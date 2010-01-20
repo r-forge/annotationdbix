@@ -1,11 +1,6 @@
 ## Create bimap objects dyn. from database
 .createBimapObj <- function(dbconn,datacache)
-{
-	
-	
-	## Create Bimap Objects
-	#myBimap_T1_2_T2 <- createBimapObj(dbconn,datacache)
-	
+{	
 	## Check if bimap_meta exists
 	if(!dbExistsTable(dbconn,'bimap_meta'))
 	{
@@ -17,11 +12,11 @@
 	sql <- "SELECT * FROM bimap_meta"
 	bimaps <- dbGetQuery(dbconn,sql)
 
-	## Get bimap objects
+	## Get tableinfo
 	sql <- "SELECT * FROM table_master_meta"
 	tableinfo <- dbGetQuery(dbconn,sql)
 	tableinfo <- as.data.frame(cbind(tableinfo,apply(tableinfo[2],1,function(x) strsplit(x,";")[[1]][1])),stringsAsFactors=FALSE)
-	
+
 	Bimaps <- c()
 	
 	for(i in 1 : nrow(bimaps))
@@ -30,6 +25,8 @@
 		tags1 <- NULL
 		tags2 <- NULL
 		tagnames <- NULL
+		filter1 <- "1"
+		filter2 <- "1"		
 		
 		if(bimaps[i,'tagname1'] != "")
 		{
@@ -42,6 +39,16 @@
 				tags2 <- c(tags2,key_value[[1]][2])
 				names(tags2) <- c(temp,key_value[[1]][1])
 			}
+		}
+		
+		if(bimaps[i,'filter1'] != "")
+		{
+			filter1 = bimaps[i,'filter1']
+		}
+		
+		if(bimaps[i,'filter2'] != "")
+		{
+			filter2 = bimaps[i,'filter2']
 		}
 		
 		## All attributes which not set as tagname are added as Rattribnames
@@ -74,6 +81,8 @@
 		
 		if(is.null(tags2))
 			tags2 <- as.character(NA)
+			
+		
 		
 		#cat(i,"nrow Bimaps: ",nrow(bimaps),"table1: ",bimaps[i,'table1'],"- table2: ",bimaps[i,'table2'],"\n")
 		
@@ -93,8 +102,8 @@
 		myBimap_T1_2_T2@L2Rchain[[2]]@Rattribnames <- attributes2	
 		
 		# Add Filters
-		myBimap_T1_2_T2@L2Rchain[[1]]@filter <- 
-		myBimap_T1_2_T2@L2Rchain[[2]]@filter <- 
+		myBimap_T1_2_T2@L2Rchain[[1]]@filter <- filter1
+		myBimap_T1_2_T2@L2Rchain[[2]]@filter <- filter2
 		
 		Bimaps <- c(Bimaps,myBimap_T1_2_T2)
 		
@@ -104,3 +113,34 @@
 	return(data)
 }
 
+.getMapCounts <- function(dbconn,datacache)
+{
+	## Check if bimap_meta exists
+	if(!dbExistsTable(dbconn,'bimap_meta'))
+	{
+		cat('No Bimap Objects available\n')
+		return()
+	}
+	
+	## Get bimap objects
+	sql <- "SELECT * FROM bimap_meta"
+	bimaps <- dbGetQuery(dbconn,sql)
+
+	## Get tableinfo
+	sql <- "SELECT * FROM table_master_meta"
+	tableinfo <- dbGetQuery(dbconn,sql)
+	tableinfo <- as.data.frame(cbind(tableinfo,apply(tableinfo[2],1,function(x) strsplit(x,";")[[1]][1])),stringsAsFactors=FALSE)
+
+	print(tableinfo)
+	print(bimaps)
+	MapCounts <- c()
+	## Get MapCounts from all Bimaps
+	print(seq(along=bimaps[['name']]))
+	for(i in seq(along=bimaps[['name']]))
+	{
+		sql <- paste("SELECT COUNT(DISTINCT",tableinfo[tableinfo$tablename==bimaps[i,'table1'],4],") FROM",bimaps[i,'table1'],"a,",bimaps[i,'table2'],"b WHERE a._id = b._id")
+		print(sql)
+		MapCounts <- c(MapCounts,bimaps[i,'name']=as.integer(dbGetQuery(dbconn,sql)[1,1]))
+	}
+	return(MapCounts)
+}

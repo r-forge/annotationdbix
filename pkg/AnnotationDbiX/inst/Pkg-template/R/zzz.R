@@ -21,7 +21,6 @@ datacache <- new.env(hash=TRUE, parent=emptyenv())
     ## Assigned dbconn in datacache
     assign("dbconn", dbconn, envir=datacache)
     
-	
     ## Create the AnnObj instances 
     BimapObjs <- .createBimapObj(dbconn,datacache)
     

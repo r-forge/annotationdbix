@@ -10,5 +10,6 @@ exportMethods(
     "addNewAnnotation" 
 )
 export(
-	".createBimapObj"
+	".createBimapObj",
+	".getMapCounts"
 )
