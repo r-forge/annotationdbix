@@ -130,17 +130,27 @@
 	sql <- "SELECT * FROM table_master_meta"
 	tableinfo <- dbGetQuery(dbconn,sql)
 	tableinfo <- as.data.frame(cbind(tableinfo,apply(tableinfo[2],1,function(x) strsplit(x,";")[[1]][1])),stringsAsFactors=FALSE)
-
-	print(tableinfo)
-	print(bimaps)
+		
 	MapCounts <- c()
 	## Get MapCounts from all Bimaps
-	print(seq(along=bimaps[['name']]))
+
 	for(i in seq(along=bimaps[['name']]))
 	{
-		sql <- paste("SELECT COUNT(DISTINCT",tableinfo[tableinfo$tablename==bimaps[i,'table1'],4],") FROM",bimaps[i,'table1'],"a,",bimaps[i,'table2'],"b WHERE a._id = b._id")
-		print(sql)
-		MapCounts <- c(MapCounts,bimaps[i,'name']=as.integer(dbGetQuery(dbconn,sql)[1,1]))
+		if(bimaps[i,'filter1'] == "")
+			filter1 = 1
+		else
+			filter1 = bimaps[i,'filter1']
+		
+		if(bimaps[i,'filter2'] == "")
+			filter2 = 1
+		else
+			filter2 = bimaps[i,'filter2']
+		
+		sql <- paste("SELECT COUNT(DISTINCT",tableinfo[tableinfo$tablename==bimaps[i,'table1'],4],") FROM",bimaps[i,'table1'],"a,",bimaps[i,'table2'],"b WHERE a._id = b._id AND",filter1,"AND",filter2)
+		
+		MapCount <- as.integer(dbGetQuery(dbconn,sql)[1,1])
+		names(MapCount) <- bimaps[i,'name']
+		MapCounts <- c(MapCounts,MapCount)
 	}
 	return(MapCounts)
 }
