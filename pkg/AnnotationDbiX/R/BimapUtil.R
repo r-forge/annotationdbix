@@ -58,7 +58,8 @@ setMethod("addBimapObj", signature(x="SQLiteConnection",name="character",table1=
 	sql <- paste("INSERT INTO bimap_meta VALUES ('",name,"','",table1,"','",table2,"','",tagname1,"','",tagname2,"','",comment,"','",filter1,"','",filter2,"')",sep="")
 	print(sql)
 	dbGetQuery(con,sql)
-	cat("Bimap Object '",name,"' added.\nDetach the library now and load it new to update existing bimap objects.\n",sep="")
+	cat("Bimap Object '",name,"' added.\nTo update the bimaps objects detach and reload the library .\n",sep="")
+	
 	return(TRUE)
 })
 
@@ -205,7 +206,7 @@ setMethod("setfilterBimapObj", signature(x="SQLiteConnection",name="character",b
 	else
 		tagname2 = bimap@L2Rchain[[2]]@tagname
 	
-	filter2 <- paste(bimap@L2Rchain[[2]]@filter,'AND',paste(mainCol,"=\"",filter,"\"",sep="",collapse=" OR "))
+	filter2 <- paste(bimap@L2Rchain[[2]]@filter,'AND',paste("{",mainCol,"}=\"",filter,"\"",sep="",collapse=" OR "))
 
 	return(addBimapObj(con,name,bimap@L2Rchain[[1]]@tablename,bimap@L2Rchain[[2]]@tablename,comment,tagname1=tagname1,tagname2=tagname2,filter1=bimap@L2Rchain[[1]]@filter,filter2=filter2))
 })

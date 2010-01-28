@@ -81,8 +81,6 @@
 		
 		if(is.null(tags2))
 			tags2 <- as.character(NA)
-			
-		
 		
 		#cat(i,"nrow Bimaps: ",nrow(bimaps),"table1: ",bimaps[i,'table1'],"- table2: ",bimaps[i,'table2'],"\n")
 		
@@ -145,6 +143,11 @@
 			filter2 = 1
 		else
 			filter2 = bimaps[i,'filter2']
+			
+		filter1 <- gsub("[{]","",filter1)
+		filter2 <- gsub("[{]","",filter2)
+		filter1 <- gsub("[}]","",filter1)
+		filter2 <- gsub("[}]","",filter2)		
 		
 		sql <- paste("SELECT COUNT(DISTINCT",tableinfo[tableinfo$tablename==bimaps[i,'table1'],4],") FROM",bimaps[i,'table1'],"a,",bimaps[i,'table2'],"b WHERE a._id = b._id AND",filter1,"AND",filter2)
 		
