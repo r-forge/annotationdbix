@@ -6,7 +6,7 @@ exportMethods(
     "addBimapObj",
     "deleteBimapObj",
 	"listBimapObj",
-	"filterBimapObj",
+	"setfilterBimapObj",
     "makeDbX",
     "addNewAnnotation" 
 )
