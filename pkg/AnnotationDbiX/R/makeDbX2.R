@@ -1,21 +1,19 @@
 ## Generate a .db.sqlite from a .db1.sqlite 
-debug =TRUE
+debug = FALSE
 
 require("RSQLite")
 require("AnnotationDbi")
+require("AnnotationDbiX")
 	
 setGeneric("makeDbX2", 
-	function(probeList,organism,species,prefix,chipSrc,baseMapTableName,outputDir,version,manufacturer,chipName,manufacturerUrl,author,maintainer) standardGeneric("makeDbX"2))
+	function(probeList,organism,species,prefix,chipSrc,baseMapTableName,outputDir,version,manufacturer,chipName,manufacturerUrl,author,maintainer) standardGeneric("makeDbX2"))
 	
 ## FilePath
 setMethod("makeDbX2",
 signature("data.frame","character","character","character","character","character","character","character","character","character","character","character","character"), 
 function(probeList,organism,species,prefix,chipSrc,baseMapTableName,outputDir,version,manufacturer="Manufacturer not specified" ,chipName,manufacturerUrl,author,maintainer) 
 {	
-	## Load table_master_info
-	cat('Load table_master_info\n')
-	tableinfo <- testDb1(chipSrc,baseMapTableName)
-	tableinfo <- cbind(tableinfo,apply(tableinfo[2],1,function(x) strsplit(x,";")[[1]][1]))
+	
 	
 	## Prepare .dbX creation
 	template_path <- system.file("Pkg-template",package="AnnotationDbiX")
@@ -49,6 +47,11 @@ function(probeList,organism,species,prefix,chipSrc,baseMapTableName,outputDir,ve
 					symbolValues=symvals,
 					unlink=TRUE)
                             
+	## Load table_master_info
+	#cat('Load table_master_info\n')
+	#tableinfo <- testDb1(chipSrc,baseMapTableName)
+	#tableinfo <- cbind(tableinfo,apply(tableinfo[2],1,function(x) strsplit(x,";")[[1]][1]))
+	                            
 	## Load SQLite Driver
 	drv <- dbDriver("SQLite")
 	
@@ -67,33 +70,34 @@ function(probeList,organism,species,prefix,chipSrc,baseMapTableName,outputDir,ve
 	dbGetQuery(con,sql)
 	
 	## Attach Database
-	cat('Attach Database',chipSrc,'as db1\n')
-	sql <- paste("ATTACH '",chipSrc,"' AS db1",sep="")
-	dbGetQuery(con,sql)
+	#cat('Attach Database',chipSrc,'as db1\n')
+	#sql <- paste("ATTACH '",chipSrc,"' AS db1",sep="")
+	#dbGetQuery(con,sql)
 
 	## Get colinfo
-	sql <- paste("PRAGMA table_info(",baseMapTableName,")",sep="")
-	colinfo <- dbGetQuery(con,sql)
-	toDrop <- colinfo[-1,'name']	
+	#sql <- paste("PRAGMA table_info(",baseMapTableName,")",sep="")
+	#colinfo <- dbGetQuery(con,sql)
 	
 	## Add helper table	
-	colnames(probeList) <- (c("probe_id",colinfo[-1,'name']))
-	dbWriteTable(conn=con,name="probes_temp",value=unique(probeList),row.names=FALSE,overwrite=TRUE)
+	#colnames(probeList) <- (c("probe_id",colinfo[-1,'name']))
+	#dbWriteTable(conn=con,name="probes_temp",value=unique(probeList),row.names=FALSE,overwrite=TRUE)
 
 	## Add Main ID table
-	cat("Add Main ID table\n")
-	dyn <- paste(apply(colinfo[-1,],1,function(x) paste(x['name'],x['type'])),collapse=",")
-	sql <- paste("CREATE TABLE internal_id (_id INTEGER PRIMARY KEY,db1_id INTEGER,",dyn,")")
-	dbGetQuery(con,sql)
+	#cat("Add Main ID table\n")
+	#dyn <- paste(apply(colinfo[-1,],1,function(x) paste(x['name'],x['type'])),collapse=",")
+	#sql <- paste("CREATE TABLE internal_id (_id INTEGER PRIMARY KEY,db1_id INTEGER,",dyn,")")
+	#dbGetQuery(con,sql)
 
-	id_name <- tableinfo[tableinfo[1] == baseMapTableName,4]
+	#id_name <- tableinfo[tableinfo[1] == baseMapTableName,4]
 	
 	## Fill internal ID table for mapping to .db1
-	cat("Fill internal ID table for mapping to .db1\n")
-	dyn <- paste(colinfo[-1,'name'],collapse=",")	
-	sql <- paste("INSERT INTO internal_id (db1_id,",dyn,") SELECT DISTINCT l.* FROM probes_temp p, db1.",baseMapTableName," l WHERE l.",id_name," = p.",id_name,sep="")
-	dbGetQuery(con,sql)
+	#cat("Fill internal ID table for mapping to .db1\n")
+	#dyn <- paste(colinfo[-1,'name'],collapse=",")	
+	#sql <- paste("INSERT INTO internal_id (db1_id,",dyn,") SELECT DISTINCT l.* FROM probes_temp p, db1.",baseMapTableName," l WHERE l.",id_name," = p.",id_name,sep="")
+	#dbGetQuery(con,sql)
 	
+	if(debug)
+	{
 	## Add Probe Table
 	cat("Add probes table\n")
 	sql <- "CREATE TABLE probes_id (_id INTEGER NOT NULL REFERENCES id(_id),probe_id TEXT NOT NULL)"
@@ -210,7 +214,7 @@ function(probeList,organism,species,prefix,chipSrc,baseMapTableName,outputDir,ve
 	
 	sql <- "INSERT INTO internal_id SELECT _id FROM id_temp"
 	dbGetQuery(con,sql)
-	
+	} ## DEBUG
 })
 
 testDb1 <- function(dbfile,baseMapTableName)
