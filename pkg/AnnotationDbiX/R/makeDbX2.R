@@ -5,16 +5,21 @@ require("RSQLite")
 require("AnnotationDbi")
 require("AnnotationDbiX")
 	
-setGeneric("makeDbX2", 
-	function(probeList,organism,species,prefix,chipSrc,baseMapTableName,outputDir,version,manufacturer,chipName,manufacturerUrl,author,maintainer) standardGeneric("makeDbX2"))
+setGeneric("makeDbX2", signature = c("probeList","organism","species","prefix","outputDir","version","chipName","author","maintainer"),
+	function(probeList,organism,species,prefix,outputDir,version,chipName,author,maintainer,manufacturer="Manufacturer not specified",manufacturerUrl="ManufacturerUrl not specified",colName='sequence') standardGeneric("makeDbX2"))
 	
 ## FilePath
 setMethod("makeDbX2",
-signature("data.frame","character","character","character","character","character","character","character","character","character","character","character","character"), 
-function(probeList,organism,species,prefix,chipSrc,baseMapTableName,outputDir,version,manufacturer="Manufacturer not specified" ,chipName,manufacturerUrl,author,maintainer) 
+signature("data.frame","character","character","character","character","character","character","character","character"), 
+function(probeList,organism,species,prefix,outputDir,version,chipName,author,maintainer,manufacturer,manufacturerUrl,colName) 
 {	
 	
-	
+	## Test parameters
+	if(dim(probeList)[2] != 2)
+		stop("'probeList' must have 2 columns. The left side must be the featurenames and the right side must be a unique identifier e.g. oligosequence.")
+	if(nrow(unique(probeList)) != nrow(unique(probeList[1])))
+		stop("'probeList' is not unique. Same featurename must have same id.")
+		
 	## Prepare .dbX creation
 	template_path <- system.file("Pkg-template",package="AnnotationDbiX")
                  
@@ -35,7 +40,7 @@ function(probeList,organism,species,prefix,chipSrc,baseMapTableName,outputDir,ve
 			PKGVERSION=version,
 			LIC='Artistic-2.0',
 			#BIOCVIEWS=x@biocViews,
-			DBFILE=chipSrc,
+			#DBFILE=chipSrc,
 			DBFILENEW=paste(prefix,".dbX",sep=""),
 			ANNDBIVERSION=ann_dbi_version
         )
@@ -45,19 +50,14 @@ function(probeList,organism,species,prefix,chipSrc,baseMapTableName,outputDir,ve
 					destinationDir=outputDir,
 					originDir=template_path,
 					symbolValues=symvals,
-					unlink=TRUE)
-                            
-	## Load table_master_info
-	#cat('Load table_master_info\n')
-	#tableinfo <- testDb1(chipSrc,baseMapTableName)
-	#tableinfo <- cbind(tableinfo,apply(tableinfo[2],1,function(x) strsplit(x,";")[[1]][1]))
+					unlink=TRUE)                            
 	                            
 	## Load SQLite Driver
 	drv <- dbDriver("SQLite")
 	
 	## Generate Connection Object	
 	db_dir <- file.path(outputDir,paste(prefix,'.dbX',sep=""),'inst','extdata',prefix)
-	cat('Generate sqlite file at',db_dir)
+	cat('Generate sqlite file at',db_dir,'\n')
 	con <- dbConnect(drv, dbname = paste(db_dir,".dbX",sep=""))
 	on.exit(dbDisconnect(con))
 	
@@ -69,32 +69,25 @@ function(probeList,organism,species,prefix,chipSrc,baseMapTableName,outputDir,ve
 	sql <- "DROP TABLE IF EXISTS table_master_meta"
 	dbGetQuery(con,sql)
 	
-	## Attach Database
-	#cat('Attach Database',chipSrc,'as db1\n')
-	#sql <- paste("ATTACH '",chipSrc,"' AS db1",sep="")
-	#dbGetQuery(con,sql)
-
-	## Get colinfo
-	#sql <- paste("PRAGMA table_info(",baseMapTableName,")",sep="")
-	#colinfo <- dbGetQuery(con,sql)
-	
 	## Add helper table	
-	#colnames(probeList) <- (c("probe_id",colinfo[-1,'name']))
-	#dbWriteTable(conn=con,name="probes_temp",value=unique(probeList),row.names=FALSE,overwrite=TRUE)
+	colnames(probeList) <- (c("probe_id",colName))
+	dbWriteTable(conn=con,name="probes_temp",value=unique(probeList),row.names=FALSE,overwrite=TRUE)
 
 	## Add Main ID table
-	#cat("Add Main ID table\n")
-	#dyn <- paste(apply(colinfo[-1,],1,function(x) paste(x['name'],x['type'])),collapse=",")
-	#sql <- paste("CREATE TABLE internal_id (_id INTEGER PRIMARY KEY,db1_id INTEGER,",dyn,")")
-	#dbGetQuery(con,sql)
-
-	#id_name <- tableinfo[tableinfo[1] == baseMapTableName,4]
+	cat("Add Main ID table\n")
+	sql <- paste("CREATE TABLE internal_id (_id INTEGER PRIMARY KEY)")
+	#sql <- paste("CREATE TABLE internal_id (_id INTEGER PRIMARY KEY,",colName," TEXT UNIQUE NOT NULL)")
+	dbGetQuery(con,sql)
 	
-	## Fill internal ID table for mapping to .db1
-	#cat("Fill internal ID table for mapping to .db1\n")
-	#dyn <- paste(colinfo[-1,'name'],collapse=",")	
-	#sql <- paste("INSERT INTO internal_id (db1_id,",dyn,") SELECT DISTINCT l.* FROM probes_temp p, db1.",baseMapTableName," l WHERE l.",id_name," = p.",id_name,sep="")
-	#dbGetQuery(con,sql)
+	## Fill internal ID table
+	cat("Fill internal ID table\n")
+	sql <- paste("INSERT INTO internal_id (_id) SELECT NULL FROM (SELECT DISTINCT ",colName," FROM probes_temp) WHERE ",colName," IS NOT NULL",sep="")
+	#sql <- paste("INSERT INTO internal_id (",colName,") SELECT DISTINCT ",colName," FROM probes_temp",sep="")
+	dbGetQuery(con,sql)
+	
+	
+	
+	
 	
 	if(debug)
 	{
@@ -131,7 +124,7 @@ function(probeList,organism,species,prefix,chipSrc,baseMapTableName,outputDir,ve
 	
 	## Add table_master_meta
 	cat("Add table_master_meta\n")
-	sql <- "CREATE TABLE table_master_meta (tablename TEXT, fieldnames TEXT, createstatements TEXT)"
+	sql <- "CREATE TABLE table_master_meta (colName TEXT, fieldnames TEXT, createstatements TEXT)"
 	dbGetQuery(con,sql)
 	
 	## Add all other xxx_id tables
@@ -169,10 +162,10 @@ function(probeList,organism,species,prefix,chipSrc,baseMapTableName,outputDir,ve
 	sql <- "INSERT INTO table_master_meta SELECT * FROM db1.table_master_meta"
 	dbGetQuery(con,sql)
 	
-	## Fill baseMapTableName table
-	#cat("Fill",baseMapTableName,"table\n")
+	## Fill baseMapcolName table
+	#cat("Fill",baseMapcolName,"table\n")
 	#dyn <- paste(colinfo[,'name'],collapse=",")
-	#sql <- paste("INSERT INTO",baseMapTableName,"SELECT",dyn,"FROM internal_id")
+	#sql <- paste("INSERT INTO",baseMapcolName,"SELECT",dyn,"FROM internal_id")
 	#dbGetQuery(con,sql)
 	
 	## Fill all other _id tables
@@ -217,7 +210,7 @@ function(probeList,organism,species,prefix,chipSrc,baseMapTableName,outputDir,ve
 	} ## DEBUG
 })
 
-testDb1 <- function(dbfile,baseMapTableName)
+testDb1 <- function(dbfile,baseMapcolName)
 {
 	## Load SQLite Driver
 	drv <- dbDriver("SQLite")
@@ -225,15 +218,15 @@ testDb1 <- function(dbfile,baseMapTableName)
 	## Generate Connection Object	
 	con <- dbConnect(drv, dbname = dbfile)
 	
-	if(!dbExistsTable(con,baseMapTableName))
-		stop("baseMapTableName '",baseMapTableName,"' is not valid")
+	if(!dbExistsTable(con,baseMapcolName))
+		stop("baseMapcolName '",baseMapcolName,"' is not valid")
 		
 	sql <- "SELECT * FROM table_master_meta"
 	table_master_info <- dbGetQuery(con,sql)
 
 	for(i in 2:nrow(table_master_info)) # 1. row is probes_id table, only in dbX
-		if(!dbExistsTable(con,table_master_info[i,'tablename']))
-			stop(table_master_info[i,'tablename'],"' is not valid")
+		if(!dbExistsTable(con,table_master_info[i,'colName']))
+			stop(table_master_info[i,'colName'],"' is not valid")
 
 	if(!dbExistsTable(con,'bimap_meta'))
 	
