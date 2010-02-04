@@ -8,6 +8,7 @@ exportMethods(
 	"listBimapObj",
 	"setfilterBimapObj",
     "makeDbX",
+    "makeDbX2",
     "addNewAnnotation" 
 )
 export(

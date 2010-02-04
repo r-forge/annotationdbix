@@ -1,25 +1,31 @@
-## Generate a .db.sqlite from a .db1.sqlite 
-debug = FALSE
+## Generates a .dbX package
 
-require("RSQLite")
-require("AnnotationDbi")
-require("AnnotationDbiX")
+#require("RSQLite")
+#require("AnnotationDbi")
+#require("AnnotationDbiX")
 	
 setGeneric("makeDbX2", signature = c("probeList","organism","species","prefix","outputDir","version","chipName","author","maintainer"),
-	function(probeList,organism,species,prefix,outputDir,version,chipName,author,maintainer,manufacturer="Manufacturer not specified",manufacturerUrl="ManufacturerUrl not specified",colName='sequence') standardGeneric("makeDbX2"))
+	function(probeList,organism,species,prefix,outputDir,version,chipName,author,maintainer,manufacturer="Manufacturer not specified",manufacturerUrl="ManufacturerUrl not specified",tableName='sequence',colName='sequence') standardGeneric("makeDbX2"))
 	
 ## FilePath
 setMethod("makeDbX2",
 signature("data.frame","character","character","character","character","character","character","character","character"), 
-function(probeList,organism,species,prefix,outputDir,version,chipName,author,maintainer,manufacturer,manufacturerUrl,colName) 
+function(probeList,organism,species,prefix,outputDir,version,chipName,author,maintainer,manufacturer,manufacturerUrl,tableName,colName) 
 {	
 	
 	## Test parameters
 	if(dim(probeList)[2] != 2)
 		stop("'probeList' must have 2 columns. The left side must be the featurenames and the right side must be a unique identifier e.g. oligosequence.")
+	
 	if(nrow(unique(probeList)) != nrow(unique(probeList[1])))
 		stop("'probeList' is not unique. Same featurename must have same id.")
-		
+	
+	if(colName == 'probe_id')
+		stop("'colName' must not be named 'probe_id'.")
+
+	if(any(is.na(unique(probeList))))
+		stop("'probeList' must not contain NAs.")
+				
 	## Prepare .dbX creation
 	template_path <- system.file("Pkg-template",package="AnnotationDbiX")
                  
@@ -57,12 +63,16 @@ function(probeList,organism,species,prefix,outputDir,version,chipName,author,mai
 	
 	## Generate Connection Object	
 	db_dir <- file.path(outputDir,paste(prefix,'.dbX',sep=""),'inst','extdata',prefix)
-	cat('Generate sqlite file at',db_dir,'\n')
+	cat('Generates a sqlite file at',db_dir,'\n')
 	con <- dbConnect(drv, dbname = paste(db_dir,".dbX",sep=""))
 	on.exit(dbDisconnect(con))
 	
 	## Drop existing tables
-	sql <- "DROP TABLE IF EXISTS internal_id"
+	#sql <- "DROP TABLE IF EXISTS internal_id"
+	#dbGetQuery(con,sql)
+	sql <- paste("DROP TABLE IF EXISTS",tableName)
+	dbGetQuery(con,sql)
+	sql <- "DROP TABLE IF EXISTS meta"
 	dbGetQuery(con,sql)
 	sql <- "DROP TABLE IF EXISTS probes_id"
 	dbGetQuery(con,sql)
@@ -70,182 +80,53 @@ function(probeList,organism,species,prefix,outputDir,version,chipName,author,mai
 	dbGetQuery(con,sql)
 	
 	## Add helper table	
+	cat("Add helper Table\n")
 	colnames(probeList) <- (c("probe_id",colName))
 	dbWriteTable(conn=con,name="probes_temp",value=unique(probeList),row.names=FALSE,overwrite=TRUE)
-
+	
+	## Add meta Table
+	cat("Add meta Table\n")
+	sql <- "CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)"
+	dbGetQuery(con,sql)
+	
+	## Add User Defined table
+	cat("Add",tableName,"table\n")
+	sql <- paste("CREATE TABLE",tableName,"(_id INTEGER PRIMARY KEY,",colName,"TEXT NOT NULL)")
+	dbGetQuery(con,sql)
+	
 	## Add Main ID table
-	cat("Add Main ID table\n")
-	sql <- paste("CREATE TABLE internal_id (_id INTEGER PRIMARY KEY)")
-	#sql <- paste("CREATE TABLE internal_id (_id INTEGER PRIMARY KEY,",colName," TEXT UNIQUE NOT NULL)")
+	#cat("Add Main ID table\n")
+	#sql <- paste("CREATE TABLE internal_id (_id INTEGER PRIMARY KEY)")
+	#dbGetQuery(con,sql)
+	
+	## Add Probes table
+	cat("Add probes table\n")
+	sql <- paste("CREATE TABLE probes (_id INTEGER,probes_id TEXT)")
+	dbGetQuery(con,sql)
+	
+	## Fill User Defined table
+	cat("Fill",tableName,"table\n")
+	sql <- paste("INSERT INTO",tableName,"SELECT NULL,",colName,"FROM probes_temp GROUP BY",colName)
 	dbGetQuery(con,sql)
 	
 	## Fill internal ID table
-	cat("Fill internal ID table\n")
-	sql <- paste("INSERT INTO internal_id (_id) SELECT NULL FROM (SELECT DISTINCT ",colName," FROM probes_temp) WHERE ",colName," IS NOT NULL",sep="")
-	#sql <- paste("INSERT INTO internal_id (",colName,") SELECT DISTINCT ",colName," FROM probes_temp",sep="")
-	dbGetQuery(con,sql)
-	
-	
-	
-	
-	
-	if(debug)
-	{
-	## Add Probe Table
-	cat("Add probes table\n")
-	sql <- "CREATE TABLE probes_id (_id INTEGER NOT NULL REFERENCES id(_id),probe_id TEXT NOT NULL)"
-	dbGetQuery(con,sql)
-	
-	## Fill probes table with _id in .db1
-	cat("Fill probes table with _id in .db1\n")
-	sql <- paste("INSERT INTO probes_id (_id,probe_id) SELECT i._id,p.probe_id FROM internal_id i,probes_temp p WHERE p.",colinfo[-1,'name']," = i.",colinfo[-1,'name'],sep="")
-	dbGetQuery(con,sql)
-	
-	## Update internal_id table with values only in list
-	cat("Update internal_id table with values only in list\n")
-	dyn <- paste(colinfo[-1,'name'],collapse=",")
-	dyn1 <- paste(paste("p.",colinfo[-1,'name'],sep=""),collapse=",")
-	sql <- paste("INSERT INTO internal_id (",dyn,") SELECT ",dyn," FROM (SELECT ",dyn1," FROM probes_temp p EXCEPT SELECT ",dyn1," FROM probes_temp p,internal_id i WHERE p.",id_name," = i.",id_name,") WHERE ",id_name," IS NOT NULL",sep="")
-	dbGetQuery(con,sql)
-	
-	## Fill probes table with _ids only in list
-	cat("Fill probes table with _ids only in list\n")
-	sql <- paste("INSERT INTO probes_id (_id,probe_id) SELECT _id,p.probe_id FROM probes_temp p,internal_id i WHERE i.db1_id IS NULL AND i.",id_name," = p.",id_name,sep="")
-	dbGetQuery(con,sql)
-	
-	## Fill probes table with probe_ids from list with no internal_id
-	#cat("Fill probes table with probe_ids from list with no internal_id\n")
-	#sql <- paste("INSERT INTO probes_id (_id,probe_id) SELECT NULL,probe_id FROM probes_temp p WHERE p.",id_name," IS NULL",sep="")
+	#cat("Fill internal ID table\n")
+	#sql <- paste("INSERT INTO internal_id SELECT _id FROM",tableName)
 	#dbGetQuery(con,sql)
 	
-	## Detach database for creating multiple tables_id
-	sql <- "DETACH db1"
+	## Fill Probes table
+	cat("Fill Probes table\n")
+	sql <- paste("INSERT INTO probes SELECT _id,probe_id FROM probes_temp p,",tableName," s WHERE p.",colName," = s.",colName," GROUP BY probe_id",seq="")
 	dbGetQuery(con,sql)
 	
-	## Add table_master_meta
-	cat("Add table_master_meta\n")
-	sql <- "CREATE TABLE table_master_meta (colName TEXT, fieldnames TEXT, createstatements TEXT)"
+	## Fill meta Table
+	cat("Fill meta Table\n")
+	sql <- paste("INSERT INTO meta (key,value) VALUES ('main_table','",tableName,"')")
 	dbGetQuery(con,sql)
-	
-	## Add all other xxx_id tables
-	cat("Add all other xxx_id tables\n")
-	for(i in 2:nrow(tableinfo)) # 1.table is probes_id already exist
-	{
-		dbGetQuery(con,paste("DROP TABLE IF EXISTS",tableinfo[i,1]))	
-		dbGetQuery(con,tableinfo[i,3])
-	}
-	
-	## Add bimap_meta Table if exists
-	is.bimap <- testBimapMeta(chipSrc)
-	if(is.bimap)
-	{
-		cat("Add bimap_meta Table\n")
-		sql <- "DROP TABLE IF EXISTS bimap_meta"
-		dbGetQuery(con,sql)
-		sql<-"CREATE TABLE IF NOT EXISTS bimap_meta(name TEXT PRIMARY KEY,table1 TEXT NOT NULL,table2 TEXT NOT NULL,tagname1 TEXT,tagname2 TEXT,comment TEXT,filter1 TEXT,filter2 TEXT)"
-		dbGetQuery(con,sql)
-	}
-	
-	## Attach Database
-	sql <- paste("ATTACH '",chipSrc,"' AS db1",sep="")
-	dbGetQuery(con,sql)
-	
-	## Fill bimap_meta Table if exists
-	if(is.bimap)
-	{
-		sql <- "INSERT INTO bimap_meta SELECT * FROM db1.bimap_meta"
-		dbGetQuery(con,sql)
-	}
-	
-	## Fill table_master_meta
-	cat("Fill table_master_meta\n")
-	sql <- "INSERT INTO table_master_meta SELECT * FROM db1.table_master_meta"
-	dbGetQuery(con,sql)
-	
-	## Fill baseMapcolName table
-	#cat("Fill",baseMapcolName,"table\n")
-	#dyn <- paste(colinfo[,'name'],collapse=",")
-	#sql <- paste("INSERT INTO",baseMapcolName,"SELECT",dyn,"FROM internal_id")
-	#dbGetQuery(con,sql)
-	
-	## Fill all other _id tables
-	sapply(tableinfo[-1,][[1]],function(x) 
-	{
-		cat("Fill",x,"table\n")
-		## Get colinfo
-		sql <- paste("PRAGMA table_info(",x,")",sep="")
-		colinfo <- dbGetQuery(con,sql)
-		
-		dyn <- paste(paste("l.",colinfo[-1,'name'],sep=""),collapse=",")
-		sql <- paste("INSERT INTO ",x," SELECT i._id,",dyn," FROM internal_id i,db1.",x," l WHERE l._id = i.db1_id",sep="")
-		dbGetQuery(con,sql)
-	})
-	
-	## Creates index for all _id tables
-	cat("Creates indexes for all _id tables\n")
-	for(i in 1:nrow(tableinfo)) # 1.table is probes_id already exist
-	{
-		sql <- paste("CREATE INDEX F",tableinfo[i,1]," ON ",tableinfo[i,1],"(_id)",sep="")
-		dbGetQuery(con,sql)	
-	}
 	
 	## Remove Helper table
 	sql <- "DROP TABLE IF EXISTS probes_temp"
-	dbGetQuery(con,sql)
-	
-	
-	## Detach Database
-	sql <- "DETACH db1"
-	dbGetQuery(con,sql)
-	
-	## Removed helper columns from internal_id -- There is no ALTER TABLE DROP column in SQLite
-	sql <- "ALTER TABLE internal_id RENAME TO id_temp"
-	dbGetQuery(con,sql)
-	
-	sql <- "CREATE TABLE internal_id (_id INTEGER PRIMARY KEY)"
-	dbGetQuery(con,sql)
-	
-	sql <- "INSERT INTO internal_id SELECT _id FROM id_temp"
-	dbGetQuery(con,sql)
-	} ## DEBUG
+	dbGetQuery(con,sql)	
 })
 
-testDb1 <- function(dbfile,baseMapcolName)
-{
-	## Load SQLite Driver
-	drv <- dbDriver("SQLite")
-	
-	## Generate Connection Object	
-	con <- dbConnect(drv, dbname = dbfile)
-	
-	if(!dbExistsTable(con,baseMapcolName))
-		stop("baseMapcolName '",baseMapcolName,"' is not valid")
-		
-	sql <- "SELECT * FROM table_master_meta"
-	table_master_info <- dbGetQuery(con,sql)
 
-	for(i in 2:nrow(table_master_info)) # 1. row is probes_id table, only in dbX
-		if(!dbExistsTable(con,table_master_info[i,'colName']))
-			stop(table_master_info[i,'colName'],"' is not valid")
-
-	if(!dbExistsTable(con,'bimap_meta'))
-	
-	dbDisconnect(con)
-	
-	return(table_master_info)
-}
-
-testBimapMeta <- function(dbfile)
-{
-	## Load SQLite Driver
-	drv <- dbDriver("SQLite")
-	
-	## Generate Connection Object	
-	con <- dbConnect(drv, dbname = dbfile)
-	
-	trig <- dbExistsTable(con,'bimap_meta')
-	
-	dbDisconnect(con)
-	
-	return(trig)
-}
