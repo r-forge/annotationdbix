@@ -74,6 +74,8 @@ function(probeList,organism,species,prefix,outputDir,version,chipName,author,mai
 	dbGetQuery(con,sql)
 	sql <- "DROP TABLE IF EXISTS meta"
 	dbGetQuery(con,sql)
+	sql <- "DROP TABLE IF EXISTS bimap_meta"
+	dbGetQuery(con,sql)
 	sql <- "DROP TABLE IF EXISTS probes_id"
 	dbGetQuery(con,sql)
 	sql <- "DROP TABLE IF EXISTS table_master_meta"
@@ -88,6 +90,16 @@ function(probeList,organism,species,prefix,outputDir,version,chipName,author,mai
 	cat("Add meta Table\n")
 	sql <- "CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)"
 	dbGetQuery(con,sql)
+	
+	## Add table_master_meta
+	cat("Add table_master_meta\n")
+	sql <- "CREATE TABLE table_master_meta (tablename TEXT, fieldnames TEXT)"
+	dbGetQuery(con,sql)
+	
+	## Add Bimap table
+	#cat("Add bimap table\n")
+	#sql<-"CREATE TABLE bimap_meta(name TEXT PRIMARY KEY,table1 TEXT NOT NULL,table2 TEXT NOT NULL,tagname1 TEXT,tagname2 TEXT,comment TEXT,filter1 TEXT,filter2 TEXT)"
+	#dbGetQuery(con,sql)
 	
 	## Add User Defined table
 	cat("Add",tableName,"table\n")
@@ -122,6 +134,13 @@ function(probeList,organism,species,prefix,outputDir,version,chipName,author,mai
 	## Fill meta Table
 	cat("Fill meta Table\n")
 	sql <- paste("INSERT INTO meta (key,value) VALUES ('main_table','",tableName,"')")
+	dbGetQuery(con,sql)
+	
+	## Fill meta Table
+	cat("Fill meta Table\n")
+	sql <- paste("INSERT INTO table_master_meta (tablename,fieldnames) VALUES ('probes','probes_id')")
+	dbGetQuery(con,sql)
+	sql <- paste("INSERT INTO table_master_meta (tablename,fieldnames) VALUES ('",tableName,"','",colName,"')")
 	dbGetQuery(con,sql)
 	
 	## Remove Helper table

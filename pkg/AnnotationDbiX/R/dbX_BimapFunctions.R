@@ -5,7 +5,7 @@
 	if(!dbExistsTable(dbconn,'bimap_meta'))
 	{
 		cat('No Bimap Objects available\n')
-		return()
+		return(NULL)
 	}
 	
 	## Get bimap objects
