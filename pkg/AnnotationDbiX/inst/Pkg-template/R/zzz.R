@@ -25,8 +25,9 @@ datacache <- new.env(hash=TRUE, parent=emptyenv())
     BimapObjs <- .createBimapObj(dbconn,datacache)
     
     ## Add MapCounts
-    BimapObjs[[1]][length(BimapObjs[[1]]) + 1] <- 'MAPCOUNTS'
     BimapObjs[[2]][length(BimapObjs[[2]]) + 1] <- list(.getMapCounts(dbconn,datacache))
+    BimapObjs[[1]][length(BimapObjs[[1]]) + 1] <- 'MAPCOUNTS'
+    
     
     for(i in seq(BimapObjs[[1]]))
     {

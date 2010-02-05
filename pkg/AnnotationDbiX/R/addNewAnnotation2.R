@@ -21,7 +21,7 @@ setMethod("addNewAnnotation2", signature("character","data.frame","character","c
 	con <- dbConnect(drv, dbname = x)
 	on.exit(dbDisconnect(con))
 	
-	addNewAnnotation(con,data,tableName,data.colnames)
+	addNewAnnotation2(con,data,tableName,data.colnames)
 })
 
 ## SQLite-Connection
@@ -41,8 +41,8 @@ setMethod("addNewAnnotation2", signature("SQLiteConnection","data.frame","charac
 	meta <- dbGetQuery(con,sql)
 	main_table <- meta[meta$key == 'main_table','value']
 	
-	if(!(colnames(data)[1] %in% id_tables[1]))
-		stop("There is no table named",colnames(data)[1])
+	#if(!(colnames(data)[1] %in% id_tables[1]))
+	#	stop("There is no table named ",colnames(data)[1])
 	
 	## Add helper table	
 	cat("Add helper table ",tableName,"_temp\n",sep="")
@@ -73,6 +73,6 @@ setMethod("addNewAnnotation2", signature("SQLiteConnection","data.frame","charac
 	
 	## Remove helper table
 	cat("Remove helper table\n")
-	sql <- paste("DROP TABLE ",tablename,"_temp",sep="")
+	sql <- paste("DROP TABLE ",tableName,"_temp",sep="")
 	dbGetQuery(con,sql)
 })

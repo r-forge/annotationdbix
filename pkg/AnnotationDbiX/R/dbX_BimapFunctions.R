@@ -15,7 +15,8 @@
 	## Get tableinfo
 	sql <- "SELECT * FROM table_master_meta"
 	tableinfo <- dbGetQuery(dbconn,sql)
-	tableinfo <- as.data.frame(cbind(tableinfo,apply(tableinfo[2],1,function(x) strsplit(x,";")[[1]][1])),stringsAsFactors=FALSE)
+	mainCol <- apply(tableinfo[2],1,function(x) strsplit(x,";")[[1]][1])
+	tableinfo <- as.data.frame(cbind(tableinfo,mainCol),stringsAsFactors=FALSE)
 
 	Bimaps <- c()
 	
@@ -52,8 +53,8 @@
 		}
 		
 		## All attributes which not set as tagname are added as Rattribnames
-		attributes1 <- strsplit(tableinfo[tableinfo[['tablename']] == bimaps[i,'table1'],'fieldnames'],";")[[1]]
-		attributes1 <- attributes1[attributes1 != tableinfo[tableinfo[['tablename']] == bimaps[i,'table1'],4]]
+		attributes1 <- strsplit(tableinfo[tableinfo[['tablename']] == bimaps[i,'table1'],'fieldnames'],";")[[1]][1]
+		attributes1 <- attributes1[attributes1 != tableinfo[tableinfo[['tablename']] == bimaps[i,'table1'],'mainCol']]
 		attributes1 <- attributes1[attributes1 != tags2]
 		names(attributes1) <- attributes1
 		
@@ -71,8 +72,8 @@
 		}
 		
 		## All attributes which not set as tagname are added as Rattribnames
-		attributes2 <- strsplit(tableinfo[tableinfo[['tablename']] == bimaps[i,'table2'],'fieldnames'],";")[[1]]
-		attributes2 <- attributes2[attributes2 != tableinfo[tableinfo[['tablename']] == bimaps[i,'table2'],4]]
+		attributes2 <- strsplit(tableinfo[tableinfo[['tablename']] == bimaps[i,'table2'],'fieldnames'],";")[[1]][1]
+		attributes2 <- attributes2[attributes2 != tableinfo[tableinfo[['tablename']] == bimaps[i,'table2'],'mainCol']]
 		attributes2 <- attributes2[attributes2 != tags2]
 		names(attributes2) <- attributes2
 		
@@ -84,8 +85,8 @@
 		
 		#cat(i,"nrow Bimaps: ",nrow(bimaps),"table1: ",bimaps[i,'table1'],"- table2: ",bimaps[i,'table2'],"\n")
 		
-		chain=list(new("L2Rlink",tablename=bimaps[i,'table1'],Lcolname=as.character(tableinfo[tableinfo[1] == bimaps[i,'table1'],4]),Rcolname="_id"),
-				   new("L2Rlink",tablename=bimaps[i,'table2'],Lcolname="_id",Rcolname=as.character(tableinfo[tableinfo[1] == bimaps[i,'table2'],4])))
+		chain=list(new("L2Rlink",tablename=bimaps[i,'table1'],Lcolname=as.character(tableinfo[tableinfo[1] == bimaps[i,'table1'],'mainCol']),Rcolname="_id"),
+				   new("L2Rlink",tablename=bimaps[i,'table2'],Lcolname="_id",Rcolname=as.character(tableinfo[tableinfo[1] == bimaps[i,'table2'],'mainCol'])))
 		
 		myBimap_T1_2_T2 <- new("AnnDbBimap",L2Rchain=chain,
 				objName=bimaps[i,'name'],objTarget="ecoliK12CHIP",
@@ -127,7 +128,8 @@
 	## Get tableinfo
 	sql <- "SELECT * FROM table_master_meta"
 	tableinfo <- dbGetQuery(dbconn,sql)
-	tableinfo <- as.data.frame(cbind(tableinfo,apply(tableinfo[2],1,function(x) strsplit(x,";")[[1]][1])),stringsAsFactors=FALSE)
+	mainCol <- apply(tableinfo[2],1,function(x) strsplit(x,";")[[1]][1])
+	tableinfo <- as.data.frame(cbind(tableinfo,mainCol),stringsAsFactors=FALSE)
 		
 	MapCounts <- c()
 	## Get MapCounts from all Bimaps
@@ -149,7 +151,7 @@
 		filter1 <- gsub("[}]","",filter1)
 		filter2 <- gsub("[}]","",filter2)		
 		
-		sql <- paste("SELECT COUNT(DISTINCT",tableinfo[tableinfo$tablename==bimaps[i,'table1'],4],") FROM",bimaps[i,'table1'],"a,",bimaps[i,'table2'],"b WHERE a._id = b._id AND",filter1,"AND",filter2)
+		sql <- paste("SELECT COUNT(DISTINCT",tableinfo[tableinfo$tablename==bimaps[i,'table1'],'mainCol'],") FROM",bimaps[i,'table1'],"a,",bimaps[i,'table2'],"b WHERE a._id = b._id AND",filter1,"AND",filter2)
 		
 		MapCount <- as.integer(dbGetQuery(dbconn,sql)[1,1])
 		names(MapCount) <- bimaps[i,'name']

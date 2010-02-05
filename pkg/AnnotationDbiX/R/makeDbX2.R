@@ -113,7 +113,7 @@ function(probeList,organism,species,prefix,outputDir,version,chipName,author,mai
 	
 	## Add Probes table
 	cat("Add probes table\n")
-	sql <- paste("CREATE TABLE probes (_id INTEGER,probes_id TEXT)")
+	sql <- paste("CREATE TABLE probes (_id INTEGER,probe_id TEXT)")
 	dbGetQuery(con,sql)
 	
 	## Fill User Defined table
@@ -128,7 +128,7 @@ function(probeList,organism,species,prefix,outputDir,version,chipName,author,mai
 	
 	## Fill Probes table
 	cat("Fill Probes table\n")
-	sql <- paste("INSERT INTO probes SELECT _id,probe_id FROM probes_temp p,",tableName," s WHERE p.",colName," = s.",colName," GROUP BY probe_id",seq="")
+	sql <- paste("INSERT INTO probes SELECT _id,probe_id FROM probes_temp p,",tableName," s WHERE p.",colName," = s.",colName," GROUP BY p.probe_id",seq="")
 	dbGetQuery(con,sql)
 	
 	## Fill meta Table
@@ -138,9 +138,9 @@ function(probeList,organism,species,prefix,outputDir,version,chipName,author,mai
 	
 	## Fill meta Table
 	cat("Fill meta Table\n")
-	sql <- paste("INSERT INTO table_master_meta (tablename,fieldnames) VALUES ('probes','probes_id')")
+	sql <- paste("INSERT INTO table_master_meta (tablename,fieldnames) VALUES ('probes','probe_id')")
 	dbGetQuery(con,sql)
-	sql <- paste("INSERT INTO table_master_meta (tablename,fieldnames) VALUES ('",tableName,"','",colName,"')")
+	sql <- paste("INSERT INTO table_master_meta (tablename,fieldnames) VALUES ('",tableName,"','",colName,"')",sep="")
 	dbGetQuery(con,sql)
 	
 	## Remove Helper table
