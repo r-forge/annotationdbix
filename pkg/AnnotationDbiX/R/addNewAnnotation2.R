@@ -5,12 +5,12 @@
 ## Load Library
 #require("RSQLite")
 
-setGeneric("addNewAnnotation2", function(x,data,tableName,data.colnames) standardGeneric("addNewAnnotation2"))
+setGeneric("addNewAnnotation2", signature = c("x","data","newTableName","data.colNames","mapTableName"),function(x,data,newTableName,data.colNames,mapTableName,dbSrc=NULL) standardGeneric("addNewAnnotation2"))
 
 ## FilePath
-setMethod("addNewAnnotation2", signature("character","data.frame","character","character"), function(x,data,tableName,data.colnames) 
+setMethod("addNewAnnotation2", signature("character","data.frame","character","character","character"), function(x,data,newTableName,data.colNames,mapTableName,dbSrc) 
 {
-	## Check Parameter
+	## Check Parameters
 	if(!file.exists(x))
 		stop("Database do not exist!")
 	
@@ -21,58 +21,67 @@ setMethod("addNewAnnotation2", signature("character","data.frame","character","c
 	con <- dbConnect(drv, dbname = x)
 	on.exit(dbDisconnect(con))
 	
-	addNewAnnotation2(con,data,tableName,data.colnames)
+	addNewAnnotation2(con,data,newTableName,data.colNames,mapTableName,dbSrc)
 })
 
 ## SQLite-Connection
-setMethod("addNewAnnotation2", signature("SQLiteConnection","data.frame","character","character"), function(x,data,tableName,data.colnames) 
+setMethod("addNewAnnotation2", signature("SQLiteConnection","data.frame","character","character","character"), function(x,data,newTableName,data.colNames,mapTableName,dbSrc) 
 {	
 	con <- x
 	
-	if(dbExistsTable(con,tableName))
-		stop("Table '",tablename,"' already exists\n")
+	if(dbExistsTable(con,newTableName))
+		stop("Table '",newTableName,"' already exists\n")
 	
 	## Read meta
 	cat("Read table_master_meta\n")
 	sql <- "SELECT * FROM table_master_meta"
 	id_tables <- dbGetQuery(con,sql)	
+	mainCol <- apply(id_tables[2],1,function(x) strsplit(x,";")[[1]][1])
+	id_tables <- as.data.frame(cbind(id_tables,mainCol),stringsAsFactors=FALSE)
 	
 	sql <- "SELECT * FROM meta"
 	meta <- dbGetQuery(con,sql)
 	main_table <- meta[meta$key == 'main_table','value']
 	
-	#if(!(colnames(data)[1] %in% id_tables[1]))
-	#	stop("There is no table named ",colnames(data)[1])
+	if(!(mapTableName %in% id_tables[[1]]))
+		stop("There is no table named ",mapTableName)
+
+	colnames(data) <- c(as.character(id_tables[id_tables$tablename == mapTableName,'mainCol'][1]),data.colNames)
 	
 	## Add helper table	
-	cat("Add helper table ",tableName,"_temp\n",sep="")
-	colnames(data) <- data.colnames
-	dbWriteTable(conn=con,name=paste(tableName,"_temp",sep=""),value=data[data.colnames],row.names=FALSE,overwrite=TRUE)	
+	cat("Add helper table ",newTableName,"_temp\n",sep="")
+	dbWriteTable(conn=con,name=paste(newTableName,"_temp",sep=""),value=unique(data[colnames(data)]),row.names=FALSE,overwrite=TRUE)	
 	
-	## Create new table
-	cat("Create new table",tableName,"\n")
-	if(length(data.colnames[-1:-2]) != 0)
-		dyn <- paste(",",paste(data.colnames[-1:-2],"TEXT",collapse=","))
-	else
-		dyn <- ""
+	if(is.null(dbSrc))
+	{
+		## Create new table
+		cat("Create new table",newTableName,"\n")
+		if(length(data.colNames[-1]) != 0)
+			dyn <- paste(",",paste(data.colNames[-1],"TEXT",collapse=","))
+		else
+			dyn <- ""
 		
-	sql <- paste("CREATE TABLE",tableName,"(_id INTEGER REFERENCES ",main_table,"(_id) NOT NULL,",data.colnames[2]," TEXT NOT NULL",dyn,")")
-	dbGetQuery(con,sql)
+		sql <- paste("CREATE TABLE",newTableName,"(_id INTEGER REFERENCES ",main_table,"(_id) NOT NULL,",colnames(data)[2]," TEXT NOT NULL",dyn,")")
+		dbGetQuery(con,sql)
 	
-	## Fill new table
-	#cat("Fill new table",tablename,"\n")
-	#dyn <- paste(data.colnames[-1],collapse=",")
-	#sql <- paste("INSERT INTO ",tablename," SELECT _id,",dyn," FROM ",tablename,"_temp t,probes_id p WHERE p.probe_id = t.probe_id AND p._id IS NOT NULL",sep="")
-	#dbGetQuery(con,sql)
+		## Fill new table
+		cat("Fill new table",newTableName,"\n")
+		dyn <- paste(data.colNames,collapse=",")
+		sql <- paste("INSERT INTO ",newTableName," SELECT _id,",dyn," FROM ",newTableName,"_temp t,",mapTableName," p WHERE p.",colnames(data)[1]," = t.",colnames(data)[1]," AND p._id",sep="")
 	
-	## Update table_master_meta
-	#cat("Update table_master_meta\n")
-	#sql <- paste("INSERT INTO table_master_meta VALUES('",tableName,"','",paste(data.colnames[-1],collapse=";"),"')",sep="")
-
-	#dbGetQuery(con,sql)
+		dbGetQuery(con,sql)
+	
+		## Update table_master_meta
+		cat("Update table_master_meta\n")
+		sql <- paste("INSERT INTO table_master_meta VALUES('",newTableName,"','",paste(data.colNames,collapse=";"),"')",sep="")
+		dbGetQuery(con,sql)
+	}
+	else
+	{
+	}
 	
 	## Remove helper table
 	cat("Remove helper table\n")
-	sql <- paste("DROP TABLE ",tableName,"_temp",sep="")
+	sql <- paste("DROP TABLE ",newTableName,"_temp",sep="")
 	dbGetQuery(con,sql)
 })
