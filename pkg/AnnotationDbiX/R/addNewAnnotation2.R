@@ -43,17 +43,17 @@ setMethod("addNewAnnotation2", signature("SQLiteConnection","data.frame","charac
 	meta <- dbGetQuery(con,sql)
 	main_table <- meta[meta$key == 'main_table','value']
 	
-	if(!(mapTableName %in% id_tables[[1]]))
-		stop("There is no table named ",mapTableName)
-
-	colnames(data) <- c(as.character(id_tables[id_tables$tablename == mapTableName,'mainCol'][1]),data.colNames)
-	
-	## Add helper table	
-	cat("Add helper table ",newTableName,"_temp\n",sep="")
-	dbWriteTable(conn=con,name=paste(newTableName,"_temp",sep=""),value=unique(data[colnames(data)]),row.names=FALSE,overwrite=TRUE)	
-	
 	if(is.null(dbSrc))
 	{
+		if(!(mapTableName %in% id_tables[[1]]))
+		stop("There is no table named ",mapTableName)
+
+		colnames(data) <- c(as.character(id_tables[id_tables$tablename == mapTableName,'mainCol'][1]),data.colNames)
+	
+		## Add helper table	
+		cat("Add helper table ",newTableName,"_temp\n",sep="")
+		dbWriteTable(conn=con,name=paste(newTableName,"_temp",sep=""),value=unique(data[colnames(data)]),row.names=FALSE,overwrite=TRUE)	
+	
 		## Create new table
 		cat("Create new table",newTableName,"\n")
 		if(length(data.colNames[-1]) != 0)
@@ -78,6 +78,39 @@ setMethod("addNewAnnotation2", signature("SQLiteConnection","data.frame","charac
 	}
 	else
 	{
+		if(file.exists(dbSrc))
+		{
+			## Attach Database
+			cat('Attach Database',dbSrc,'as db1\n')
+			sql <- paste("ATTACH '",dbSrc,"' AS db1",sep="")
+			dbGetQuery(con,sql)
+		
+			## Get colinfo
+			sql <- paste("PRAGMA table_info(",data.colNames[1],")",sep="")
+			print(sql)
+			colinfo <- dbGetQuery(con,sql)
+			toDrop <- colinfo[-1,'name']
+			print(toDrop)
+			
+			if(!(mapTableName %in% id_tables[[1]]))
+			stop("There is no table named ",mapTableName)
+			
+			## Add helper table	
+			cat("Add helper table ",newTableName,"_temp\n",sep="")
+			dbWriteTable(conn=con,name=paste(newTableName,"_temp",sep=""),value=unique(data[colnames(data)]),row.names=FALSE,overwrite=TRUE)	
+	
+			## Create new table
+			cat("Create new table",newTableName,"\n")
+			if(length(data.colNames[-1]) != 0)
+				dyn <- paste(",",paste(data.colNames[-1],"TEXT",collapse=","))
+			else
+				dyn <- ""
+		
+			sql <- paste("CREATE TABLE",newTableName,"(_id INTEGER REFERENCES ",main_table,"(_id) NOT NULL,",colnames(data)[2]," TEXT NOT NULL",dyn,")")
+			dbGetQuery(con,sql)
+		}
+		else
+			stop("'dbScr' does not exist!")
 	}
 	
 	## Remove helper table
