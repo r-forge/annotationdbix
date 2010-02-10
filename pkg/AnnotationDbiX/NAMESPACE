@@ -10,7 +10,8 @@ exportMethods(
     "makeDbX",
     "makeDbX2",
     "addNewAnnotation",
-    "addNewAnnotation2"
+    "addNewAnnotation2",
+    "addNewAnnotationFromDb1"
 )
 export(
 	".createBimapObj",
