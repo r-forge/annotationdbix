@@ -134,6 +134,9 @@ setMethod("addNewAnnotationFromDb1", signature("SQLiteConnection","data.frame","
 	tableInfo <- dbGetQuery(con,sql)
 	mainCol <- apply(tableInfo[2],1,function(x) strsplit(x,";")[[1]][1])
 	tableInfo <- as.data.frame(cbind(tableInfo,mainCol),stringsAsFactors=FALSE)
+
+	print(tableInfo)
+	
 	
 	.attach_db(con,dbSrc)
 	
@@ -167,7 +170,7 @@ setMethod("addNewAnnotationFromDb1", signature("SQLiteConnection","data.frame","
 	#print(tableInfoDb1)
 	for(i in 1:nrow(tableInfoDb1))
 	{
-		cat("Create new table '",tableInfoDb1[i,1],"'\n")
+		cat("Create new table '",tableInfoDb1[i,1],"'\n",sep="")
 		
 		if(dbExistsTable(con,tableInfoDb1[i,1]))
 		{
@@ -187,21 +190,23 @@ setMethod("addNewAnnotationFromDb1", signature("SQLiteConnection","data.frame","
 			fieldNames <- strsplit(tableInfoDb1[i,2],";")
 			
 			if(length(fieldNames[[1]]) > 1)
-				dyn <- paste(paste("b.",fieldNames,sep=""),collapse=",")
+				dyn <- paste(paste("b.",fieldNames[[1]],sep=""),collapse=",")
 			else
-				dyn <- ""
+				dyn <- paste("b.",tableInfoDb1[i,4])
 				
-			sql <- paste("INSERT INTO ",tableInfoDb1[i,1]," SELECT m._id, b.",mainCol[i]," ",dyn," FROM db1.",tableInfoDb1[i,1]," b,data_temp d,",mapTableName," m WHERE m.",tableInfo[i,4]," = d.V1 AND b.",tableInfoDb1[i,4]," = d.V2",sep="")
+			sql <- paste("INSERT INTO ",tableInfoDb1[i,1]," SELECT m._id, ",dyn," FROM db1.",mapDb1TableName," a,db1.",tableInfoDb1[i,1]," b,data_temp d,",mapTableName," m WHERE m.",tableInfo[tableInfo$tablename==mapTableName,3]," = d.V1 AND a.",tableInfoDb1[tableInfoDb1$tablename==mapDb1TableName,4]," = d.V2 AND b._id == a._id",sep="")
+			
 			print(sql)
-			#SELECT i._id,",dyn," FROM  i,db1.",x," l WHERE l._id = i.db1_id",sep="")
-			#dbGetQuery(con,sql)
+			
+			
+			dbGetQuery(con,sql)
 
-			#tryCatch(dbGetQuery(con,sql),error=function(e) 
-			#{ 
-			#	dbRollback(con)
-			#	.detach_db(con)
-			#	stop("Problemsss!\n") 
-			#})
+			tryCatch(dbGetQuery(con,sql),error=function(e) 
+			{ 
+				dbRollback(con)
+				.detach_db(con)
+				stop("Cannot insert data into '",tableInfoDb1[i,1],"'\n") 
+			})
 		}
 		
 		## Fill meta Table
@@ -210,6 +215,7 @@ setMethod("addNewAnnotationFromDb1", signature("SQLiteConnection","data.frame","
 		dbGetQuery(con,sql)
 	}
 	
+		
 	if (!dbCommit(con))
 	{
     	dbRollback(con)
@@ -220,7 +226,7 @@ setMethod("addNewAnnotationFromDb1", signature("SQLiteConnection","data.frame","
 	## Remove helper table
 	cat("Remove helper table\n")
 	sql <- paste("DROP TABLE data_temp",sep="")
-	#dbGetQuery(con,sql)
+	dbGetQuery(con,sql)
 	
 	.detach_db(con)
 })
