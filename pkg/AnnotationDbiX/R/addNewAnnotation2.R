@@ -44,19 +44,19 @@ setMethod("addNewAnnotation2", signature("SQLiteConnection","data.frame","charac
 	## Read meta
 	cat("Read table_master_meta\n")
 	sql <- "SELECT * FROM table_master_meta"
-	id_tables <- dbGetQuery(con,sql)	
-	mainCol <- apply(id_tables[2],1,function(x) strsplit(x,";")[[1]][1])
-	id_tables <- as.data.frame(cbind(id_tables,mainCol),stringsAsFactors=FALSE)
+	tableInfo <- dbGetQuery(con,sql)	
+	mainCol <- apply(tableInfo[2],1,function(x) strsplit(x,";")[[1]][1])
+	tableInfo <- as.data.frame(cbind(tableInfo,mainCol),stringsAsFactors=FALSE)
 	
 	sql <- "SELECT * FROM meta"
 	meta <- dbGetQuery(con,sql)
 	main_table <- meta[meta$key == 'main_table','value']
 	
 	
-	if(!(mapTableName %in% id_tables[[1]]))
+	if(!(mapTableName %in% tableInfo[[1]]))
 	stop("There is no table named ",mapTableName)
 
-	colnames(data) <- c(as.character(id_tables[id_tables$tablename == mapTableName,'mainCol'][1]),data.colNames)
+	colnames(data) <- c(as.character(tableInfo[tableInfo$tablename == mapTableName,'mainCol'][1]),data.colNames)
 	
 	## Add helper table	
 	cat("Add helper table ",newTableName,"_temp\n",sep="")
@@ -83,8 +83,6 @@ setMethod("addNewAnnotation2", signature("SQLiteConnection","data.frame","charac
 	cat("Update table_master_meta\n")
 	sql <- paste("INSERT INTO table_master_meta VALUES('",newTableName,"','",paste(data.colNames,collapse=";"),"')",sep="")
 	dbGetQuery(con,sql)
-	
-	
 	
 	## Remove helper table
 	cat("Remove helper table\n")
@@ -121,7 +119,7 @@ setMethod("addNewAnnotationFromDb1", signature("SQLiteConnection","data.frame","
 	drv <- dbDriver("SQLite")
 	
 	## Generate Connection Object	
-	con2 <- dbConnect(drv, dbname = x)
+	con2 <- dbConnect(drv, dbname = dbSrc)
 	on.exit(dbDisconnect(con2))
 	
 	addNewAnnotationFromDb1(con,data,mapTableName,mapDb1TableName,con2)
@@ -130,33 +128,115 @@ setMethod("addNewAnnotationFromDb1", signature("SQLiteConnection","data.frame","
 setMethod("addNewAnnotationFromDb1", signature("SQLiteConnection","data.frame","character","character","SQLiteConnection"), function(x,data,mapTableName,mapDb1TableName,dbSrc) 
 {
 	con <- x
-	
-	## Attach Database
-	cat('Attach Database',dbSrc,'as db1\n')
-	sql <- paste("ATTACH '",dbSrc,"' AS db1",sep="")
-	dbGetQuery(con,sql)
 		
-	## Get colinfo
-	sql <- paste("PRAGMA table_info(",data.colNames[1],")",sep="")
-	print(sql)
-	colinfo <- dbGetQuery(con,sql)
-	toDrop <- colinfo[-1,'name']
-	print(toDrop)
-			
-	if(!(mapTableName %in% id_tables[[1]]))
-	stop("There is no table named ",mapTableName)
-			
+	## Get tableinfo from dbX
+	sql <- "SELECT * FROM table_master_meta"
+	tableInfo <- dbGetQuery(con,sql)
+	mainCol <- apply(tableInfo[2],1,function(x) strsplit(x,";")[[1]][1])
+	tableInfo <- as.data.frame(cbind(tableInfo,mainCol),stringsAsFactors=FALSE)
+	
+	.attach_db(con,dbSrc)
+	
+	if(!(mapTableName %in% tableInfo[[1]]))
+	{
+		.detach_db(con)		
+		stop("There is no table named '",mapTableName,"' in the dbX database")
+	}
+		
+	## Get tableinfo from db1
+	sql <- "SELECT * FROM db1.table_master_meta"
+	tableInfoDb1 <- dbGetQuery(con,sql)
+	mainColDb1 <- apply(tableInfoDb1[2],1,function(x) strsplit(x,";")[[1]][1])
+	tableInfoDb1 <- as.data.frame(cbind(tableInfoDb1,mainColDb1),stringsAsFactors=FALSE)
+	
+	if(!(mapDb1TableName %in% tableInfoDb1[[1]]))
+	{
+		.detach_db(con)	
+		stop("There is no table named '",mapDb1TableName,"' in the db1 database")
+	}
+	
+	## For creating new tables with the same name like in the db1
+	#.detach_db(con)	
+	
 	## Add helper table	
-	cat("Add helper table ",newTableName,"_temp\n",sep="")
-	dbWriteTable(conn=con,name=paste(newTableName,"_temp",sep=""),value=unique(data[colnames(data)]),row.names=FALSE,overwrite=TRUE)	
+	cat("Add helper table data_temp\n")
+	dbWriteTable(conn=con,name="data_temp",value=unique(data),row.names=FALSE,overwrite=TRUE)	
 	
-	## Create new table
-	cat("Create new table",newTableName,"\n")
-	if(length(data.colNames[-1]) != 0)
-		dyn <- paste(",",paste(data.colNames[-1],"TEXT",collapse=","))
-	else
-		dyn <- ""
+	dbBeginTransaction(con)
+	
+	#print(tableInfoDb1)
+	for(i in 1:nrow(tableInfoDb1))
+	{
+		cat("Create new table '",tableInfoDb1[i,1],"'\n")
 		
-	sql <- paste("CREATE TABLE",newTableName,"(_id INTEGER REFERENCES ",main_table,"(_id) NOT NULL,",colnames(data)[2]," TEXT NOT NULL",dyn,")")
-	dbGetQuery(con,sql)	
+		if(dbExistsTable(con,tableInfoDb1[i,1]))
+		{
+			dbRollback(con)
+			.detach_db(con)
+			stop("Table '",tableInfoDb1[i,1],"' already exists in the dbX database\n")
+		}
+		else
+		{
+			tryCatch(dbGetQuery(con,tableInfoDb1[i,3]),error=function(e) 
+			{ 
+				dbRollback(con)
+				.detach_db(con)
+				stop("Cannot create table '",tableInfoDb1[i,3],"'\n") 
+			})
+			
+			fieldNames <- strsplit(tableInfoDb1[i,2],";")
+			
+			if(length(fieldNames[[1]]) > 1)
+				dyn <- paste(paste("b.",fieldNames,sep=""),collapse=",")
+			else
+				dyn <- ""
+				
+			sql <- paste("INSERT INTO ",tableInfoDb1[i,1]," SELECT m._id, b.",mainCol[i]," ",dyn," FROM db1.",tableInfoDb1[i,1]," b,data_temp d,",mapTableName," m WHERE m.",tableInfo[i,4]," = d.V1 AND b.",tableInfoDb1[i,4]," = d.V2",sep="")
+			print(sql)
+			#SELECT i._id,",dyn," FROM  i,db1.",x," l WHERE l._id = i.db1_id",sep="")
+			#dbGetQuery(con,sql)
+
+			#tryCatch(dbGetQuery(con,sql),error=function(e) 
+			#{ 
+			#	dbRollback(con)
+			#	.detach_db(con)
+			#	stop("Problemsss!\n") 
+			#})
+		}
+		
+		## Fill meta Table
+		cat("Fill meta Table\n")
+		sql <- paste("INSERT INTO table_master_meta (tablename,fieldnames) VALUES ('",tableInfoDb1[i,1],"','",tableInfoDb1[i,2],"')",sep="")
+		dbGetQuery(con,sql)
+	}
+	
+	if (!dbCommit(con))
+	{
+    	dbRollback(con)
+    	stop("Commit failed")
+	}
+	
+	
+	## Remove helper table
+	cat("Remove helper table\n")
+	sql <- paste("DROP TABLE data_temp",sep="")
+	#dbGetQuery(con,sql)
+	
+	.detach_db(con)
 })
+
+.attach_db <- function(con,dbconn)
+{
+	## Attach Database
+	cat('Attach Database',dbGetInfo(dbconn)$dbname,'as db1\n')
+	sql <- paste("ATTACH '",dbGetInfo(dbconn)$dbname,"' AS db1",sep="")
+	dbGetQuery(con,sql)
+}
+
+.detach_db <- function(dbconn)
+{
+	## Detach Database
+	cat('Detach Database',dbGetInfo(dbconn)$dbname,'\n')
+	sql <- "DETACH db1"
+	dbGetQuery(dbconn,sql)
+}
