@@ -139,7 +139,7 @@ function(probeList,organism,species,prefix,chipSrc,baseMapTableName,outputDir,ve
 	}
 	
 	## Add bimap_meta Table if exists
-	is.bimap <- testBimapMeta(chipSrc)
+	is.bimap <- .testBimapMeta(chipSrc)
 	if(is.bimap)
 	{
 		cat("Add bimap_meta Table\n")
@@ -238,7 +238,7 @@ testDb1 <- function(dbfile,baseMapTableName)
 	return(table_master_info)
 }
 
-testBimapMeta <- function(dbfile)
+.testBimapMeta <- function(dbfile)
 {
 	## Load SQLite Driver
 	drv <- dbDriver("SQLite")

@@ -156,10 +156,7 @@ setMethod("addNewAnnotationFromDb1", signature("SQLiteConnection","data.frame","
 	{
 		.detach_db(con)	
 		stop("There is no table named '",mapDb1TableName,"' in the db1 database")
-	}
-	
-	## For creating new tables with the same name like in the db1
-	#.detach_db(con)	
+	}	
 	
 	## Add helper table	
 	cat("Add helper table data_temp\n")
@@ -197,9 +194,6 @@ setMethod("addNewAnnotationFromDb1", signature("SQLiteConnection","data.frame","
 			sql <- paste("INSERT INTO ",tableInfoDb1[i,1]," SELECT m._id, ",dyn," FROM db1.",mapDb1TableName," a,db1.",tableInfoDb1[i,1]," b,data_temp d,",mapTableName," m WHERE m.",tableInfo[tableInfo$tablename==mapTableName,3]," = d.V1 AND a.",tableInfoDb1[tableInfoDb1$tablename==mapDb1TableName,4]," = d.V2 AND b._id == a._id",sep="")
 			
 			print(sql)
-			
-			
-			dbGetQuery(con,sql)
 
 			tryCatch(dbGetQuery(con,sql),error=function(e) 
 			{ 
@@ -213,8 +207,29 @@ setMethod("addNewAnnotationFromDb1", signature("SQLiteConnection","data.frame","
 		cat("Fill meta Table\n")
 		sql <- paste("INSERT INTO table_master_meta (tablename,fieldnames) VALUES ('",tableInfoDb1[i,1],"','",tableInfoDb1[i,2],"')",sep="")
 		dbGetQuery(con,sql)
+			
 	}
 	
+	#if(dbExistsTable(con,'db1.bimap_meta'))
+	{
+		# Create bimap_meta table
+		sql <- "CREATE TABLE IF NOT EXISTS bimap_meta(name TEXT PRIMARY KEY,table1 TEXT NOT NULL,table2 TEXT NOT NULL,tagname1 TEXT,tagname2 TEXT,comment TEXT,filter1 TEXT,filter2 TEXT)"
+		dbGetQuery(con,sql)
+			
+		# Update bimap_meta table with all bimap objects from the .db1 database except bimap objects
+		# which have the same name in the .dbX bimap_meta table
+		cat("Update bimap_meta table\n")
+		sql <- "INSERT INTO bimap_meta SELECT * FROM db1.bimap_meta WHERE name IN (SELECT name FROM db1.bimap_meta except SELECT name FROM bimap_meta)"
+		dbGetQuery(con,sql)	
+			
+		tryCatch(dbGetQuery(con,sql),error=function(e) 
+		{ 
+			dbRollback(con)
+			.detach_db(con)
+			stop("Cannot insert data into '",tableInfoDb1[i,1],"'\n") 
+		})
+	}
+		
 		
 	if (!dbCommit(con))
 	{
