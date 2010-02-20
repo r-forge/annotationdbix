@@ -22,16 +22,13 @@ datacache <- new.env(hash=TRUE, parent=emptyenv())
     assign("dbconn", dbconn, envir=datacache)
     
     ## Create the AnnObj instances 
-    BimapObjs <- .createBimapObj(dbconn,datacache)
+    newBimap <- new.env(hash=TRUE,parent=emptyenv()) 
+    .createBimapObjs(dbconn,datacache,newBimap)
     
-    ## Add MapCounts
-    BimapObjs[[2]][length(BimapObjs[[2]]) + 1] <- list(.getMapCounts(dbconn,datacache))
-    BimapObjs[[1]][length(BimapObjs[[1]]) + 1] <- 'MAPCOUNTS'
-    
-    
-    for(i in seq(BimapObjs[[1]]))
+    for(i in seq(ls(newBimap)))
     {
-    	assign(paste('@ANNOBJPREFIX@',BimapObjs[[1]][i],sep=""),BimapObjs[[2]][[i]],envir=datacache)
+    	bimapName <- ls(newBimap)[i]
+    	assign(paste('@ANNOBJPREFIX@',bimapName,sep=""),get(bimapName,newBimap),envir=datacache)
     }
     		  
     keys <- ls(datacache, all.names=TRUE)

@@ -143,6 +143,13 @@ function(probeList,organism,species,prefix,outputDir,version,chipName,author,mai
 	sql <- paste("INSERT INTO table_master_meta (tablename,fieldnames) VALUES ('",tableName,"','",colName,"')",sep="")
 	dbGetQuery(con,sql)
 	
+	## Create index for main and probes table
+	cat("Create index for main and probes table\n")
+	sql <- paste("CREATE INDEX F",tableName," ON ",tableName,"(_id)",sep="")
+	dbGetQuery(con,sql)	
+	sql <- paste("CREATE INDEX FPROBES ON ",tableName,"(_id)",sep="")
+	dbGetQuery(con,sql)	
+	
 	## Remove Helper table
 	sql <- "DROP TABLE IF EXISTS probes_temp"
 	dbGetQuery(con,sql)	

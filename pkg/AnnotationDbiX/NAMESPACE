@@ -14,7 +14,7 @@ exportMethods(
     "addNewAnnotationFromDb1"
 )
 export(
-	".createBimapObj",
+	".createBimapObjs",
 	".getMapCounts",
 	".dbSchema"
 )

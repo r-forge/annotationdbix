@@ -76,8 +76,12 @@ setMethod("addNewAnnotation2", signature("SQLiteConnection","data.frame","charac
 	cat("Fill new table",newTableName,"\n")
 	dyn <- paste(data.colNames,collapse=",")
 	sql <- paste("INSERT INTO ",newTableName," SELECT _id,",dyn," FROM ",newTableName,"_temp t,",mapTableName," p WHERE p.",colnames(data)[1]," = t.",colnames(data)[1]," AND p._id",sep="")
-	
 	dbGetQuery(con,sql)
+	
+	## Create index for main and probes table
+	cat(paste("Create index for '",newTableName,"'\n",sep=""))
+	sql <- paste("CREATE INDEX F",newTableName," ON ",newTableName,"(_id)",sep="")
+	dbGetQuery(con,sql)	
 	
 	## Update table_master_meta
 	cat("Update table_master_meta\n")
@@ -192,8 +196,6 @@ setMethod("addNewAnnotationFromDb1", signature("SQLiteConnection","data.frame","
 				dyn <- paste("b.",tableInfoDb1[i,4])
 				
 			sql <- paste("INSERT INTO ",tableInfoDb1[i,1]," SELECT m._id, ",dyn," FROM db1.",mapDb1TableName," a,db1.",tableInfoDb1[i,1]," b,data_temp d,",mapTableName," m WHERE m.",tableInfo[tableInfo$tablename==mapTableName,3]," = d.V1 AND a.",tableInfoDb1[tableInfoDb1$tablename==mapDb1TableName,4]," = d.V2 AND b._id == a._id",sep="")
-			
-			print(sql)
 
 			tryCatch(dbGetQuery(con,sql),error=function(e) 
 			{ 
@@ -207,28 +209,31 @@ setMethod("addNewAnnotationFromDb1", signature("SQLiteConnection","data.frame","
 		cat("Fill meta Table\n")
 		sql <- paste("INSERT INTO table_master_meta (tablename,fieldnames) VALUES ('",tableInfoDb1[i,1],"','",tableInfoDb1[i,2],"')",sep="")
 		dbGetQuery(con,sql)
-			
+		
+		## Create index for each table
+		cat(paste("Create index for '",tableInfoDb1[i,1],"'\n",sep=""))
+		sql <- paste("CREATE INDEX F",tableInfoDb1[i,1]," ON ",tableInfoDb1[i,1],"(_id)",sep="")
+		dbGetQuery(con,sql)		
 	}
 	
-	#if(dbExistsTable(con,'db1.bimap_meta'))
-	{
-		# Create bimap_meta table
-		sql <- "CREATE TABLE IF NOT EXISTS bimap_meta(name TEXT PRIMARY KEY,table1 TEXT NOT NULL,table2 TEXT NOT NULL,tagname1 TEXT,tagname2 TEXT,comment TEXT,filter1 TEXT,filter2 TEXT)"
-		dbGetQuery(con,sql)
+	
+	# Create bimap_meta table
+	sql <- "CREATE TABLE IF NOT EXISTS bimap_meta(name TEXT PRIMARY KEY,table1 TEXT NOT NULL,table2 TEXT NOT NULL,tagname1 TEXT,tagname2 TEXT,comment TEXT,filter1 TEXT,filter2 TEXT)"
+	dbGetQuery(con,sql)
 			
-		# Update bimap_meta table with all bimap objects from the .db1 database except bimap objects
-		# which have the same name in the .dbX bimap_meta table
-		cat("Update bimap_meta table\n")
-		sql <- "INSERT INTO bimap_meta SELECT * FROM db1.bimap_meta WHERE name IN (SELECT name FROM db1.bimap_meta except SELECT name FROM bimap_meta)"
-		dbGetQuery(con,sql)	
+	# Update bimap_meta table with all bimap objects from the .db1 database except bimap objects
+	# which have the same name in the .dbX bimap_meta table
+	cat("Update bimap_meta table\n")
+	sql <- "INSERT INTO bimap_meta SELECT * FROM db1.bimap_meta WHERE name IN (SELECT name FROM db1.bimap_meta except SELECT name FROM bimap_meta)"
+	dbGetQuery(con,sql)	
 			
-		tryCatch(dbGetQuery(con,sql),error=function(e) 
-		{ 
-			dbRollback(con)
-			.detach_db(con)
-			stop("Cannot insert data into '",tableInfoDb1[i,1],"'\n") 
-		})
-	}
+	tryCatch(dbGetQuery(con,sql),error=function(e) 
+	{ 
+		dbRollback(con)
+		.detach_db(con)
+		stop("Cannot insert data into '",tableInfoDb1[i,1],"'\n") 
+	})
+	
 		
 		
 	if (!dbCommit(con))

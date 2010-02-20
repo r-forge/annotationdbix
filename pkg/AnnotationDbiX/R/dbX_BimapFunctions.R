@@ -1,5 +1,58 @@
+## Database schema function
+.dbSchema <- function(x, show.indices=FALSE,tableName="")
+{
+	if(is.character(x))
+	{
+		if(file.exists(x))
+			tryCatch(
+			{
+				## Load SQLite Driver
+				drv <- dbDriver("SQLite")
+	
+				## Generate Connection Object	
+				con <- dbConnect(drv, dbname = x)
+				on.exit(dbDisconnect(con))
+			},
+			error=function(e)
+			{ 			
+				stop("Cannot open database '",x,"'\n") 
+			})
+	}
+	else if(class(x) == "SQLiteConnection")
+	{
+		con <- x
+	}
+	else if(class(x) == "AnnDbBimap")
+	{
+		con <- x@datacache$dbconn
+	}
+	
+	## Check if tableName exists
+	if(tableName != '' && !dbExistsTable(con,tableName))
+	{
+		cat(paste("Table '",tableName,"' does not exist'\n",sep=""))
+		return(NULL)
+	}
+	
+	if(tableName=="")
+		where <- "1"
+	else
+		where <- paste("tbl_name = '",tableName,"'",sep="")
+		
+	if(show.indices)
+		sql <- paste("SELECT sql FROM sqlite_master WHERE (type = 'table' OR type ='index') AND",where)
+	else
+		sql <- paste("SELECT sql FROM sqlite_master WHERE type = 'table' AND",where)
+	print(sql)
+	return(dbGetQuery(con,sql))
+}
+## Get MAPCOUNTS
+.getMapCounts <- function()
+{
+}
+
 ## Create bimap objects dyn. from database
-.createBimapObj <- function(dbconn,datacache)
+.createBimapObjs <- function(dbconn,datacache,env)
 {	
 	## Check if bimap_meta exists
 	if(!dbExistsTable(dbconn,'bimap_meta'))
@@ -17,8 +70,8 @@
 	tableinfo <- dbGetQuery(dbconn,sql)
 	mainCol <- apply(tableinfo[2],1,function(x) strsplit(x,";")[[1]][1])
 	tableinfo <- as.data.frame(cbind(tableinfo,mainCol),stringsAsFactors=FALSE)
-
-	Bimaps <- c()
+	MapCounts <- c()
+	
 	print(tableinfo)
 	for(i in 1 : nrow(bimaps))
 	{	
@@ -105,8 +158,22 @@
 			# Add Filters
 			myBimap_T1_2_T2@L2Rchain[[1]]@filter <- filter1
 			myBimap_T1_2_T2@L2Rchain[[2]]@filter <- filter2
+			
+			assign(bimaps[i,'name'],myBimap_T1_2_T2,envir=env)
+			
+			
+			## Get MapCounts for Bimap
+			filter1 <- gsub("[{]","",filter1)
+			filter2 <- gsub("[{]","",filter2)
+			filter1 <- gsub("[}]","",filter1)
+			filter2 <- gsub("[}]","",filter2)		
 		
-			Bimaps <- c(Bimaps,myBimap_T1_2_T2)
+			cat(i,' MAPCOUNT ',bimaps[i,'name'],"\n")
+			sql <- paste("SELECT COUNT(DISTINCT",tableinfo[tableinfo$tablename==bimaps[i,'table1'],'mainCol'],") FROM",bimaps[i,'table1'],"a,",bimaps[i,'table2'],"b WHERE a._id = b._id AND",filter1,"AND",filter2)
+		
+			MapCount <- as.integer(dbGetQuery(dbconn,sql)[1,1])
+			names(MapCount) <- bimaps[i,'name']
+			MapCounts <- c(MapCounts,MapCount)
 		}
 		,error=function(e) 
 		{ 
@@ -114,83 +181,8 @@
 		})
 		
 	}
-	data <- list(bimaps[['name']],Bimaps)
 	
-	return(data)
-}
-
-.getMapCounts <- function(dbconn,datacache)
-{
-	## Check if bimap_meta exists
-	if(!dbExistsTable(dbconn,'bimap_meta'))
-	{
-		cat('No Bimap Objects available\n')
-		return()
-	}
+	assign('MAPCOUNTS',MapCounts,envir=env)
 	
-	## Get bimap objects
-	sql <- "SELECT * FROM bimap_meta"
-	bimaps <- dbGetQuery(dbconn,sql)
-
-	## Get tableinfo
-	sql <- "SELECT * FROM table_master_meta"
-	tableinfo <- dbGetQuery(dbconn,sql)
-	mainCol <- apply(tableinfo[2],1,function(x) strsplit(x,";")[[1]][1])
-	tableinfo <- as.data.frame(cbind(tableinfo,mainCol),stringsAsFactors=FALSE)
-		
-	MapCounts <- c()
-	## Get MapCounts from all Bimaps
-
-	for(i in seq(along=bimaps[['name']]))
-	{
-		if(bimaps[i,'filter1'] == "")
-			filter1 = 1
-		else
-			filter1 = bimaps[i,'filter1']
-		
-		if(bimaps[i,'filter2'] == "")
-			filter2 = 1
-		else
-			filter2 = bimaps[i,'filter2']
-			
-		filter1 <- gsub("[{]","",filter1)
-		filter2 <- gsub("[{]","",filter2)
-		filter1 <- gsub("[}]","",filter1)
-		filter2 <- gsub("[}]","",filter2)		
-		
-		sql <- paste("SELECT COUNT(DISTINCT",tableinfo[tableinfo$tablename==bimaps[i,'table1'],'mainCol'],") FROM",bimaps[i,'table1'],"a,",bimaps[i,'table2'],"b WHERE a._id = b._id AND",filter1,"AND",filter2)
-		
-		MapCount <- as.integer(dbGetQuery(dbconn,sql)[1,1])
-		names(MapCount) <- bimaps[i,'name']
-		MapCounts <- c(MapCounts,MapCount)
-	}
-	return(MapCounts)
-}
-
-.dbSchema <- function(x, show.indices=FALSE,tablename="")
-{
-	if(is.character(x))
-	{
-		if(file.exists(x))
-			tryCatch(
-			{
-				## Load SQLite Driver
-				drv <- dbDriver("SQLite")
-	
-				## Generate Connection Object	
-				con <- dbConnect(drv, dbname = x)
-				on.exit(dbDisconnect(con))
-			},
-			error=function(e)
-			{ 			
-				stop("Cannot open database '",x,"'\n") 
-			})
-	}
-	else if(class(x) == "SQLiteConnection")
-	{
-		con <- x
-	}
-	else if(class(x) == "")
-	{
-	}
+	return(TRUE)
 }
