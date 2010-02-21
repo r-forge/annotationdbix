@@ -15,6 +15,5 @@ exportMethods(
 )
 export(
 	".createBimapObjs",
-	".getMapCounts",
 	".dbSchema"
 )

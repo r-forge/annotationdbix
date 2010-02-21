@@ -1,9 +1,12 @@
 ## Database schema function
 .dbSchema <- function(x, show.indices=FALSE,tableName="")
 {
+	con <- NULL
+	
 	if(is.character(x))
 	{
 		if(file.exists(x))
+		{
 			tryCatch(
 			{
 				## Load SQLite Driver
@@ -17,6 +20,9 @@
 			{ 			
 				stop("Cannot open database '",x,"'\n") 
 			})
+		}
+		else
+			stop("File '",x,"' does not exist\n") 
 	}
 	else if(class(x) == "SQLiteConnection")
 	{
@@ -40,15 +46,11 @@
 		where <- paste("tbl_name = '",tableName,"'",sep="")
 		
 	if(show.indices)
-		sql <- paste("SELECT sql FROM sqlite_master WHERE (type = 'table' OR type ='index') AND",where)
+		sql <- paste("SELECT sql AS schema FROM sqlite_master WHERE (type = 'table' OR type ='index') AND",where)
 	else
-		sql <- paste("SELECT sql FROM sqlite_master WHERE type = 'table' AND",where)
-	print(sql)
+		sql <- paste("SELECT sql AS schema FROM sqlite_master WHERE type = 'table' AND",where)
+	
 	return(dbGetQuery(con,sql))
-}
-## Get MAPCOUNTS
-.getMapCounts <- function()
-{
 }
 
 ## Create bimap objects dyn. from database
