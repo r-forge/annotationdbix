@@ -11,7 +11,8 @@ exportMethods(
     "makeDbX2",
     "addNewAnnotation",
     "addNewAnnotation2",
-    "addNewAnnotationFromDb1"
+    "addNewAnnotationFromDb1",
+    "annotationPkgToHTML"
 )
 export(
 	".createBimapObjs",
