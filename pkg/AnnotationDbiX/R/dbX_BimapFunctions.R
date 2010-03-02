@@ -71,7 +71,7 @@
 	sql <- "SELECT * FROM table_master_meta"
 	tableinfo <- dbGetQuery(dbconn,sql)
 	mainCol <- apply(tableinfo[2],1,function(x) strsplit(x,";")[[1]][1])
-	tableinfo <- as.data.frame(cbind(tableinfo,mainCol),stringsAsFactors=FALSE)
+	tableinfo <- as.data.frame(cbind(tableinfo,mainCol,stringsAsFactors=FALSE),stringsAsFactors=FALSE)
 	MapCounts <- c()
 	
 	print(tableinfo)

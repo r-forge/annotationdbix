@@ -46,7 +46,7 @@ setMethod("addNewAnnotation2", signature("SQLiteConnection","data.frame","charac
 	sql <- "SELECT * FROM table_master_meta"
 	tableInfo <- dbGetQuery(con,sql)	
 	mainCol <- apply(tableInfo[2],1,function(x) strsplit(x,";")[[1]][1])
-	tableInfo <- as.data.frame(cbind(tableInfo,mainCol),stringsAsFactors=FALSE)
+	tableInfo <- as.data.frame(cbind(tableInfo,mainCol,stringsAsFactors=FALSE),stringsAsFactors=FALSE)
 	
 	sql <- "SELECT * FROM meta"
 	meta <- dbGetQuery(con,sql)
@@ -137,7 +137,7 @@ setMethod("addNewAnnotationFromDb1", signature("SQLiteConnection","data.frame","
 	sql <- "SELECT * FROM table_master_meta"
 	tableInfo <- dbGetQuery(con,sql)
 	mainCol <- apply(tableInfo[2],1,function(x) strsplit(x,";")[[1]][1])
-	tableInfo <- as.data.frame(cbind(tableInfo,mainCol),stringsAsFactors=FALSE)
+	tableInfo <- as.data.frame(cbind(tableInfo,mainCol,stringsAsFactors=FALSE),stringsAsFactors=FALSE)
 
 	print(tableInfo)
 	

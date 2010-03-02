@@ -54,7 +54,8 @@ function(x,caption,outputDir,tables,onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css
 	sql <- "SELECT * FROM table_master_meta"
 	tableInfo <- dbGetQuery(con,sql)	
 	mainCol <- apply(tableInfo[2],1,function(x) strsplit(x,";")[[1]][1])
-	tableInfo <- as.data.frame(cbind(tableInfo,mainCol),stringsAsFactors=FALSE)
+	
+	tableInfo <- as.data.frame(cbind(tableInfo,mainCol,stringsAsFactors=FALSE),stringsAsFactors=FALSE)
 	
 	if(length(tables) == 1 && tables == "*")
 		tables <- tableInfo[['tablename']]
@@ -79,54 +80,63 @@ function(x,caption,outputDir,tables,onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css
 	
 	## Get all unique IDs from the main column
 	sql <- paste("SELECT DISTINCT",select1,"FROM",fieldNames[1,1])
-	print(sql)
+
 	results[[1]] <- dbGetQuery(con,sql)
-	print(results[[1]])
 	
 	## Get all unique IDs from the other columns
 	for(i in 2:length(tables))
-	{	
+	{		
 		select2 <- paste(fieldNames[i,1],".",strsplit(fieldNames[i,2],";")[[1]],collapse=",",sep="")
 		
 		sql <- paste("SELECT DISTINCT ",fieldNames[1,1],".",strsplit(fieldNames[1,2],";")[[1]][1],",",select2," FROM ",fieldNames[1,1]," LEFT OUTER JOIN ",fieldNames[i,1]," ON ",fieldNames[1,1],"._id = ",fieldNames[i,1],"._id",sep="")
-		print(sql)
+
 		results[[i]] <- dbGetQuery(con,sql)
 	}
 	
-	html <- "<table border='1'>"
+	## Generate HTML side
+	cat("Generate the HTML file\n")
+	html <- paste("<table border='1'><caption>",caption,"</caption>",sep="")
 	
 	## Writes Header
-	print("Header")
-	html <- paste(html,"<thead><tr><th>",colnames(results[[1]]),"</th>")
-	print("Header2")
+	html <- paste(html,"<thead><tr>",paste("<th>",colnames(results[[1]]),"</th>",collapse="",sep=""))
+	
   	for(i in 2:length(results))
 	{
-		html <- paste(html,"<th>",colnames(results[[i]][-1]),"</th>",collapse="\n")
+		html <- paste(html,paste("<th>",colnames(results[[i]][-1]),"</th>",collapse=""))
 	}
 	
 	html <- paste(html,"</tr></thead><tbody>")
-	print(seq(along=results[[1]]))	
 	
+	
+	line <- c()
+	
+	print(system.time(
 	for(i in 1:nrow(results[[1]]))
 	{
-		html <- paste(html,"<tr><td>",results[[1]][i,1],"</td>")
-		print("Body2")
-		for(j in 2:length(results))
+		if(i%%10 == 0)
 		{
-			html <- paste(html,"<td>")
-			print("Body3")
+			cat("Row",i,"finished\n")
+		}
+		
+		b <-c()
+		for(j in 2:length(results))
 			for(k in 2:ncol(results[[j]]))
 			{
-				html <- paste(html,paste(results[[j]][results[[j]][,1] == results[[1]][i,1],k],collapse="<br/>"))
-			}
-			html <- paste(html,"</td>")
-		}
-		html <- paste(html,"</tr>")
-	}	
-	print("Body4")
-	html <- paste(html,"</tbody></table>")
-	
-	return(html)
+				#shtml <- paste(shtml,"<td>")
+				if(length(results[[j]][results[[j]][,1] == results[[1]][i,1],k]) == 1 && is.na(results[[j]][results[[j]][,1] == results[[1]][i,1],k]))
+					b[length(b)+1] <- "<td>&nbsp;</td>"
+				else
+					b[length(b)+1] <- paste("<td>",paste(results[[j]][results[[j]][,1] == results[[1]][i,1],k],collapse="<br/>"),"</td>")
+
+				#shtml <- paste(shtml,"</td>")
+			}	
+			
+		line[i] <- paste("<tr><td>",results[[1]][i,1],"</td>",paste(b,collapse="",sep=""),"</tr>",sep="")
+	}	))
+	print(system.time(
+	html <- paste(html,paste(line,collapse="",sep=""),"</tbody></table>",sep="")
+	))
+	cat(file=outputDir,html)
 
 	#join <- paste("LEFT OUTER JOIN ",tables[-1]," ON ",tables[1],"._id = ",tables[2:length(tables)],"._id",sep="",collapse=" ")
 		
