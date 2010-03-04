@@ -93,50 +93,43 @@ function(x,caption,outputDir,tables,onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css
 		results[[i]] <- dbGetQuery(con,sql)
 	}
 	
+	#print(system.time({
+	
 	## Generate HTML side
 	cat("Generate the HTML file\n")
 	html <- paste("<table border='1'><caption>",caption,"</caption>",sep="")
 	
-	## Writes Header
-	html <- paste(html,"<thead><tr>",paste("<th>",colnames(results[[1]]),"</th>",collapse="",sep=""))
+	## Write Header
+	header <- paste("<th>",colnames(results[[1]]),"</th>",collapse="",sep="")
 	
-  	for(i in 2:length(results))
+	for(i in 2:length(results))
 	{
-		html <- paste(html,paste("<th>",colnames(results[[i]][-1]),"</th>",collapse=""))
+		header <- paste(header,paste("<th>",colnames(results[[i]][-1]),"</th>",collapse=""))
 	}
 	
-	html <- paste(html,"</tr></thead><tbody>")
+	html <- paste(html,"<thead><tr>",header,"</tr></thead><tbody>")
 	
-	
-	line <- c()
-	
-	print(system.time(
-	for(i in 1:nrow(results[[1]]))
-	{
-		if(i%%10 == 0)
-		{
-			cat("Row",i,"finished\n")
-		}
-		
-		b <-c()
-		for(j in 2:length(results))
-			for(k in 2:ncol(results[[j]]))
-			{
-				#shtml <- paste(shtml,"<td>")
-				if(length(results[[j]][results[[j]][,1] == results[[1]][i,1],k]) == 1 && is.na(results[[j]][results[[j]][,1] == results[[1]][i,1],k]))
-					b[length(b)+1] <- "<td>&nbsp;</td>"
+	## Write Body
+	l<-lapply(results[[1]][,1],function(x)
+	{	
+		v <- x
+		for(i in 2:length(results))
+			for(j in 2:ncol(results[[i]]))
+				if(any(is.na(res<-results[[i]][results[[i]][,1] == x,j])))
+					v<-c(v,"&nbsp")
 				else
-					b[length(b)+1] <- paste("<td>",paste(results[[j]][results[[j]][,1] == results[[1]][i,1],k],collapse="<br/>"),"</td>")
-
-				#shtml <- paste(shtml,"</td>")
-			}	
-			
-		line[i] <- paste("<tr><td>",results[[1]][i,1],"</td>",paste(b,collapse="",sep=""),"</tr>",sep="")
-	}	))
-	print(system.time(
-	html <- paste(html,paste(line,collapse="",sep=""),"</tbody></table>",sep="")
-	))
+					v<-c(v,paste(res,collapse="<br/>",sep=""))
+		
+		paste("<td>",v,"</td>",collapse="",sep="")
+	})
+	
+	html <- paste(html,paste("<tr>",l,"</tr>",collapse="\n",sep=""),"</tbody></table>",sep="")
+	
+	## Write File
 	cat(file=outputDir,html)
+	#}))
+	
+	
 
 	#join <- paste("LEFT OUTER JOIN ",tables[-1]," ON ",tables[1],"._id = ",tables[2:length(tables)],"._id",sep="",collapse=" ")
 		
