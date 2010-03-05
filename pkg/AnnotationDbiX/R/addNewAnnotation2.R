@@ -138,9 +138,6 @@ setMethod("addNewAnnotationFromDb1", signature("SQLiteConnection","data.frame","
 	tableInfo <- dbGetQuery(con,sql)
 	mainCol <- apply(tableInfo[2],1,function(x) strsplit(x,";")[[1]][1])
 	tableInfo <- as.data.frame(cbind(tableInfo,mainCol,stringsAsFactors=FALSE),stringsAsFactors=FALSE)
-
-	print(tableInfo)
-	
 	
 	.attach_db(con,dbSrc)
 	
@@ -154,7 +151,7 @@ setMethod("addNewAnnotationFromDb1", signature("SQLiteConnection","data.frame","
 	sql <- "SELECT * FROM db1.table_master_meta"
 	tableInfoDb1 <- dbGetQuery(con,sql)
 	mainColDb1 <- apply(tableInfoDb1[2],1,function(x) strsplit(x,";")[[1]][1])
-	tableInfoDb1 <- as.data.frame(cbind(tableInfoDb1,mainColDb1),stringsAsFactors=FALSE)
+	tableInfoDb1 <- as.data.frame(cbind(tableInfoDb1,mainColDb1,stringsAsFactors=FALSE),stringsAsFactors=FALSE)
 	
 	if(!(mapDb1TableName %in% tableInfoDb1[[1]]))
 	{
@@ -193,9 +190,9 @@ setMethod("addNewAnnotationFromDb1", signature("SQLiteConnection","data.frame","
 			if(length(fieldNames[[1]]) > 1)
 				dyn <- paste(paste("b.",fieldNames[[1]],sep=""),collapse=",")
 			else
-				dyn <- paste("b.",tableInfoDb1[i,4])
-				
-			sql <- paste("INSERT INTO ",tableInfoDb1[i,1]," SELECT m._id, ",dyn," FROM db1.",mapDb1TableName," a,db1.",tableInfoDb1[i,1]," b,data_temp d,",mapTableName," m WHERE m.",tableInfo[tableInfo$tablename==mapTableName,3]," = d.V1 AND a.",tableInfoDb1[tableInfoDb1$tablename==mapDb1TableName,4]," = d.V2 AND b._id == a._id",sep="")
+				dyn <- paste("b.",tableInfoDb1[i,5])	
+			
+			sql <- paste("INSERT INTO ",tableInfoDb1[i,1]," SELECT m._id, ",dyn," FROM db1.",mapDb1TableName," a,db1.",tableInfoDb1[i,1]," b,data_temp d,",mapTableName," m WHERE m.",tableInfo[tableInfo$tablename==mapTableName,4]," = d.V1 AND a.",tableInfoDb1[tableInfoDb1$tablename==mapDb1TableName,5]," = d.V2 AND b._id == a._id",sep="")
 
 			tryCatch(dbGetQuery(con,sql),error=function(e) 
 			{ 
@@ -207,7 +204,7 @@ setMethod("addNewAnnotationFromDb1", signature("SQLiteConnection","data.frame","
 		
 		## Fill meta Table
 		cat("Fill meta Table\n")
-		sql <- paste("INSERT INTO table_master_meta (tablename,fieldnames) VALUES ('",tableInfoDb1[i,1],"','",tableInfoDb1[i,2],"')",sep="")
+		sql <- paste("INSERT INTO table_master_meta (tablename,fieldnames,links) VALUES ('",tableInfoDb1[i,1],"','",tableInfoDb1[i,2],"','",tableInfoDb1[i,4],"')",sep="")
 		dbGetQuery(con,sql)
 		
 		## Create index for each table
@@ -215,7 +212,6 @@ setMethod("addNewAnnotationFromDb1", signature("SQLiteConnection","data.frame","
 		sql <- paste("CREATE INDEX F",tableInfoDb1[i,1]," ON ",tableInfoDb1[i,1],"(_id)",sep="")
 		dbGetQuery(con,sql)		
 	}
-	
 	
 	# Create bimap_meta table
 	sql <- "CREATE TABLE IF NOT EXISTS bimap_meta(name TEXT PRIMARY KEY,table1 TEXT NOT NULL,table2 TEXT NOT NULL,tagname1 TEXT,tagname2 TEXT,comment TEXT,filter1 TEXT,filter2 TEXT)"
@@ -234,14 +230,11 @@ setMethod("addNewAnnotationFromDb1", signature("SQLiteConnection","data.frame","
 		stop("Cannot insert data into '",tableInfoDb1[i,1],"'\n") 
 	})
 	
-		
-		
 	if (!dbCommit(con))
 	{
     	dbRollback(con)
     	stop("Commit failed")
 	}
-	
 	
 	## Remove helper table
 	cat("Remove helper table\n")

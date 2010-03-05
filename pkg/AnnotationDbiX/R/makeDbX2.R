@@ -93,7 +93,7 @@ function(probeList,organism,species,prefix,outputDir,version,chipName,author,mai
 	
 	## Add table_master_meta
 	cat("Add table_master_meta\n")
-	sql <- "CREATE TABLE table_master_meta (tablename TEXT, fieldnames TEXT)"
+	sql <- "CREATE TABLE table_master_meta (tablename TEXT, fieldnames TEXT,links TEXT)"
 	dbGetQuery(con,sql)
 	
 	## Add Bimap table
@@ -138,9 +138,9 @@ function(probeList,organism,species,prefix,outputDir,version,chipName,author,mai
 	
 	## Fill meta Table
 	cat("Fill meta Table\n")
-	sql <- paste("INSERT INTO table_master_meta (tablename,fieldnames) VALUES ('probes','probe_id')")
+	sql <- paste("INSERT INTO table_master_meta (tablename,fieldnames,links) VALUES ('probes','probe_id','')")
 	dbGetQuery(con,sql)
-	sql <- paste("INSERT INTO table_master_meta (tablename,fieldnames) VALUES ('",tableName,"','",colName,"')",sep="")
+	sql <- paste("INSERT INTO table_master_meta (tablename,fieldnames,links) VALUES ('",tableName,"','",colName,"','')",sep="")
 	dbGetQuery(con,sql)
 	
 	## Create index for main and probes table

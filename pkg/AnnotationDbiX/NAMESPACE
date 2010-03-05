@@ -1,6 +1,7 @@
 import("AnnotationDbi")
 import("RSQLite")
 
+           
 exportMethods(
     "db1ConverterECOLIK12",
     "addBimapObj",

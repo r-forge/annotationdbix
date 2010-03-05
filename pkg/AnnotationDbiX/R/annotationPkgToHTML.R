@@ -62,9 +62,9 @@ function(x,caption,outputDir,tables,onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css
 	
 	## If onlyIDs TRUE then only ids where used without their attributes
 	if(onlyIDs)
-		fieldNames <- tableInfo[tableInfo[['tablename']] %in% tables,c('tablename','mainCol')] 
+		fieldNames <- tableInfo[tableInfo[['tablename']] %in% tables,c('tablename','mainCol','links')] 
 	else
-		fieldNames <- tableInfo[tableInfo[['tablename']] %in% tables,c('tablename','fieldnames')]
+		fieldNames <- tableInfo[tableInfo[['tablename']] %in% tables,c('tablename','fieldnames','links')]
 
 	for(i in length(tables))
 		if(!dbExistsTable(con,tables[i]))
@@ -75,6 +75,7 @@ function(x,caption,outputDir,tables,onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css
 			stop("'extdata' must be from class data.frame\n")
 	
 	results <- list()
+	links <- c(fieldNames[1,3])
 	
 	select1 <- paste(fieldNames[1,1],".",strsplit(fieldNames[1,2],";")[[1]],collapse=",",sep="")
 	
@@ -91,9 +92,10 @@ function(x,caption,outputDir,tables,onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css
 		sql <- paste("SELECT DISTINCT ",fieldNames[1,1],".",strsplit(fieldNames[1,2],";")[[1]][1],",",select2," FROM ",fieldNames[1,1]," LEFT OUTER JOIN ",fieldNames[i,1]," ON ",fieldNames[1,1],"._id = ",fieldNames[i,1],"._id",sep="")
 
 		results[[i]] <- dbGetQuery(con,sql)
+		links[i] <- fieldNames[i,3] 
 	}
 	
-	#print(system.time({
+	print(system.time({
 	
 	## Generate HTML side
 	cat("Generate the HTML file\n")
@@ -109,17 +111,32 @@ function(x,caption,outputDir,tables,onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css
 	
 	html <- paste(html,"<thead><tr>",header,"</tr></thead><tbody>")
 	
+	print(fieldNames)
+	print(length(results))
+	
 	## Write Body
 	l<-lapply(results[[1]][,1],function(x)
 	{	
-		v <- x
+		
+		v <- x # TODO: v ist nicht unbedingt x alleine
 		for(i in 2:length(results))
+		{
+			link <- fieldNames[i,3]
+			#print(link)
+			
 			for(j in 2:ncol(results[[i]]))
+			{
 				if(any(is.na(res<-results[[i]][results[[i]][,1] == x,j])))
 					v<-c(v,"&nbsp")
-				else
+				else if(link=="")
 					v<-c(v,paste(res,collapse="<br/>",sep=""))
-		
+				else
+				{
+					link <- sub("\\$ID",res,link)
+					v<-c(v,paste("<a href='",link,"'>",res,"</a>",collapse="<br/>",sep=""))
+				}
+			}
+		}
 		paste("<td>",v,"</td>",collapse="",sep="")
 	})
 	
@@ -127,7 +144,8 @@ function(x,caption,outputDir,tables,onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css
 	
 	## Write File
 	cat(file=outputDir,html)
-	#}))
+
+	})) # system.time()
 	
 	
 
