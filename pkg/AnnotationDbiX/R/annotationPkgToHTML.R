@@ -8,6 +8,9 @@
 ## css = Pfad zu css File, dass dann im html code eingebettet wird
 ## filter = SQL WHERE Statement, welche die Hauptabelle filtert
 
+
+# TODO: Die Spalten Order ist wie in tableInfo. Die erste Spalte ist immer probes
+
 setGeneric("annotationPkgToHTML", signature = c("x","caption","outputDir","tables"),
 	function(x,caption,outputDir,tables,onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css="", ...) standardGeneric("annotationPkgToHTML"))
 	
@@ -71,7 +74,7 @@ function(x,caption,outputDir,tables,onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css
 			stop("Table '",tables[i],"' does not exist\n")
 			
 	if(!is.null(extdata))
-		if(!class(extdata)=='data.frame')
+		if(!is.data.frame(extdata))
 			stop("'extdata' must be from class data.frame\n")
 	
 	results <- list()
@@ -95,6 +98,14 @@ function(x,caption,outputDir,tables,onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css
 		links[i] <- fieldNames[i,3] 
 	}
 	
+	if(!is.null(extdata))
+	{
+		# Set NAs and "" to empty cell types
+		#extdata[is.na(extdata) || extdata == "",-1] <- "&nbsp;"
+		
+		results[[length(results) + 1]] <- merge(results[[1]][1],extdata,all.x=TRUE,by.x=1,by.y=1)
+	}
+	
 	print(system.time({
 	
 	## Generate HTML side
@@ -111,29 +122,34 @@ function(x,caption,outputDir,tables,onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css
 	
 	html <- paste(html,"<thead><tr>",header,"</tr></thead><tbody>")
 	
-	print(fieldNames)
-	print(length(results))
+	#print(fieldNames)
+	#print(length(results))
 	
 	## Write Body
 	l<-lapply(results[[1]][,1],function(x)
 	{	
+		if(fieldNames[1,3] == "")
+			v <- paste(results[[1]][results[[1]] == x,][1],collapse="<br/>",sep="")
+		else
+		{
+			links <- sapply(res,function(x) sub("\\$ID",x,link))
+			v<-c(v,paste("<a href='",links,"'>",res,"</a>",collapse="<br/>",sep=""))
+		}
 		
-		v <- x # TODO: v ist nicht unbedingt x alleine
 		for(i in 2:length(results))
 		{
 			link <- fieldNames[i,3]
-			#print(link)
 			
 			for(j in 2:ncol(results[[i]]))
 			{
 				if(any(is.na(res<-results[[i]][results[[i]][,1] == x,j])))
-					v<-c(v,"&nbsp")
-				else if(link=="")
+					v<-c(v,"&nbsp;")
+				else if(is.na(link) || link=="") # if extdata is set link is NA for this columns
 					v<-c(v,paste(res,collapse="<br/>",sep=""))
 				else
 				{
-					link <- sub("\\$ID",res,link)
-					v<-c(v,paste("<a href='",link,"'>",res,"</a>",collapse="<br/>",sep=""))
+					links <- sapply(res,function(x) sub("\\$ID",x,link))
+					v<-c(v,paste("<a href='",links,"'>",res,"</a>",collapse="<br/>",sep=""))
 				}
 			}
 		}
