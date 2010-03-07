@@ -9,14 +9,14 @@
 ## filter = SQL WHERE Statement, welche die Hauptabelle filtert
 
 
-# TODO: Die Spalten Order ist wie in tableInfo. Die erste Spalte ist immer probes
+# TODO: HTML auf mehrere Seiten aufteilen
 
-setGeneric("annotationPkgToHTML", signature = c("x","caption","outputDir","tables"),
-	function(x,caption,outputDir,tables,onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css="", ...) standardGeneric("annotationPkgToHTML"))
+setGeneric("annotationPkgToHTML", signature = c("x","caption","outputDir","mainTable"),
+	function(x,caption,outputDir,mainTable,tables=c(),onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css="", ...) standardGeneric("annotationPkgToHTML"))
 	
 ## FilePath
 setMethod("annotationPkgToHTML", signature("character","character","character","character"),
-function(x,caption,outputDir,tables,onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css="") 
+function(x,caption,outputDir,mainTable,tables=c(),onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css="") 
 {
 	## Check Parameters
 	if(!file.exists(x))
@@ -29,11 +29,11 @@ function(x,caption,outputDir,tables,onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css
 	con <- dbConnect(drv, dbname = x)
 	on.exit(dbDisconnect(con))
 	
-	annotationPkgToHTML(con,caption,outputDir,tables,onlyIDs,extdata,colOrder,css)
+	annotationPkgToHTML(con,caption,outputDir,mainTable,tables,onlyIDs,extdata,colOrder,css)
 })
 
-setMethod("annotationPkgToHTML", signature(x="AnnDbBimap",caption="character",outputDir="character",tables="missing"),
-function(x,caption,outputDir,direction=1,onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css="") 
+setMethod("annotationPkgToHTML", signature(x="AnnDbBimap",caption="character",outputDir="character",mainTable="missing"),
+function(x,caption,outputDir,tables,direction=1,onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css="") 
 {
 	if(direction==1)
 		tables = c(x@L2Rchain[[1]]@tablename,x@L2Rchain[[2]]@tablename)
@@ -48,7 +48,7 @@ function(x,caption,outputDir,direction=1,onlyIDs=FALSE,extdata=NULL,colOrder=NUL
 })
 
 setMethod("annotationPkgToHTML",signature("SQLiteConnection","character","character","character"),
-function(x,caption,outputDir,tables,onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css="") 
+function(x,caption,outputDir,mainTable,tables=c(),onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css="") 
 {	
 	con <- x
 	
@@ -63,39 +63,53 @@ function(x,caption,outputDir,tables,onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css
 	if(length(tables) == 1 && tables == "*")
 		tables <- tableInfo[['tablename']]
 	
+	if(!dbExistsTable(con,mainTable))
+			stop("Main table '",mainTable,"' does not exist\n")
+			
+	for(i in length(tables))
+		if(!dbExistsTable(con,tables[i]))
+			stop("Table '",tables[i],"' does not exist\n")
+			
+	## colOrder must be unique
+	if(length(colOrder)!=length(unique(colOrder)))
+		stop("'colOrder' must be unique\n")
+		
+	if(all(tables %in% colOrder))
+			
 	## If onlyIDs TRUE then only ids where used without their attributes
 	if(onlyIDs)
 		fieldNames <- tableInfo[tableInfo[['tablename']] %in% tables,c('tablename','mainCol','links')] 
 	else
 		fieldNames <- tableInfo[tableInfo[['tablename']] %in% tables,c('tablename','fieldnames','links')]
-
-	for(i in length(tables))
-		if(!dbExistsTable(con,tables[i]))
-			stop("Table '",tables[i],"' does not exist\n")
-			
+		
+	mainTableInfo <- tableInfo[tableInfo[['tablename']] == mainTable,]
+	
+	# Sort fieldNames like tables is sort
+	fieldNames <- merge(tables,fieldNames,by.x=1,by.y=1,sort=FALSE)
+	
 	if(!is.null(extdata))
 		if(!is.data.frame(extdata))
 			stop("'extdata' must be from class data.frame\n")
 	
 	results <- list()
-	links <- c(fieldNames[1,3])
 	
-	select1 <- paste(fieldNames[1,1],".",strsplit(fieldNames[1,2],";")[[1]],collapse=",",sep="")
+	select1 <- paste(mainTable,".",strsplit(mainTableInfo[[2]],";"),collapse=",",sep="")
+	links <- c(mainTableInfo[3])
 	
 	## Get all unique IDs from the main column
-	sql <- paste("SELECT DISTINCT",select1,"FROM",fieldNames[1,1])
+	sql <- paste("SELECT DISTINCT",select1,"FROM",mainTable)
 
-	results[[1]] <- dbGetQuery(con,sql)
+	results[[1]] <- as.data.frame(dbGetQuery(con,sql))
 	
 	## Get all unique IDs from the other columns
-	for(i in 2:length(tables))
+	for(i in 1:length(tables))
 	{		
 		select2 <- paste(fieldNames[i,1],".",strsplit(fieldNames[i,2],";")[[1]],collapse=",",sep="")
 		
-		sql <- paste("SELECT DISTINCT ",fieldNames[1,1],".",strsplit(fieldNames[1,2],";")[[1]][1],",",select2," FROM ",fieldNames[1,1]," LEFT OUTER JOIN ",fieldNames[i,1]," ON ",fieldNames[1,1],"._id = ",fieldNames[i,1],"._id",sep="")
+		sql <- paste("SELECT DISTINCT ",mainTable,".",mainTableInfo[4],",",select2," FROM ",mainTable," LEFT OUTER JOIN ",fieldNames[i,1]," ON ",mainTable,"._id = ",fieldNames[i,1],"._id",sep="")
 
-		results[[i]] <- dbGetQuery(con,sql)
-		links[i] <- fieldNames[i,3] 
+		results[[i+1]] <- dbGetQuery(con,sql)
+		links[i+1] <- fieldNames[i,3] 
 	}
 	
 	if(!is.null(extdata))
@@ -122,27 +136,29 @@ function(x,caption,outputDir,tables,onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css
 	
 	html <- paste(html,"<thead><tr>",header,"</tr></thead><tbody>")
 	
-	#print(fieldNames)
-	#print(length(results))
+	
 	
 	## Write Body
 	l<-lapply(results[[1]][,1],function(x)
 	{	
-		if(fieldNames[1,3] == "")
-			v <- paste(results[[1]][results[[1]] == x,][1],collapse="<br/>",sep="")
+		# Main Column 
+		mainResult <- results[[1]][results[[1]] == x,][1]
+		if(mainTableInfo[[3]] == "")
+			v <- paste(mainResult,collapse="<br/>",sep="")
 		else
 		{
-			links <- sapply(res,function(x) sub("\\$ID",x,link))
+			links <- sapply(mainResult,function(x) sub("\\$ID",x,link))
 			v<-c(v,paste("<a href='",links,"'>",res,"</a>",collapse="<br/>",sep=""))
 		}
 		
-		for(i in 2:length(results))
+		# Other Columns
+		for(i in 1:(length(results) - 1))
 		{
 			link <- fieldNames[i,3]
 			
-			for(j in 2:ncol(results[[i]]))
+			for(j in 2:ncol(results[[i+1]]))
 			{
-				if(any(is.na(res<-results[[i]][results[[i]][,1] == x,j])))
+				if(any(is.na(res<-results[[i+1]][results[[i+1]][,1] == x,j])))
 					v<-c(v,"&nbsp;")
 				else if(is.na(link) || link=="") # if extdata is set link is NA for this columns
 					v<-c(v,paste(res,collapse="<br/>",sep=""))
