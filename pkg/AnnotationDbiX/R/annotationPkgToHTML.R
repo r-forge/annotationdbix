@@ -93,7 +93,7 @@ function(x,caption,outputDir,mainTable,tables=c(),onlyIDs=FALSE,extdata=NULL,col
 		{
 			if(!all(colnames(extdata[-1]) %in% colOrder))
 			{
-				stop("'",colnames(extdata)[!(colnames(extdata[-1]) %in% colOrder)],"' is not in 'colOrder'\n")
+				stop("'",colnames(extdata[-1])[!(colnames(extdata[-1]) %in% colOrder)],"' is not in 'colOrder'\n")
 			}
 			nCols <- nCols + ncol(extdata[-1])
 		}
@@ -117,13 +117,8 @@ function(x,caption,outputDir,mainTable,tables=c(),onlyIDs=FALSE,extdata=NULL,col
 	mainTableInfo <- tableInfo[tableInfo[['tablename']] == mainTable,]
 
 	# Sort fieldNames like tables is sort
-	fieldNames <- merge(tables,fieldNames,by.x=1,by.y=1,sort=FALSE)
-	#a <- fieldNames[tables,,drop=FALSE]
-
-	#print(fieldNames)
-	#print(a)
-	
-	
+	rownames(fieldNames) <- fieldNames[[1]]
+	fieldNames <- cbind(fieldNames[c(mainTable,tables),],index=c(1:nrow(fieldNames)))
 	
 	if(!is.null(extdata))
 		if(!is.data.frame(extdata))
@@ -133,42 +128,40 @@ function(x,caption,outputDir,mainTable,tables=c(),onlyIDs=FALSE,extdata=NULL,col
 	
 	select1 <- paste(mainTable,".",strsplit(mainTableInfo[[2]],";"),collapse=",",sep="")
 	links <- c(mainTableInfo[3])
-	
+
 	## Get all unique IDs from the main column
 	sql <- paste("SELECT DISTINCT",select1,"FROM",mainTable)
 
 	results[[1]] <- dbGetQuery(con,sql)
 	results[[1]] <- cbind(results[[1]][1],results[[1]])
-	resNames <- data.frame(mainTable,1,rownames=1)
+	
 	
 	## Get all unique IDs from the other columns
-	for(i in 1:length(tables))
+	for(i in 2:nrow(fieldNames))
 	{		
 		select2 <- paste(fieldNames[i,1],".",strsplit(fieldNames[i,2],";")[[1]],collapse=",",sep="")
 		
 		sql <- paste("SELECT DISTINCT ",mainTable,".",mainTableInfo[4],",",select2," FROM ",mainTable," LEFT OUTER JOIN ",fieldNames[i,1]," ON ",mainTable,"._id = ",fieldNames[i,1],"._id",sep="")
-
-		results[[i+1]] <- dbGetQuery(con,sql)
-		links[i+1] <- fieldNames[i,3] 
-		resNames <- rbind(resNames,c(fieldNames[i,1],i+2),rownames=1)
+print(sql)
+		results[[i]] <- dbGetQuery(con,sql)
+		links[i] <- fieldNames[i,3] 
+		
 	}
-
+print(3)
 	if(!is.null(extdata))
 	{
-		# Set NAs and "" to empty cell types
-		#extdata[is.na(extdata) || extdata == "",-1] <- "&nbsp;"
-		
 		extdata <- merge(results[[1]][1],extdata,all.x=TRUE,by.x=1,by.y=1)
 		
 		for(i in 2:ncol(extdata))
 		{
 			results[[length(results) + 1]] <- extdata[c(1,i)] 
-			#resNames[length(resNames) + 1] <- data.frame(colnames(extdata[i],length(resNames) + 1),rownames=1)
-			resNames <- rbind(resNames,c(colnames(extdata[i],length(resNames) + 1),rownames=1))
+			fieldNames <- rbind(fieldNames,data.frame(colnames(extdata[i]),"","",fieldNames[nrow(fieldNames),4] + 1))
+			
 		}
 	}
+	rownames(fieldNames) <- fieldNames[[1]]
 	
-	print(resNames)
+	print(fieldNames[-3])
 	print(system.time({
 	
 	## Generate HTML side
@@ -187,7 +180,7 @@ function(x,caption,outputDir,mainTable,tables=c(),onlyIDs=FALSE,extdata=NULL,col
 	
 	
 	b <-c()
-	
+	print(length(results))
 	## Write Body
 	l<-lapply(results[[1]][,1],function(x)
 	{	
@@ -201,14 +194,18 @@ function(x,caption,outputDir,mainTable,tables=c(),onlyIDs=FALSE,extdata=NULL,col
 		#	v<-c(v,paste("<a href='",links,"'>",res,"</a>",collapse="<br/>",sep=""))
 		#}
 		
+		v <- c()
+		
 		# Other Columns
 		for(i in 1:length(results))
 		{
 			link <- fieldNames[i,3]
 
-			for(j in 2:ncol(results[[resNames[i]]]))
+			print(fieldNames[i,4])
+			for(j in 2:ncol(results[[fieldNames[i,4]]]))
 			{
-				if(any(is.na(res<-results[[resNames[i]]][results[[resNames[i]]][,1] == x,j])))
+				print("START")
+				if(any(is.na(res<-results[[fieldNames[i,4]]][results[[fieldNames[i,4]]][,1] == x,j])))
 					v<-c(v,"&nbsp;")
 				else if(is.na(link) || link=="") # if extdata is set link is NA for this columns
 					v<-c(v,paste(res,collapse="<br/>",sep=""))
@@ -217,6 +214,7 @@ function(x,caption,outputDir,mainTable,tables=c(),onlyIDs=FALSE,extdata=NULL,col
 					links <- sapply(res,function(x) sub("\\$ID",x,link))
 					v<-c(v,paste("<a href='",links,"'>",res,"</a>",collapse="<br/>",sep=""))
 				}
+				print("END")
 			}
 		}
 		paste("<td>",v,"</td>",collapse="",sep="")
