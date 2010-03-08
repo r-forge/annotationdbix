@@ -33,7 +33,7 @@ function(x,caption,outputDir,mainTable,tables=c(),onlyIDs=FALSE,extdata=NULL,col
 })
 
 setMethod("annotationPkgToHTML", signature(x="AnnDbBimap",caption="character",outputDir="character",mainTable="missing"),
-function(x,caption,outputDir,tables,direction=1,onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css="") 
+function(x,caption,outputDir,tables=NULL,direction=1,onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css="") 
 {
 	if(direction==1)
 		tables = c(x@L2Rchain[[1]]@tablename,x@L2Rchain[[2]]@tablename)
@@ -69,23 +69,61 @@ function(x,caption,outputDir,mainTable,tables=c(),onlyIDs=FALSE,extdata=NULL,col
 	for(i in length(tables))
 		if(!dbExistsTable(con,tables[i]))
 			stop("Table '",tables[i],"' does not exist\n")
-			
-	## colOrder must be unique
-	if(length(colOrder)!=length(unique(colOrder)))
-		stop("'colOrder' must be unique\n")
+	
+	nCols <- 1		
+
+	if(!is.null(colOrder))
+	{
+		## colOrder must be unique
+		if(length(colOrder)!=length(unique(colOrder)))
+			stop("'colOrder' must be unique\n")
 		
-	if(all(tables %in% colOrder))
-			
+		## All table names must be in colOrder
+		if(!is.null(tables))
+		{
+			if(!all(tables %in% colOrder))
+			{
+				stop("'",tables[tables %in% colOrder],"' is not in 'colOrder'\n")
+			}	
+			nCols <- nCols + length(tables)
+		}
+		
+		## All extdata header names must be in colOrder
+		if(!is.null(extdata))
+		{
+			if(!all(colnames(extdata[-1]) %in% colOrder))
+			{
+				stop("'",colnames(extdata)[!(colnames(extdata[-1]) %in% colOrder)],"' is not in 'colOrder'\n")
+			}
+			nCols <- nCols + ncol(extdata[-1])
+		}
+		
+		if(length(colOrder) != nCols)
+			stop("'colOrder' must have a length of ",nCols,"\n")
+	}	
+
 	## If onlyIDs TRUE then only ids where used without their attributes
 	if(onlyIDs)
+	{
 		fieldNames <- tableInfo[tableInfo[['tablename']] %in% tables,c('tablename','mainCol','links')] 
+		fieldNames <- rbind(tableInfo[tableInfo[['tablename']] == mainTable,c('tablename','mainCol','links')],fieldNames)
+	}
 	else
+	{
 		fieldNames <- tableInfo[tableInfo[['tablename']] %in% tables,c('tablename','fieldnames','links')]
+		fieldNames <- rbind(tableInfo[tableInfo[['tablename']] == mainTable,c('tablename','fieldnames','links')],fieldNames)		
+	}
 		
 	mainTableInfo <- tableInfo[tableInfo[['tablename']] == mainTable,]
-	
+
 	# Sort fieldNames like tables is sort
 	fieldNames <- merge(tables,fieldNames,by.x=1,by.y=1,sort=FALSE)
+	#a <- fieldNames[tables,,drop=FALSE]
+
+	#print(fieldNames)
+	#print(a)
+	
+	
 	
 	if(!is.null(extdata))
 		if(!is.data.frame(extdata))
@@ -99,7 +137,9 @@ function(x,caption,outputDir,mainTable,tables=c(),onlyIDs=FALSE,extdata=NULL,col
 	## Get all unique IDs from the main column
 	sql <- paste("SELECT DISTINCT",select1,"FROM",mainTable)
 
-	results[[1]] <- as.data.frame(dbGetQuery(con,sql))
+	results[[1]] <- dbGetQuery(con,sql)
+	results[[1]] <- cbind(results[[1]][1],results[[1]])
+	resNames <- data.frame(mainTable,1,rownames=1)
 	
 	## Get all unique IDs from the other columns
 	for(i in 1:length(tables))
@@ -110,16 +150,25 @@ function(x,caption,outputDir,mainTable,tables=c(),onlyIDs=FALSE,extdata=NULL,col
 
 		results[[i+1]] <- dbGetQuery(con,sql)
 		links[i+1] <- fieldNames[i,3] 
+		resNames <- rbind(resNames,c(fieldNames[i,1],i+2),rownames=1)
 	}
-	
+
 	if(!is.null(extdata))
 	{
 		# Set NAs and "" to empty cell types
 		#extdata[is.na(extdata) || extdata == "",-1] <- "&nbsp;"
 		
-		results[[length(results) + 1]] <- merge(results[[1]][1],extdata,all.x=TRUE,by.x=1,by.y=1)
+		extdata <- merge(results[[1]][1],extdata,all.x=TRUE,by.x=1,by.y=1)
+		
+		for(i in 2:ncol(extdata))
+		{
+			results[[length(results) + 1]] <- extdata[c(1,i)] 
+			#resNames[length(resNames) + 1] <- data.frame(colnames(extdata[i],length(resNames) + 1),rownames=1)
+			resNames <- rbind(resNames,c(colnames(extdata[i],length(resNames) + 1),rownames=1))
+		}
 	}
 	
+	print(resNames)
 	print(system.time({
 	
 	## Generate HTML side
@@ -137,28 +186,29 @@ function(x,caption,outputDir,mainTable,tables=c(),onlyIDs=FALSE,extdata=NULL,col
 	html <- paste(html,"<thead><tr>",header,"</tr></thead><tbody>")
 	
 	
+	b <-c()
 	
 	## Write Body
 	l<-lapply(results[[1]][,1],function(x)
 	{	
 		# Main Column 
-		mainResult <- results[[1]][results[[1]] == x,][1]
-		if(mainTableInfo[[3]] == "")
-			v <- paste(mainResult,collapse="<br/>",sep="")
-		else
-		{
-			links <- sapply(mainResult,function(x) sub("\\$ID",x,link))
-			v<-c(v,paste("<a href='",links,"'>",res,"</a>",collapse="<br/>",sep=""))
-		}
+		#mainResult <- results[[1]][results[[1]] == x,][1]
+		#if(mainTableInfo[[3]] == "")
+		#	v <- paste(mainResult,collapse="<br/>",sep="")
+		#else
+		#{
+		#	links <- sapply(mainResult,function(x) sub("\\$ID",x,link))
+		#	v<-c(v,paste("<a href='",links,"'>",res,"</a>",collapse="<br/>",sep=""))
+		#}
 		
 		# Other Columns
-		for(i in 1:(length(results) - 1))
+		for(i in 1:length(results))
 		{
 			link <- fieldNames[i,3]
-			
-			for(j in 2:ncol(results[[i+1]]))
+
+			for(j in 2:ncol(results[[resNames[i]]]))
 			{
-				if(any(is.na(res<-results[[i+1]][results[[i+1]][,1] == x,j])))
+				if(any(is.na(res<-results[[resNames[i]]][results[[resNames[i]]][,1] == x,j])))
 					v<-c(v,"&nbsp;")
 				else if(is.na(link) || link=="") # if extdata is set link is NA for this columns
 					v<-c(v,paste(res,collapse="<br/>",sep=""))
