@@ -12,11 +12,11 @@
 # TODO: HTML auf mehrere Seiten aufteilen
 
 setGeneric("annotationPkgToHTML", signature = c("x","caption","outputDir","mainTable"),
-	function(x,caption,outputDir,mainTable,tables=c(),onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css="", ...) standardGeneric("annotationPkgToHTML"))
+	function(x,caption,outputDir,mainTable,tables=character(),filter=character(),onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css="",tableRows=50, ...) standardGeneric("annotationPkgToHTML"))
 	
 ## FilePath
 setMethod("annotationPkgToHTML", signature("character","character","character","character"),
-function(x,caption,outputDir,mainTable,tables=c(),onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css="") 
+function(x,caption,outputDir,mainTable,tables=character(),filter=character(),onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css="",tableRows=50) 
 {
 	## Check Parameters
 	if(!file.exists(x))
@@ -33,7 +33,7 @@ function(x,caption,outputDir,mainTable,tables=c(),onlyIDs=FALSE,extdata=NULL,col
 })
 
 setMethod("annotationPkgToHTML", signature(x="AnnDbBimap",caption="character",outputDir="character",mainTable="missing"),
-function(x,caption,outputDir,tables=NULL,direction=1,onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css="") 
+function(x,caption,outputDir,tables=character(),filter=character(),direction=1,onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css="",tableRows=50) 
 {
 	if(direction==1)
 		tables = c(x@L2Rchain[[1]]@tablename,x@L2Rchain[[2]]@tablename)
@@ -48,7 +48,7 @@ function(x,caption,outputDir,tables=NULL,direction=1,onlyIDs=FALSE,extdata=NULL,
 })
 
 setMethod("annotationPkgToHTML",signature("SQLiteConnection","character","character","character"),
-function(x,caption,outputDir,mainTable,tables=c(),onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css="") 
+function(x,caption,outputDir,mainTable,tables=character(),filter=character(),onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css="",tableRows=50) 
 {	
 	con <- x
 	
@@ -59,18 +59,26 @@ function(x,caption,outputDir,mainTable,tables=c(),onlyIDs=FALSE,extdata=NULL,col
 	mainCol <- apply(tableInfo[2],1,function(x) strsplit(x,";")[[1]][1])
 	
 	tableInfo <- as.data.frame(cbind(tableInfo,mainCol,stringsAsFactors=FALSE),stringsAsFactors=FALSE)
+	rownames(tableInfo) <- tableInfo[[1]]
 	
-	if(length(tables) == 1 && tables == "*")
+	## All _id tables are included
+	if(length(tables) == 0)
 		tables <- tableInfo[['tablename']]
-	
-	if(!dbExistsTable(con,mainTable))
-			stop("Main table '",mainTable,"' does not exist\n")
+	else
+		tables <- c(mainTable,tables)
 			
+	## Test if tables exist
 	for(i in length(tables))
 		if(!dbExistsTable(con,tables[i]))
 			stop("Table '",tables[i],"' does not exist\n")
 	
-	nCols <- 1		
+	## If onlyIDs TRUE then only ids where used without their attributes
+	if(onlyIDs)
+		tableInfo <-cbind(tableInfo[tables,c('tablename','mainCol','mainCol','links')],1:length(tables))
+	else
+		tableInfo <-cbind(tableInfo[tables,c('tablename','fieldnames','mainCol','links')],1:length(tables))
+	
+	nCols <- 0		
 
 	if(!is.null(colOrder))
 	{
@@ -78,15 +86,13 @@ function(x,caption,outputDir,mainTable,tables=c(),onlyIDs=FALSE,extdata=NULL,col
 		if(length(colOrder)!=length(unique(colOrder)))
 			stop("'colOrder' must be unique\n")
 		
-		## All table names must be in colOrder
-		if(!is.null(tables))
+		## All column names must be in colOrder
+		if(!all(tables %in% colOrder))
 		{
-			if(!all(tables %in% colOrder))
-			{
-				stop("'",tables[tables %in% colOrder],"' is not in 'colOrder'\n")
-			}	
-			nCols <- nCols + length(tables)
-		}
+			stop(paste("'",tables[!(tables %in% colOrder)],"'",sep="",collapse=",")," is not in 'colOrder'\n")
+		}	
+		nCols <- nCols + length(tables)
+		
 		
 		## All extdata header names must be in colOrder
 		if(!is.null(extdata))
@@ -101,53 +107,42 @@ function(x,caption,outputDir,mainTable,tables=c(),onlyIDs=FALSE,extdata=NULL,col
 		if(length(colOrder) != nCols)
 			stop("'colOrder' must have a length of ",nCols,"\n")
 	}	
-
-	## If onlyIDs TRUE then only ids where used without their attributes
-	if(onlyIDs)
-	{
-		fieldNames <- tableInfo[tableInfo[['tablename']] %in% tables,c('tablename','mainCol','links')] 
-		fieldNames <- rbind(tableInfo[tableInfo[['tablename']] == mainTable,c('tablename','mainCol','links')],fieldNames)
-	}
-	else
-	{
-		fieldNames <- tableInfo[tableInfo[['tablename']] %in% tables,c('tablename','fieldnames','links')]
-		fieldNames <- rbind(tableInfo[tableInfo[['tablename']] == mainTable,c('tablename','fieldnames','links')],fieldNames)		
-	}
+	
+	## Test filter
+	if(!is.character(filter))
+		stop("'filter' must be of type character\n")
 		
-	mainTableInfo <- tableInfo[tableInfo[['tablename']] == mainTable,]
-
-	# Sort fieldNames like tables is sort
-	rownames(fieldNames) <- fieldNames[[1]]
-	fieldNames <- cbind(fieldNames[c(mainTable,tables),],index=c(1:nrow(fieldNames)))
-	
-	if(!is.null(extdata))
-		if(!is.data.frame(extdata))
-			stop("'extdata' must be from class data.frame\n")
-	
+	## Set tableRows 50 if not valid
+	if((!is.numeric(tableRows)) || tableRows < 1)
+		tableRows <- 50
+		
+	## Get all unique IDs from the main column
 	results <- list()
 	
-	select1 <- paste(mainTable,".",strsplit(mainTableInfo[[2]],";"),collapse=",",sep="")
-	links <- c(mainTableInfo[3])
-
-	## Get all unique IDs from the main column
+	select1 <- paste(mainTable,".",strsplit(tableInfo[mainTable,2],";"),collapse=",",sep="")
+	
 	sql <- paste("SELECT DISTINCT",select1,"FROM",mainTable)
 
 	results[[1]] <- dbGetQuery(con,sql)
-	results[[1]] <- cbind(results[[1]][1],results[[1]])
+	results[[1]] <- cbind(results[[1]][,1],results[[1]])
 	
+	## Filter mainTable rows
+	if(length(filter) > 0)
+	{
+		results[[1]] <- results[[1]][results[[1]][,1] %in% filter,]
+	}
 	
 	## Get all unique IDs from the other columns
-	for(i in 2:nrow(fieldNames))
+	for(i in 2:nrow(tableInfo))
 	{		
-		select2 <- paste(fieldNames[i,1],".",strsplit(fieldNames[i,2],";")[[1]],collapse=",",sep="")
+		select2 <- paste(tableInfo[i,1],".",strsplit(tableInfo[i,2],";")[[1]],collapse=",",sep="")
 		
-		sql <- paste("SELECT DISTINCT ",mainTable,".",mainTableInfo[4],",",select2," FROM ",mainTable," LEFT OUTER JOIN ",fieldNames[i,1]," ON ",mainTable,"._id = ",fieldNames[i,1],"._id",sep="")
-print(sql)
+		sql <- paste("SELECT DISTINCT ",mainTable,".",tableInfo[mainTable,3],",",select2," FROM ",mainTable," LEFT OUTER JOIN ",tableInfo[i,1]," ON ",mainTable,"._id = ",tableInfo[i,1],"._id ORDER BY ",mainTable,".",tableInfo[mainTable,3],sep="")
+		
 		results[[i]] <- dbGetQuery(con,sql)
-		links[i] <- fieldNames[i,3] 
-		
 	}
-print(3)
+	
+	## Add extdata columns to results
 	if(!is.null(extdata))
 	{
 		extdata <- merge(results[[1]][1],extdata,all.x=TRUE,by.x=1,by.y=1)
@@ -155,85 +150,76 @@ print(3)
 		for(i in 2:ncol(extdata))
 		{
 			results[[length(results) + 1]] <- extdata[c(1,i)] 
-			fieldNames <- rbind(fieldNames,data.frame(colnames(extdata[i]),"","",fieldNames[nrow(fieldNames),4] + 1))
+			temp <- data.frame(colnames(extdata[i]),colnames(extdata[i]),colnames(extdata[i]),"",tableInfo[nrow(tableInfo),5] + 1,row.names=colnames(extdata[i]))
+			colnames(temp) <- colnames(tableInfo)
 			
+			tableInfo <- rbind(tableInfo,temp)
 		}
 	}
-	rownames(fieldNames) <- fieldNames[[1]]
 	
-	print(fieldNames[-3])
-	print(system.time({
-	
-	## Generate HTML side
-	cat("Generate the HTML file\n")
-	html <- paste("<table border='1'><caption>",caption,"</caption>",sep="")
-	
-	## Write Header
-	header <- paste("<th>",colnames(results[[1]]),"</th>",collapse="",sep="")
-	
-	for(i in 2:length(results))
+	#print(system.time({
+
+	numPages <- ceiling(nrow(results[[1]])/tableRows)
+	## Write HTML pages
+	for(p in 1:numPages)
 	{
-		header <- paste(header,paste("<th>",colnames(results[[i]][-1]),"</th>",collapse=""))
-	}
-	
-	html <- paste(html,"<thead><tr>",header,"</tr></thead><tbody>")
-	
-	
-	b <-c()
-	print(length(results))
-	## Write Body
-	l<-lapply(results[[1]][,1],function(x)
-	{	
-		# Main Column 
-		#mainResult <- results[[1]][results[[1]] == x,][1]
-		#if(mainTableInfo[[3]] == "")
-		#	v <- paste(mainResult,collapse="<br/>",sep="")
-		#else
-		#{
-		#	links <- sapply(mainResult,function(x) sub("\\$ID",x,link))
-		#	v<-c(v,paste("<a href='",links,"'>",res,"</a>",collapse="<br/>",sep=""))
-		#}
+		## Generate HTML side
+		cat("Write page ",p," of ",numPages,"\n")
 		
-		v <- c()
-		
-		# Other Columns
+		## Write DOCTYPE and META
+		html <- paste('<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">',
+					  '<html xmlns="http://www.w3.org/1999/xhtml">',
+					  '<head>',
+					  '<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />',
+					  '<title>',caption,'</title>',
+					  '</head>',
+					  '<body>',
+					  sep="\n")
+                  
+		html <- paste(html,"<table border='1'><caption>",caption,"</caption>",sep="")
+	
+		## Write table header
+		header <- ""	
 		for(i in 1:length(results))
-		{
-			link <- fieldNames[i,3]
-
-			print(fieldNames[i,4])
-			for(j in 2:ncol(results[[fieldNames[i,4]]]))
-			{
-				print("START")
-				if(any(is.na(res<-results[[fieldNames[i,4]]][results[[fieldNames[i,4]]][,1] == x,j])))
-					v<-c(v,"&nbsp;")
-				else if(is.na(link) || link=="") # if extdata is set link is NA for this columns
-					v<-c(v,paste(res,collapse="<br/>",sep=""))
-				else
-				{
-					links <- sapply(res,function(x) sub("\\$ID",x,link))
-					v<-c(v,paste("<a href='",links,"'>",res,"</a>",collapse="<br/>",sep=""))
-				}
-				print("END")
-			}
-		}
-		paste("<td>",v,"</td>",collapse="",sep="")
-	})
-	
-	html <- paste(html,paste("<tr>",l,"</tr>",collapse="\n",sep=""),"</tbody></table>",sep="")
-	
-	## Write File
-	cat(file=outputDir,html)
-
-	})) # system.time()
-	
-	
-
-	#join <- paste("LEFT OUTER JOIN ",tables[-1]," ON ",tables[1],"._id = ",tables[2:length(tables)],"._id",sep="",collapse=" ")
+			header <- paste(header,paste("<th>",colnames(results[[tableInfo[colOrder[i],5]]][-1]),"</th>",collapse=""))
 		
-	#SELECT * FROM probes a1 LEFT OUTER JOIN go_id a2 ON a1._id = a2._id LEFT OUTER JOIN kegg a3 ON a1._id = a3._id
+		html <- paste(html,"<thead><tr>",header,"</tr></thead><tbody>")
+		
+		## Write table body
+		from <- (p-1)*tableRows+1
+		to <- 0
+		
+		if(p == numPages)
+			to <- nrow(results[[1]])
+		else
+			to <- p*tableRows
+			
+		body<-lapply(results[[1]][from:to,1],function(x)
+		{	
+			v <- c()
+			for(i in 1:length(results))
+			{
+				for(j in 2:ncol(results[[tableInfo[colOrder[i],5]]]))
+				{
+					if(any(is.na(res<-results[[tableInfo[colOrder[i],5]]][results[[tableInfo[colOrder[i],5]]][,1] == x,j])))
+						v<-c(v,"&nbsp;")
+					else if(tableInfo[colOrder[i],4] == "") 
+						v<-c(v,paste(res,collapse="<br/>",sep=""))
+					else
+					{
+						links <- sapply(res,function(x) sub("\\$ID",x,tableInfo[colOrder[i],4]))
+						v<-c(v,paste("<a href='",links,"'>",res,"</a>",collapse="<br/>",sep=""))
+					}
+				}
+			}
+			paste("<td>",v,"</td>",collapse="",sep="")
+		})
+		
+		html <- paste(html,paste("<tr>",body,"</tr>",collapse="\n",sep=""),"</tbody></table></body></html>",sep="")
 	
-	#sql<- paste("SELECT",select,"FROM",tables[1],join)
-	#print(sql)
-	#return(dbGetQuery(con,sql))
+		## Write File
+		cat(file=paste(outputDir,p,".html",sep=""),html)
+	}
+
+	#}))
 })
