@@ -85,7 +85,7 @@ setMethod("addNewAnnotation2", signature("SQLiteConnection","data.frame","charac
 	
 	## Update table_master_meta
 	cat("Update table_master_meta\n")
-	sql <- paste("INSERT INTO table_master_meta VALUES('",newTableName,"','",paste(data.colNames,collapse=";"),"')",sep="")
+	sql <- paste("INSERT INTO table_master_meta VALUES('",newTableName,"','",paste(data.colNames,collapse=";"),"','')",sep="")
 	dbGetQuery(con,sql)
 	
 	## Remove helper table

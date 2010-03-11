@@ -13,7 +13,8 @@ exportMethods(
     "addNewAnnotation",
     "addNewAnnotation2",
     "addNewAnnotationFromDb1",
-    "annotationPkgToHTML"
+    "annotationPkgToHTML",
+    "setIdLink"
 )
 export(
 	".createBimapObjs",
