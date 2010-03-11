@@ -52,6 +52,10 @@ function(x,caption,outputDir,mainTable,tables=character(),filter=character(),onl
 {	
 	con <- x
 	
+	path <- strsplit(outputDir,.Platform$file.sep)[[1]]
+	print(fileName <- path[length(path)])
+	path <- paste(path[1:(length(path)-1)],collapse=.Platform$file.sep)
+	
 	## Read meta
 	cat("Read table_master_meta\n")
 	sql <- "SELECT * FROM table_master_meta"
@@ -187,6 +191,7 @@ function(x,caption,outputDir,mainTable,tables=character(),filter=character(),onl
 						border-color: blue blue blue blue;
 						border-collapse: collapse;
 						background-color: #fae0d6;
+						width: 100%;
 					}
 					table caption{
 						font-size: 1cm;
@@ -195,13 +200,16 @@ function(x,caption,outputDir,mainTable,tables=character(),filter=character(),onl
 						font-variant: small-caps;
 					}
 					table th {
-						border-width: 0px 2px 0px 2px;
+						white-space:nowrap;
+						font-size: 0.6cm;
+						border-width: 0px 2px 2px 2px;
 						padding: 5px 10px 5px 10px;
 						border-style: solid solid solid solid;
-						border-color: white blue white blue;
+						border-color: blue blue blue blue;
 						-moz-border-radius: 0px 0px 0px 0px;
 					}
 					table td {
+						white-space:nowrap;
 						border-width: 0px 2px 0px 2px;
 						padding: 2px 10px 2px 10px;
 						border-style: solid solid solid solid;
@@ -217,6 +225,11 @@ function(x,caption,outputDir,mainTable,tables=character(),filter=character(),onl
 					}
 					table tr:hover {
 						background-color: #f6f5b2;
+					}
+					.links {
+						width: 100%;
+						text-align:center; 
+						font-size: 0.7cm;
 					}/* ]] */
 					</style>','</head>','<body>',
         	sep="\n")
@@ -224,12 +237,23 @@ function(x,caption,outputDir,mainTable,tables=character(),filter=character(),onl
         	html <- paste(html,paste('<link rel="stylesheet" type="text/css" href="',css,'" />',sep=""),'</head>','<body>',sep="\n")
         else
         	stop("'css' must be from type character or NULL.")
-        	
+        
+        ## Writes links to the other sides
+        if(numPages == 1)
+        	html <- paste(html,"<div class='links'><p>", p,"/",numPages,"</p></div>",sep="")
+        else if(p == numPages)
+        	html <- paste(html,"<div class='links'><p><a href='",fileName,p-1,".html'>&lt;</a>", p,"/",numPages,"</p></div>",sep="")
+        else if(p == 1)
+        	html <- paste(html,"<div class='links'><p>", p,"/",numPages,"<a href='",fileName,p+1,".html'>&gt;</a></p></div>",sep="")
+        else
+	        html <- paste(html,"<div class='links'><p><a href='",fileName,p-1,".html'>&lt;</a>", p,"/",numPages,"<a href='",fileName,p+1,".html'>&gt;</a></p></div>",sep="")
+	        
 		if(is.null(css))        	
-			html <- paste(html,"<table border='1'><caption>",caption,"</caption>",sep="")
+			html <- paste(html,"<table border='1'><caption>",sep="")
 		else
 			html <- paste(html,"<table><caption>",caption,"</caption>",sep="")
-			
+		
+	    	
 		## Write table header
 		header <- ""	
 		for(i in 1:length(results))
@@ -257,19 +281,30 @@ function(x,caption,outputDir,mainTable,tables=character(),filter=character(),onl
 					if(any(is.na(res<-results[[tableInfo[colOrder[i],5]]][results[[tableInfo[colOrder[i],5]]][,1] == x,j])))
 						v<-c(v,"&nbsp;")
 					else if(tableInfo[colOrder[i],4] == "") 
-						v<-c(v,paste(res,collapse="<br/>",sep=""))
+						v<-c(v,paste(res,collapse="<br />",sep=""))
 					else
 					{
 						links <- sapply(res,function(x) sub("\\$ID",x,tableInfo[colOrder[i],4]))
-						v<-c(v,paste("<a href='",links,"'>",res,"</a>",collapse="<br/>",sep=""))
+						v<-c(v,paste("<a href='",links,"'>",res,"</a>",collapse="<br />",sep=""))
 					}
 				}
 			}
 			paste("<td>",v,"</td>",collapse="",sep="")
 		})
 		
-		html <- paste(html,paste("<tr class=",c("'even'","'odd'"),">",body,"</tr>",collapse="\n",sep=""),"</tbody></table></body></html>",sep="")
+		html <- paste(html,paste("<tr class=",c("'even'","'odd'"),">",body,"</tr>",collapse="\n",sep=""),"</tbody></table>",sep="")
 	
+		## Writes links to the other sides
+        if(numPages == 1)
+        	html <- paste(html,"<div class='links'><p>", p,"/",numPages,"</p></div></body></html>",sep="")
+        else if(p == numPages)
+        	html <- paste(html,"<div class='links'><p><a href='",fileName,p-1,".html'>&lt;</a>", p,"/",numPages,"</p></div></body></html>",sep="")
+        else if(p == 1)
+        	html <- paste(html,"<div class='links'><p>", p,"/",numPages,"<a href='",fileName,p+1,".html'>&gt;</a></p></div></body></html>",sep="")
+        else
+	        html <- paste(html,"<div class='links'><p><a href='",fileName,p-1,".html'>&lt;</a>", p,"/",numPages,"<a href='",fileName,p+1,".html'>&gt;</a></p></div></body></html>",sep="")
+	        
+	        
 		## Write File
 		cat(file=paste(outputDir,p,".html",sep=""),html)
 	}
