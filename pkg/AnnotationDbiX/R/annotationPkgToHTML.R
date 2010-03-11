@@ -172,16 +172,68 @@ function(x,caption,outputDir,mainTable,tables=character(),filter=character(),onl
 					  '<head>',
 					  '<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />',
 					  '<title>',caption,'</title>',
-					  '</head>',
-					  '<body>',
 					  sep="\n")
-                  
-		html <- paste(html,"<table border='1'><caption>",caption,"</caption>",sep="")
-	
+		
+		if(is.null(css))
+			html <- paste(html,'</head>','<body>',sep="\n")			  
+		else if(css=="")
+        	html <- paste(html,
+        			'<style type="text/css">
+        			/* >![CDATA[ */
+					table {
+						border-width: medium medium medium medium;
+						border-spacing: 2px;
+						border-style: outset outset outset outset;
+						border-color: blue blue blue blue;
+						border-collapse: collapse;
+						background-color: #fae0d6;
+					}
+					table caption{
+						font-size: 1cm;
+						font-style: italic;
+						font-weight: bold;
+						font-variant: small-caps;
+					}
+					table th {
+						border-width: 0px 2px 0px 2px;
+						padding: 5px 10px 5px 10px;
+						border-style: solid solid solid solid;
+						border-color: white blue white blue;
+						-moz-border-radius: 0px 0px 0px 0px;
+					}
+					table td {
+						border-width: 0px 2px 0px 2px;
+						padding: 2px 10px 2px 10px;
+						border-style: solid solid solid solid;
+						border-color: white blue white blue;
+						vertical-align:text-top;
+						-moz-border-radius: 0px 0px 0px 0px;
+					}
+					.even {
+						background-color: #fdfdfd;	
+					}
+					.odd {
+						background-color: #dddddd;	
+					}
+					table tr:hover {
+						background-color: #f6f5b2;
+					}/* ]] */
+					</style>','</head>','<body>',
+        	sep="\n")
+        else if(is.character(css))
+        	html <- paste(html,paste('<link rel="stylesheet" type="text/css" href="',css,'" />',sep=""),'</head>','<body>',sep="\n")
+        else
+        	stop("'css' must be from type character or NULL.")
+        	
+		if(is.null(css))        	
+			html <- paste(html,"<table border='1'><caption>",caption,"</caption>",sep="")
+		else
+			html <- paste(html,"<table><caption>",caption,"</caption>",sep="")
+			
 		## Write table header
 		header <- ""	
 		for(i in 1:length(results))
-			header <- paste(header,paste("<th>",colnames(results[[tableInfo[colOrder[i],5]]][-1]),"</th>",collapse=""))
+			header <- paste(header,paste("<th>",colnames(results[[tableInfo[colOrder[i],5]]][-1]),"</th>",collapse="",sep=""),sep="")
 		
 		html <- paste(html,"<thead><tr>",header,"</tr></thead><tbody>")
 		
@@ -195,6 +247,7 @@ function(x,caption,outputDir,mainTable,tables=character(),filter=character(),onl
 			to <- p*tableRows
 			
 		body<-lapply(results[[1]][from:to,1],function(x)
+
 		{	
 			v <- c()
 			for(i in 1:length(results))
@@ -215,7 +268,7 @@ function(x,caption,outputDir,mainTable,tables=character(),filter=character(),onl
 			paste("<td>",v,"</td>",collapse="",sep="")
 		})
 		
-		html <- paste(html,paste("<tr>",body,"</tr>",collapse="\n",sep=""),"</tbody></table></body></html>",sep="")
+		html <- paste(html,paste("<tr class=",c("'even'","'odd'"),">",body,"</tr>",collapse="\n",sep=""),"</tbody></table></body></html>",sep="")
 	
 		## Write File
 		cat(file=paste(outputDir,p,".html",sep=""),html)
