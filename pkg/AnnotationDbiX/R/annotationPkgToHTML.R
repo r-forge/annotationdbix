@@ -209,7 +209,6 @@ function(x,caption,outputDir,mainTable,tables=character(),filter=character(),onl
 						-moz-border-radius: 0px 0px 0px 0px;
 					}
 					table td {
-						white-space:nowrap;
 						border-width: 0px 2px 0px 2px;
 						padding: 2px 10px 2px 10px;
 						border-style: solid solid solid solid;
