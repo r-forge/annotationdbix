@@ -74,7 +74,6 @@
 	tableinfo <- as.data.frame(cbind(tableinfo,mainCol,stringsAsFactors=FALSE),stringsAsFactors=FALSE)
 	MapCounts <- c()
 	
-	print(tableinfo)
 	for(i in 1 : nrow(bimaps))
 	{	
 		tryCatch(
@@ -145,10 +144,13 @@
 			chain=list(new("L2Rlink",tablename=bimaps[i,'table1'],Lcolname=as.character(tableinfo[tableinfo[1] == bimaps[i,'table1'],'mainCol']),Rcolname="_id"),
 					   new("L2Rlink",tablename=bimaps[i,'table2'],Lcolname="_id",Rcolname=as.character(tableinfo[tableinfo[1] == bimaps[i,'table2'],'mainCol'])))
 		
+			# Create new Bimap
 			myBimap_T1_2_T2 <- new("AnnDbBimap",L2Rchain=chain,
-					objName=bimaps[i,'name'],objTarget="ecoliK12CHIP",
-					datacache=datacache)
-		
+								objName=bimaps[i,'name'],objTarget="ecoliK12CHIP",
+								datacache=datacache,direction=bimaps[i,'revmap'])
+								
+			#direction(myBimap_T1_2_T2) <- revmap
+									
 			# Add tagnames
 			myBimap_T1_2_T2@L2Rchain[[1]]@tagname <- tags1		
 			myBimap_T1_2_T2@L2Rchain[[2]]@tagname <- tags2
@@ -160,6 +162,9 @@
 			# Add Filters
 			myBimap_T1_2_T2@L2Rchain[[1]]@filter <- filter1
 			myBimap_T1_2_T2@L2Rchain[[2]]@filter <- filter2
+			
+			# If revmap true
+			#revmap(myBimap_T1_2_T2, objName='test')
 			
 			assign(bimaps[i,'name'],myBimap_T1_2_T2,envir=env)
 			

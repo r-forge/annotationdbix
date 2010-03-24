@@ -26,7 +26,7 @@ setMethod("addBimapObj", signature("character","character","character","characte
 	con <- dbConnect(drv, dbname = x)
 	on.exit(dbDisconnect(con))
 	
-	addBimapObj(con,name,table1,table2,comment,tagname1,tagname2,filter1,filter2)
+	addBimapObj(con,name,table1,table2,comment,tagname1,tagname2,filter1,filter2,revmap)
 })
 
 
@@ -48,11 +48,13 @@ setMethod("addBimapObj", signature(x="SQLiteConnection",name="character",table1=
 	dbGetQuery(con,sql)
 	
 	## If revmap TRUE @direction = -1 otherwise @direction = 1
+	print(revmap)
 	if(revmap)
 		revmap <- -1
 	else
 		revmap <- 1
 		
+	print(revmap)
 	## Check if Bimap Object already exists
 	sql <- paste("SELECT COUNT(*) FROM bimap_meta WHERE name='",name,"'",sep="")
 	if(dbGetQuery(con,sql) > 0)
@@ -64,6 +66,7 @@ setMethod("addBimapObj", signature(x="SQLiteConnection",name="character",table1=
 	## Add new Bimap Object
 	sql <- paste("INSERT INTO bimap_meta VALUES ('",name,"','",table1,"','",table2,"','",tagname1,"','",tagname2,"','",comment,"','",filter1,"','",filter2,"','",revmap,"')",sep="")
 	dbGetQuery(con,sql)
+	print(sql)
 	cat("Bimap Object '",name,"' added.\nTo update the bimaps objects detach and reload the library .\n",sep="")
 	
 	return(TRUE)

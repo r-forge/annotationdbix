@@ -214,7 +214,7 @@ setMethod("addNewAnnotationFromDb1", signature("SQLiteConnection","data.frame","
 	}
 	
 	# Create bimap_meta table
-	sql <- "CREATE TABLE IF NOT EXISTS bimap_meta(name TEXT PRIMARY KEY,table1 TEXT NOT NULL,table2 TEXT NOT NULL,tagname1 TEXT,tagname2 TEXT,comment TEXT,filter1 TEXT,filter2 TEXT)"
+	sql <- "CREATE TABLE IF NOT EXISTS bimap_meta(name TEXT PRIMARY KEY,table1 TEXT NOT NULL,table2 TEXT NOT NULL,tagname1 TEXT,tagname2 TEXT,comment TEXT,filter1 TEXT,filter2 TEXT,revmap INTEGER)"
 	dbGetQuery(con,sql)
 			
 	# Update bimap_meta table with all bimap objects from the .db1 database except bimap objects
