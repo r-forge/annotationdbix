@@ -85,7 +85,8 @@ setMethod("addNewAnnotation2", signature("SQLiteConnection","data.frame","charac
 	
 	## Update table_master_meta
 	cat("Update table_master_meta\n")
-	sql <- paste("INSERT INTO table_master_meta VALUES('",newTableName,"','",paste(data.colNames,collapse=";"),"','')",sep="")
+	sql <- paste("INSERT INTO table_master_meta VALUES('",newTableName,"','",paste(data.colNames,collapse=";"),"','",paste(rep('|',length(data.colNames)-1),collapse=''),"')",sep="")
+	print(sql)
 	dbGetQuery(con,sql)
 	
 	## Remove helper table
@@ -165,7 +166,6 @@ setMethod("addNewAnnotationFromDb1", signature("SQLiteConnection","data.frame","
 	
 	dbBeginTransaction(con)
 	
-	#print(tableInfoDb1)
 	for(i in 1:nrow(tableInfoDb1))
 	{
 		cat("Create new table '",tableInfoDb1[i,1],"'\n",sep="")

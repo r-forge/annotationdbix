@@ -253,16 +253,30 @@ setMethod("setIdLink", signature("SQLiteConnection","character","character"), fu
 		stop("Table '",table,"' does not exist.\n")		
 	
 	## Get tableinfo
-	sql <- "SELECT * FROM table_master_meta"
+	sql <- paste("SELECT * FROM table_master_meta WHERE tablename = '",table,"'",sep="")
 	result <- dbGetQuery(con,sql)
 	
 	## Check if table is in table_master_meta
-	if(!(table %in% result[[1]]))
+	if(table != result[[1]][1])
 		stop("Table '",table,"' is not listed in 'table_master_meta'.\n")		
 	
 	## Check if $ID is set in the link
-	if(length(grep("\\$ID",link)) == 0)
-		stop("There is no $ID Tag in the link. This tag will be replaced with the ids from the .dbX database\n")	
+	#if(length(grep("\\$ID",link)) == 0)
+	#	stop("There is no $ID Tag in the link. This tag will be replaced with the ids from the .dbX database\n")	
+	# fixed link allowed
+	
+	if(length(link) != length(strsplit(result[[2]],";")[[1]]))
+	
+	for(i in 1:length(strsplit(result[[2]],";")[[1]]))
+		if(is.na(link[i]))
+			link[i] <- ""
+			
+	print(link)
+	print(length(link))
+	
+	## Concatenate all links to one string
+	link <- paste(link,collapse="|")
+	print(link)
 		
 	## Mask all & with the correct &amp; for valid html
 	link <- paste(strsplit(link,"&(?!amp)",perl=TRUE)[[1]],collapse="&amp;",sep="")

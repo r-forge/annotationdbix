@@ -261,29 +261,36 @@ function(x,caption,outputDir,mainTable,tables=character(),filter=character(),onl
 		html <- paste(html,"<thead><tr>",header,"</tr></thead><tbody>")
 		
 		## Write table body
-		from <- (p-1)*tableRows+1
+		from <- (p-1) * tableRows + 1
 		to <- 0
 		
 		if(p == numPages)
 			to <- nrow(results[[1]])
 		else
-			to <- p*tableRows
+			to <- p * tableRows
 			
-		body<-lapply(results[[1]][from:to,1],function(x)
-
+		
+		
+		body <- lapply(results[[1]][from:to,1],function(x)
 		{	
 			v <- c()
-			for(i in 1:length(results))
+			for(i in 1:length(results)) # num cols
 			{
+				mainres <- c()
 				for(j in 2:ncol(results[[tableInfo[colOrder[i],5]]]))
 				{
+					link <- strsplit(tableInfo[colOrder[i],4],"\\|")[[1]][j-1]
+
+					if(j == 2)
+						mainres<-results[[tableInfo[colOrder[i],5]]][results[[tableInfo[colOrder[i],5]]][,1] == x,j]
+						
 					if(any(is.na(res<-results[[tableInfo[colOrder[i],5]]][results[[tableInfo[colOrder[i],5]]][,1] == x,j])))
 						v<-c(v,"&nbsp;")
-					else if(tableInfo[colOrder[i],4] == "") 
+					else if(is.na(link)) 
 						v<-c(v,paste(res,collapse="<br />",sep=""))
 					else
 					{
-						links <- sapply(res,function(x) sub("\\$ID",x,tableInfo[colOrder[i],4]))
+						links <- sapply(mainres,function(x) sub("\\$ID",x,link))
 						v<-c(v,paste("<a href='",links,"'>",res,"</a>",collapse="<br />",sep=""))
 					}
 				}
