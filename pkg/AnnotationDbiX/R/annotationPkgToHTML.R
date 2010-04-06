@@ -123,10 +123,27 @@ function(x,caption,outputDir,tables=character(),filter=character(),onlyIDs=FALSE
 	Lwhere <-  AnnotationDbi:::.contextualizeColnames(x@L2Rchain[[1]]@filter,Lcontext)
 	Rwhere <-  AnnotationDbi:::.contextualizeColnames(x@L2Rchain[[2]]@filter,Rcontext)
 		
-	sql <- paste("SELECT DISTINCT",select1,"FROM",mainTable,Lcontext,",",tables[2],Rcontext,"WHERE",Lwhere,"AND",Rwhere)
-	print(sql)
-	results[[1]] <- dbGetQuery(con,sql)
-	results[[1]] <- cbind(results[[1]][,1],results[[1]])
+	#sql <- paste("SELECT DISTINCT",select1,"FROM",mainTable,Lcontext,",",tables[2],Rcontext,"WHERE",Lwhere,"AND",Rwhere)
+	#sql <- paste("SELECT DISTINCT",select1,"FROM",mainTable,Lcontext,"WHERE",Lwhere)
+	#print(sql)
+	#print(system.time({
+	#results[[1]] <- dbGetQuery(con,sql)
+	#}))
+	#results[[1]] <- cbind(results[[1]][,1],results[[1]])
+	
+	
+	
+	## Get all unique IDs from the other columns
+	#for(i in 2:nrow(tableInfo))
+	{		
+		select2 <- paste(Rcontext,".",strsplit(tableInfo[2,2],";")[[1]],collapse=",",sep="")
+		
+		sql <- paste("SELECT DISTINCT ",Lcontext,".",tableInfo[mainTable,3],",",select2," FROM ",mainTable," ",Lcontext," LEFT OUTER JOIN ",tableInfo[i,1]," ",Rcontext," ON ",Lcontext,"._id = ",Rcontext,"._id WHERE ",Lwhere," AND ",Rwhere," ORDER BY ",Lcontext,".",tableInfo[mainTable,3],sep="")
+		print(sql)
+		
+		results[[2]] <- dbGetQuery(con,sql)
+		
+	}
 	
 	## Filter mainTable rows
 	if(length(filter) > 0)
@@ -134,15 +151,6 @@ function(x,caption,outputDir,tables=character(),filter=character(),onlyIDs=FALSE
 		results[[1]] <- results[[1]][results[[1]][,1] %in% filter,]
 	}
 	
-	## Get all unique IDs from the other columns
-	for(i in 2:nrow(tableInfo))
-	{		
-		select2 <- paste(Rcontext,".",strsplit(tableInfo[i,2],";")[[1]],collapse=",",sep="")
-		
-		sql <- paste("SELECT DISTINCT ",Lcontext,".",tableInfo[mainTable,3],",",select2," FROM ",mainTable," ",Lcontext," LEFT OUTER JOIN ",tableInfo[i,1]," ",Rcontext," ON ",Lcontext,"._id = ",Rcontext,"._id WHERE ",Lwhere," AND ",Rwhere," ORDER BY ",Lcontext,".",tableInfo[mainTable,3],sep="")
-		print(sql)
-		results[[i]] <- dbGetQuery(con,sql)
-	}
 	
 	## Add extdata columns to results
 	if(!is.null(extdata))
@@ -393,18 +401,25 @@ function(x,caption,outputDir,mainTable,tables=character(),filter=character(),onl
 	## Get all unique IDs from the main column
 	results <- list()
 	
-	select1 <- paste(mainTable,".",strsplit(tableInfo[mainTable,2],";"),collapse=",",sep="")
-	
-	sql <- paste("SELECT DISTINCT",select1,"FROM",mainTable)
-
-	results[[1]] <- dbGetQuery(con,sql)
-	results[[1]] <- cbind(results[[1]][,1],results[[1]])
-	
 	## Filter mainTable rows
 	if(length(filter) > 0)
 	{
-		results[[1]] <- results[[1]][results[[1]][,1] %in% filter,]
+		## Write helper table of filtered ids
+		dbWriteTable(conn=con,name="filter_temp",value=unique(filter),row.names=FALSE,overwrite=TRUE)
+		
+		
+		#results[[1]] <- results[[1]][results[[1]][,1] %in% filter,]
 	}
+	
+	
+	select1 <- paste(mainTable,".",strsplit(tableInfo[mainTable,2],";"),collapse=",",sep="")
+	
+	#sql <- paste("SELECT DISTINCT",select1,"FROM",mainTable)
+
+	#results[[1]] <- dbGetQuery(con,sql)
+	#results[[1]] <- cbind(results[[1]][,1],results[[1]])
+	
+	
 	
 	## Get all unique IDs from the other columns
 	for(i in 2:nrow(tableInfo))
