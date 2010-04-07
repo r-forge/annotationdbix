@@ -42,7 +42,7 @@ function(x,caption,outputDir,tables=character(),filter=character(),onlyIDs=FALSE
 	tables <- x@L2Rchain[[2]]@tablename 
 	
 	path <- strsplit(outputDir,.Platform$file.sep)[[1]]
-	print(fileName <- path[length(path)])
+	
 	path <- paste(path[1:(length(path)-1)],collapse=.Platform$file.sep)
 	
 	## Read meta
@@ -74,7 +74,7 @@ function(x,caption,outputDir,tables=character(),filter=character(),onlyIDs=FALSE
 	nCols <- 0		
 
 	if(is.null(colOrder))
-		colOrder <- c(tables,colnames(extdata))
+		colOrder <- c(tables,colnames(extdata[-1]))
 	else
 	{
 		## colOrder must be unique
@@ -102,7 +102,8 @@ function(x,caption,outputDir,tables=character(),filter=character(),onlyIDs=FALSE
 		if(length(colOrder) != nCols)
 			stop("'colOrder' must have a length of ",nCols,"\n")
 	}	
-	
+	print(tables)
+	print(colOrder)
 	## Test filter
 	if(!is.character(filter))
 		stop("'filter' must be of type character\n")
@@ -114,43 +115,41 @@ function(x,caption,outputDir,tables=character(),filter=character(),onlyIDs=FALSE
 	bimapData <- toTable(x)
 	## Get all unique IDs from the main column
 	results <- list()
-	
+
 	Lcontext <- "_L"
 	Rcontext <- "_R"
 	
-	select1 <- paste(Lcontext,".",strsplit(tableInfo[mainTable,2],";"),collapse=",",sep="")
+	#select1 <- paste(Lcontext,".",strsplit(tableInfo[mainTable,2],";"),collapse=",",sep="")
 	
 	Lwhere <-  AnnotationDbi:::.contextualizeColnames(x@L2Rchain[[1]]@filter,Lcontext)
 	Rwhere <-  AnnotationDbi:::.contextualizeColnames(x@L2Rchain[[2]]@filter,Rcontext)
-		
-	#sql <- paste("SELECT DISTINCT",select1,"FROM",mainTable,Lcontext,",",tables[2],Rcontext,"WHERE",Lwhere,"AND",Rwhere)
-	#sql <- paste("SELECT DISTINCT",select1,"FROM",mainTable,Lcontext,"WHERE",Lwhere)
-	#print(sql)
-	#print(system.time({
-	#results[[1]] <- dbGetQuery(con,sql)
-	#}))
-	#results[[1]] <- cbind(results[[1]][,1],results[[1]])
 	
-	
-	
-	## Get all unique IDs from the other columns
-	#for(i in 2:nrow(tableInfo))
-	{		
-		select2 <- paste(Rcontext,".",strsplit(tableInfo[2,2],";")[[1]],collapse=",",sep="")
+	sql <- paste("SELECT DISTINCT * FROM",mainTable)
+	mainIds <- dbGetQuery(con,sql)
 		
-		sql <- paste("SELECT DISTINCT ",Lcontext,".",tableInfo[mainTable,3],",",select2," FROM ",mainTable," ",Lcontext," LEFT OUTER JOIN ",tableInfo[i,1]," ",Rcontext," ON ",Lcontext,"._id = ",Rcontext,"._id WHERE ",Lwhere," AND ",Rwhere," ORDER BY ",Lcontext,".",tableInfo[mainTable,3],sep="")
-		print(sql)
-		
-		results[[2]] <- dbGetQuery(con,sql)
-		
-	}
-	
 	## Filter mainTable rows
 	if(length(filter) > 0)
 	{
-		results[[1]] <- results[[1]][results[[1]][,1] %in% filter,]
+		if(length(filterIds <- mainIds[mainIds[,2] %in% filter,]) == 0)
+			stop("'filter' has no match in ",mainTable,"\n")
+		
+		dbWriteTable(conn=con,name="filter_temp",value=filterIds,row.names=FALSE,overwrite=TRUE)
 	}
+	else
+		dbWriteTable(conn=con,name="filter_temp",value=mainIds,row.names=FALSE,overwrite=TRUE)
 	
+	## 
+	select1 <- paste("_L.",strsplit(tableInfo[mainTable,2],";")[[1]],collapse=",",sep="")
+	select2 <- paste("_R.",strsplit(tableInfo[i,2],";")[[1]],collapse=",",sep="")
+	
+	sql <- paste("SELECT DISTINCT ",select1," FROM ",mainTable," _L, filter_temp _R WHERE _L.",tableInfo[mainTable,3]," = _R.",tableInfo[mainTable,3],sep="")
+	
+	results[[1]] <- dbGetQuery(con,sql)
+	results[[1]] <- cbind(results[[1]][,1],results[[1]])
+	
+	sql <- paste("SELECT DISTINCT ",select1,",",select2," FROM filter_temp _L LEFT OUTER JOIN ",tableInfo[2,1]," _R ON _L.X_id = _R._id WHERE ",Lwhere," AND ",Rwhere," ORDER BY _L.",tableInfo[mainTable,3],sep="")
+	
+	results[[2]] <- dbGetQuery(con,sql)
 	
 	## Add extdata columns to results
 	if(!is.null(extdata))
@@ -273,17 +272,20 @@ function(x,caption,outputDir,tables=character(),filter=character(),onlyIDs=FALSE
 			to <- nrow(results[[1]])
 		else
 			to <- p * tableRows
-			
 		
+		print(tableInfo)	
+		print(colOrder)
 		
 		body <- lapply(results[[1]][from:to,1],function(x)
 		{	
 			v <- c()
 			for(i in 1:length(results)) # num cols
 			{
+				print(paste("i ",i))
 				mainres <- c()
 				for(j in 2:ncol(results[[tableInfo[colOrder[i],5]]]))
 				{
+					print(paste("j ",j))
 					link <- strsplit(tableInfo[colOrder[i],4],"\\|")[[1]][j-1]
 
 					if(j == 2)
@@ -329,7 +331,7 @@ function(x,caption,outputDir,mainTable,tables=character(),filter=character(),onl
 	con <- x
 
 	path <- strsplit(outputDir,.Platform$file.sep)[[1]]
-	print(fileName <- path[length(path)])
+	
 	path <- paste(path[1:(length(path)-1)],collapse=.Platform$file.sep)
 	
 	## Read meta
@@ -401,32 +403,32 @@ function(x,caption,outputDir,mainTable,tables=character(),filter=character(),onl
 	## Get all unique IDs from the main column
 	results <- list()
 	
+	sql <- paste("SELECT DISTINCT * FROM",mainTable)
+	mainIds <- dbGetQuery(con,sql)
+		
 	## Filter mainTable rows
 	if(length(filter) > 0)
 	{
-		## Write helper table of filtered ids
-		dbWriteTable(conn=con,name="filter_temp",value=unique(filter),row.names=FALSE,overwrite=TRUE)
+		if(length(filterIds <- mainIds[mainIds[,2] %in% filter,]) == 0)
+			stop("'filter' has no match in ",mainTable,"\n")
 		
-		
-		#results[[1]] <- results[[1]][results[[1]][,1] %in% filter,]
+		dbWriteTable(conn=con,name="filter_temp",value=filterIds,row.names=FALSE,overwrite=TRUE)
 	}
+	else
+		dbWriteTable(conn=con,name="filter_temp",value=mainIds,row.names=FALSE,overwrite=TRUE)
 	
+	select1 <- paste("m.",strsplit(tableInfo[mainTable,2],";"),collapse=",",sep="")
 	
-	select1 <- paste(mainTable,".",strsplit(tableInfo[mainTable,2],";"),collapse=",",sep="")
-	
-	#sql <- paste("SELECT DISTINCT",select1,"FROM",mainTable)
-
-	#results[[1]] <- dbGetQuery(con,sql)
-	#results[[1]] <- cbind(results[[1]][,1],results[[1]])
-	
-	
+	sql <- paste("SELECT DISTINCT ",select1," FROM ",mainTable," m, filter_temp f WHERE m.",tableInfo[mainTable,3]," = f.",tableInfo[mainTable,3],sep="")
+	results[[1]] <- dbGetQuery(con,sql)
+	results[[1]] <- cbind(results[[1]][,1],results[[1]])
 	
 	## Get all unique IDs from the other columns
 	for(i in 2:nrow(tableInfo))
 	{		
 		select2 <- paste(tableInfo[i,1],".",strsplit(tableInfo[i,2],";")[[1]],collapse=",",sep="")
-		
-		sql <- paste("SELECT DISTINCT ",mainTable,".",tableInfo[mainTable,3],",",select2," FROM ",mainTable," LEFT OUTER JOIN ",tableInfo[i,1]," ON ",mainTable,"._id = ",tableInfo[i,1],"._id ORDER BY ",mainTable,".",tableInfo[mainTable,3],sep="")
+
+		sql <- paste("SELECT DISTINCT filter_temp.",tableInfo[mainTable,3],",",select2," FROM filter_temp LEFT OUTER JOIN ",tableInfo[i,1]," ON filter_temp.X_id = ",tableInfo[i,1],"._id ORDER BY filter_temp.",tableInfo[mainTable,3],sep="")
 		
 		results[[i]] <- dbGetQuery(con,sql)
 	}
@@ -594,7 +596,6 @@ function(x,caption,outputDir,mainTable,tables=character(),filter=character(),onl
         	html <- paste(html,"<div class='links'><p>", p,"/",numPages,"<a href='",fileName,p+1,".html'>&gt;</a></p></div></body></html>",sep="")
         else
 	        html <- paste(html,"<div class='links'><p><a href='",fileName,p-1,".html'>&lt;</a>", p,"/",numPages,"<a href='",fileName,p+1,".html'>&gt;</a></p></div></body></html>",sep="")
-	        
 	        
 		## Write File
 		cat(file=paste(outputDir,p,".html",sep=""),html)
