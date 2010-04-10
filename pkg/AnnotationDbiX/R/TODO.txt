@@ -1,7 +1,9 @@
-BL21 Paket backen
+o BL21 Paket backen
 
-testen, ob addNewAnnotationFromDb1 von mehreren db1 funktioniert
+x testen, ob addNewAnnotationFromDb1 von mehreren db1 funktioniert -- nicht vorgesehen
 
-Funktionen mit Endung 2 umbenennen
+x Funktionen mit Endung 2 umbenennen
 
-CREATE Statements prüfen
+o CREATE Statements prüfen
+
+x deleteBimapObj eine Funktion für AnnDbBimaps hinzufügen

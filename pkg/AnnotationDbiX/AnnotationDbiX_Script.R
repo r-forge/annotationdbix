@@ -5,7 +5,7 @@ probe_genbank.list <- read.table(file=system.file(package='AnnotationDbiX','data
 feature.seq.list <- read.table(file=system.file(package='AnnotationDbiX','data','feature.seq.list'),sep=",",header= FALSE,stringsAsFactors= FALSE) 
 
 cat('\nErzeuge neue .dbX Datenbank mit Sequenzdaten und ProbeIDs\n\n')
-makeDbX2(feature.seq.list,'Eschericha Coli','EColi','ecoliK12CHIP','~/Desktop','0.1.0','Mo-Ferm','ecoliK12 Chip','www.derauer.net',author=c('Norbert Auer','Test Dummy'),maintainer='Norbert Auer <norbert@derauer.net>')
+makeDbX(feature.seq.list,'Eschericha Coli','EColi','ecoliK12CHIP','~/Desktop','0.1.0','Mo-Ferm','ecoliK12 Chip','www.derauer.net',author=c('Norbert Auer','Test Dummy'),maintainer='Norbert Auer <norbert@derauer.net>')
 
 cat('\nFüge neues Bimap-Objekt SEQUENCE hinzu\n\n')
 addBimapObj('~/Desktop/ecoliK12CHIP.dbX/inst/extdata/ecoliK12CHIP.dbX','SEQUENCE','probes','sequence')
@@ -22,7 +22,7 @@ cat('\nErzeuge dummy Daten\n\n')
 dummy_data <- data.frame(sample(feature.seq.list[[1]],2000),rnorm(2000))
 
 cat('\nFüge externe dummy Daten dem .dbX hinzu\n\n')
-addNewAnnotation2(x='~/Desktop/ecoliK12CHIP.dbX/inst/extdata/ecoliK12CHIP.dbX', data=dummy_data,newTableName='dummy',data.colNames='dummy_id',mapTableName='probes')
+addNewAnnotation(x='~/Desktop/ecoliK12CHIP.dbX/inst/extdata/ecoliK12CHIP.dbX', data=dummy_data,newTableName='dummy',data.colNames='dummy_id',mapTableName='probes')
 
 cat('\nFüge neues Bimap-Objekt Dummy Daten hinzu\n\n')
 addBimapObj('~/Desktop/ecoliK12CHIP.dbX/inst/extdata/ecoliK12CHIP.dbX','DUMMY','probes','dummy')
