@@ -68,17 +68,17 @@ listBimapObj(x)
 }
 \examples{
 	\dontrun{
-		## add a new Bimap
-		addBimapObj(ecoliK12CHIP_dbconn(),'SEQUENCE','probes','sequence')
-		## the same like revmap(ecoliK12CHIPSEQUENCE,objName="SEQUENCE2PROBE")
-		addBimapObj(ecoliK12CHIP_dbconn(),'SEQUENCE2PROBE','probes','sequence',revmap=TRUE)
-		## add a real revers map from ecoliK12CHIPSEQUENCE Bimap
-		addBimapObj(ecoliK12CHIP_dbconn(),'SEQUENCE2PROBEREAL','sequence','probes')
+	## add a new Bimap
+	addBimapObj(ecoliK12CHIP_dbconn(),'SEQUENCE','probes','sequence')
+	## the same like revmap(ecoliK12CHIPSEQUENCE,objName="SEQUENCE2PROBE")
+	addBimapObj(ecoliK12CHIP_dbconn(),'SEQUENCE2PROBE','probes','sequence',revmap=TRUE)
+	## add a real revers map from ecoliK12CHIPSEQUENCE Bimap
+	addBimapObj(ecoliK12CHIP_dbconn(),'SEQUENCE2PROBEREAL','sequence','probes')
 		
-		## Start a new session
-		toTable(ecoliK12CHIPSEQUENCE)[1:10,]
-		toTable(ecoliK12CHIPSEQUENCE2PROBE)[1:10,]
-		toTable(ecoliK12CHIPSEQUENCE2PROBEREAL)[1:10,]
+	## Start a new session
+	toTable(ecoliK12CHIPSEQUENCE)[1:10,]
+	toTable(ecoliK12CHIPSEQUENCE2PROBE)[1:10,]
+	toTable(ecoliK12CHIPSEQUENCE2PROBEREAL)[1:10,]
 	}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
