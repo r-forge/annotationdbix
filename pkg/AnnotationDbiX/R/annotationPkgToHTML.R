@@ -151,6 +151,10 @@ function(x,caption,outputDir,tables=character(),filter=character(),onlyIDs=FALSE
 	
 	results[[2]] <- dbGetQuery(con,sql)
 	
+	## Remove Helper table
+	sql <- "DROP TABLE IF EXISTS filter_temp"
+	dbGetQuery(con,sql)	
+	
 	## Add extdata columns to results
 	if(!is.null(extdata))
 	{
@@ -432,6 +436,10 @@ function(x,caption,outputDir,mainTable,tables=character(),filter=character(),onl
 		
 		results[[i]] <- dbGetQuery(con,sql)
 	}
+	
+	## Remove Helper table
+	sql <- "DROP TABLE IF EXISTS filter_temp"
+	dbGetQuery(con,sql)	
 	
 	## Add extdata columns to results
 	if(!is.null(extdata))

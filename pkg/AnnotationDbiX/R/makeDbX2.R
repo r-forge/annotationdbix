@@ -113,7 +113,7 @@ function(probeList,organism,species,prefix,outputDir,version,chipName,author,mai
 	
 	## Add Probes table
 	cat("Add probes table\n")
-	sql <- paste("CREATE TABLE probes (_id INTEGER,probe_id TEXT)")
+	sql <- paste("CREATE TABLE probes (_id INTEGER,probe_id TEXT NOT NULL)")
 	dbGetQuery(con,sql)
 	
 	## Fill User Defined table
