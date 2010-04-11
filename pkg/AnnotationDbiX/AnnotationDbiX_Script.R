@@ -16,7 +16,7 @@ db1ConverterECOLIK12 (system.file (package='AnnotationDbiX','data','ecoliK12v2.3
 cat('\nFüge der .dbX Datenbank die Annotationen aus der .db1 hinzu\n\n')
 addNewAnnotationFromDb1(x='~/Desktop/ecoliK12CHIP.dbX/inst/extdata/ecoliK12CHIP.dbX',data=probe_entrez.list,mapT='probes',mapD='genes', dbSrc='ecoliK12v2.3.5.db1')
 
-addNewAnnotationFromDb1(x='~/Desktop/ecoliK12CHIP.dbX/inst/extdata/ecoliK12CHIP.dbX',data=probe_genbank.list,mapT='probes',mapD='genbank_id', dbSrc='ecoliK12v2.3.5.db1')
+#addNewAnnotationFromDb1(x='~/Desktop/ecoliK12CHIP.dbX/inst/extdata/ecoliK12CHIP.dbX',data=probe_genbank.list,mapT='probes',mapD='genbank_id', dbSrc='ecoliK12v2.3.5.db1')
 
 cat('\nErzeuge dummy Daten\n\n')	
 dummy_data <- data.frame(sample(feature.seq.list[[1]],2000),rnorm(2000))
