@@ -52,15 +52,15 @@ setMethod("addNewAnnotation", signature("SQLiteConnection","data.frame","charact
 	meta <- dbGetQuery(con,sql)
 	main_table <- meta[meta$key == 'main_table','value']
 	
-	
 	if(!(mapTableName %in% tableInfo[[1]]))
 	stop("There is no table named ",mapTableName)
 
 	colnames(data) <- c(as.character(tableInfo[tableInfo$tablename == mapTableName,'mainCol'][1]),data.colNames)
 	
 	## Add helper table	
+	data[which(data[[2]] == ""),2] <- NA
 	cat("Add helper table ",newTableName,"_temp\n",sep="")
-	dbWriteTable(conn=con,name=paste(newTableName,"_temp",sep=""),value=unique(data[colnames(data)]),row.names=FALSE,overwrite=TRUE)	
+	dbWriteTable(conn=con,name=paste(newTableName,"_temp",sep=""),value=unique(data),row.names=FALSE,overwrite=TRUE)	
 	
 	## Create new table
 	cat("Create new table",newTableName,"\n")
@@ -74,8 +74,9 @@ setMethod("addNewAnnotation", signature("SQLiteConnection","data.frame","charact
 	
 	## Fill new table
 	cat("Fill new table",newTableName,"\n")
-	dyn <- paste(data.colNames,collapse=",")
-	sql <- paste("INSERT INTO ",newTableName," SELECT _id,",dyn," FROM ",newTableName,"_temp t,",mapTableName," p WHERE p.",colnames(data)[1]," = t.",colnames(data)[1]," AND p._id",sep="")
+	dyn <- paste("t.",data.colNames,collapse=",",sep="")
+	sql <- paste("INSERT INTO ",newTableName," SELECT p._id,",dyn," FROM ",newTableName,"_temp t,",mapTableName," p WHERE p.",colnames(data)[1]," = t.",colnames(data)[1]," AND t.",colnames(data)[2]," IS NOT NULL",sep="")
+	print(sql)
 	dbGetQuery(con,sql)
 	
 	## Create index for main and probes table
