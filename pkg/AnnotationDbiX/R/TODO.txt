@@ -7,3 +7,7 @@ x Funktionen mit Endung 2 umbenennen
 o CREATE Statements prüfen
 
 x deleteBimapObj eine Funktion für AnnDbBimaps hinzufügen
+
+o bei addNewAnnotation Transaction einfügen
+
+o testen, ob "" in IDs richtig erarbeitet werden

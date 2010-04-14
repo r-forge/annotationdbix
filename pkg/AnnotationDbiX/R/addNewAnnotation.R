@@ -76,7 +76,6 @@ setMethod("addNewAnnotation", signature("SQLiteConnection","data.frame","charact
 	cat("Fill new table",newTableName,"\n")
 	dyn <- paste("t.",data.colNames,collapse=",",sep="")
 	sql <- paste("INSERT INTO ",newTableName," SELECT p._id,",dyn," FROM ",newTableName,"_temp t,",mapTableName," p WHERE p.",colnames(data)[1]," = t.",colnames(data)[1]," AND t.",colnames(data)[2]," IS NOT NULL",sep="")
-	print(sql)
 	dbGetQuery(con,sql)
 	
 	## Create index for main and probes table
