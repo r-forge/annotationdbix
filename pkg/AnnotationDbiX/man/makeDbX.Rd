@@ -1,19 +1,17 @@
 \name{makeDbX}
+\Rdversion{1.1}
 \alias{makeDbX}
-%- Also NEED an '\alias' for EACH other topic documented here.
-\title{T6
-%%  ~~function to do ... ~~
-}
+\title{Generates a .dbX annotation database skeleton.}
 \description{
-%%  ~~ A concise (1-5 lines) description of what the function does. ~~
+	In the following sections the generation of annotation packages from type .dbX is described.
 }
 \usage{
-makeDbX(probeList, organism, species, prefix, chipSrc, baseMapTableName, outputDir, version, manufacturer, chipName, manufacturerUrl, author, maintainer)
+makeDbX(probeList, organism, species, prefix, outputDir, version, chipName, author, maintainer, manufacturer = "Manufacturer not specified", manufacturerUrl = "ManufacturerUrl not specified", tableName = "sequence", colName = "sequence")
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{probeList}{
-%%     ~~Describe \code{probeList} here~~
+	Twocolumn list. On the left side probe ids and on the right side a unique identifier. For example the 
 }
   \item{organism}{
 %%     ~~Describe \code{organism} here~~
@@ -24,32 +22,32 @@ makeDbX(probeList, organism, species, prefix, chipSrc, baseMapTableName, outputD
   \item{prefix}{
 %%     ~~Describe \code{prefix} here~~
 }
-  \item{chipSrc}{
-%%     ~~Describe \code{chipSrc} here~~
-}
-  \item{baseMapTableName}{
-%%     ~~Describe \code{baseMapTableName} here~~
-}
   \item{outputDir}{
 %%     ~~Describe \code{outputDir} here~~
 }
   \item{version}{
 %%     ~~Describe \code{version} here~~
 }
-  \item{manufacturer}{
-%%     ~~Describe \code{manufacturer} here~~
-}
   \item{chipName}{
 %%     ~~Describe \code{chipName} here~~
-}
-  \item{manufacturerUrl}{
-%%     ~~Describe \code{manufacturerUrl} here~~
 }
   \item{author}{
 %%     ~~Describe \code{author} here~~
 }
   \item{maintainer}{
 %%     ~~Describe \code{maintainer} here~~
+}
+  \item{manufacturer}{
+%%     ~~Describe \code{manufacturer} here~~
+}
+  \item{manufacturerUrl}{
+%%     ~~Describe \code{manufacturerUrl} here~~
+}
+  \item{tableName}{
+%%     ~~Describe \code{tableName} here~~
+}
+  \item{colName}{
+%%     ~~Describe \code{colName} here~~
 }
 }
 \details{
@@ -83,20 +81,21 @@ makeDbX(probeList, organism, species, prefix, chipSrc, baseMapTableName, outputD
 ##--	or do  help(data=index)  for the standard data sets.
 
 ## The function is currently defined as
-structure(function (probeList, organism, species, prefix, chipSrc, 
-    baseMapTableName, outputDir, version, manufacturer, chipName, 
-    manufacturerUrl, author, maintainer) 
+structure(function (probeList, organism, species, prefix, outputDir, 
+    version, chipName, author, maintainer, manufacturer = "Manufacturer not specified", 
+    manufacturerUrl = "ManufacturerUrl not specified", tableName = "sequence", 
+    colName = "sequence") 
 standardGeneric("makeDbX"), generic = structure("makeDbX", package = "AnnotationDbiX"), package = "AnnotationDbiX", group = list(), valueClass = character(0), signature = c("probeList", 
-"organism", "species", "prefix", "chipSrc", "baseMapTableName", 
-"outputDir", "version", "manufacturer", "chipName", "manufacturerUrl", 
+"organism", "species", "prefix", "outputDir", "version", "chipName", 
 "author", "maintainer"), default = <S4 object of class structure("MethodsList", package = "methods")>, skeleton = function (probeList, 
-    organism, species, prefix, chipSrc, baseMapTableName, outputDir, 
-    version, manufacturer, chipName, manufacturerUrl, author, 
-    maintainer) 
+    organism, species, prefix, outputDir, version, chipName, 
+    author, maintainer, manufacturer = "Manufacturer not specified", 
+    manufacturerUrl = "ManufacturerUrl not specified", tableName = "sequence", 
+    colName = "sequence") 
 stop("invalid call in method dispatch to \"makeDbX\" (no default method)", 
-    domain = NA)(probeList, organism, species, prefix, chipSrc, 
-    baseMapTableName, outputDir, version, manufacturer, chipName, 
-    manufacturerUrl, author, maintainer), class = structure("standardGeneric", package = "methods"))
+    domain = NA)(probeList, organism, species, prefix, outputDir, 
+    version, chipName, author, maintainer, manufacturer, manufacturerUrl, 
+    tableName, colName), class = structure("standardGeneric", package = "methods"))
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
