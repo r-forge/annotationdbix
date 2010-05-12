@@ -1,23 +1,20 @@
 \name{db1ConverterECOLIK12}
 \Rdversion{1.1}
 \alias{db1ConverterECOLIK12}
-%- Also NEED an '\alias' for EACH other topic documented here.
-\title{
-%%  ~~function to do ... ~~
-}
+\title{Convert .db0 packages into .db1 packages}
 \description{
-%%  ~~ A concise (1-5 lines) description of what the function does. ~~
+Each db1Converter method converts a .db0 database into a .db1 database for which it is designed. The suffix of the db1Converter method is named after the appropriate .db0 database. These .db1 packages are needed for the addNewAnnotationFromDb1() function to add its annotations to the .dbX package. For each .db0 database has its own db1Converter function to create. The db1Converter function must not change, delete or upgrade existing data from the .db0 database. It only add important tables. This ensures that a .db1 database can also be used as a .db0 database.
 }
 \usage{
-db1ConverterECOLIK12(connType, outputDir)
+db1ConverterXXX(connType, outputDir)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{connType}{
-%%     ~~Describe \code{connType} here~~
+The path and filename or a SQLiteConnection object to the .db0 database of interest.
 }
   \item{outputDir}{
-%%     ~~Describe \code{outputDir} here~~
+The path and name of the new generated .db1 file. The function automatically adds the suffix .db1.
 }
 }
 \details{
@@ -33,9 +30,7 @@ db1ConverterECOLIK12(connType, outputDir)
 \references{
 %% ~put references to the literature/web site here ~
 }
-\author{
-%%  ~~who you are~~
-}
+\author{N. Auer}
 \note{
 %%  ~~further notes~~
 }
