@@ -11,10 +11,10 @@ makeDbX(probeList, organism, species, prefix, outputDir, version, chipName, auth
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{probeList}{
-	Twocolumn list. On the left side probe ids and on the right side a unique identifier. For example the 
+	A twocolumn list. On the left side are the probe ids and on the right side are an unique identifier id. For example the nucleotid sequence.
 }
   \item{organism}{
-%%     ~~Describe \code{organism} here~~
+	The name of the organism e.g. Eschericha Coli
 }
   \item{species}{
 %%     ~~Describe \code{species} here~~
