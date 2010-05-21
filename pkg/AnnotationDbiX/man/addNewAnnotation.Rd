@@ -3,7 +3,7 @@
 \alias{addNewAnnotation}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-%%  ~~function to do ... ~~
+Add new Annotations to the .dbX database
 }
 \description{
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~

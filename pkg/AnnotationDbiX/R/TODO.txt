@@ -11,3 +11,5 @@ x deleteBimapObj eine Funktion für AnnDbBimaps hinzufügen
 o bei addNewAnnotation Transaction einfügen
 
 o testen, ob "" in IDs richtig erarbeitet werden
+
+o Paketname() gibt keine QC Daten aus
