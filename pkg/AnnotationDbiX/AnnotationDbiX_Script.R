@@ -17,17 +17,11 @@ cat('\nFüge der .dbX Datenbank die Annotationen aus der .db1 hinzu für Entrez 
 addNewAnnotationFromDb1(x='~/Desktop/ecoliK12CHIPEntrez.dbX/inst/extdata/ecoliK12CHIPEntrez.dbX',data=probe_entrez.list,mapT='probes',mapD='genes', dbSrc='ecoliK12v2.4.1.db1')
 
 cat('\nFüge der .dbX Datenbank die Annotationen aus der .db1 hinzu für Genbank IDs\n\n')
-addNewAnnotationFromDb1(x='~/Desktop/ecoliK12CHIPGenbank.dbX/inst/extdata/ecoliK12CHIPGenbank.dbX',data=probe_genbank.list,mapT='probes',mapD='genbank_id', dbSrc='ecoliK12v2.3.5.db1')
+addNewAnnotationFromDb1(x='~/Desktop/ecoliK12CHIPGenbank.dbX/inst/extdata/ecoliK12CHIPGenbank.dbX',data=probe_genbank.list,mapT='probes',mapD='genbank_id', dbSrc='ecoliK12v2.4.1.db1')
 
 cat('\nFüge neues Bimap-Objekt SEQUENCE hinzu\n\n')
 addBimapObj('~/Desktop/ecoliK12CHIPEntrez.dbX/inst/extdata/ecoliK12CHIPEntrez.dbX','SEQUENCE','probes','sequence')
 addBimapObj('~/Desktop/ecoliK12CHIPGenbank.dbX/inst/extdata/ecoliK12CHIPGenbank.dbX','SEQUENCE','probes','sequence')
-
-#addBimapObj('~/Desktop/ecoliK12CHIPGenbank.dbX/inst/extdata/ecoliK12CHIPGenbank.dbX','GENBANK','probes','sequence')
-#addBimapObj('~/Desktop/ecoliK12CHIPEntrez.dbX/inst/extdata/ecoliK12CHIPEntrez.dbX','ENTREZ','probes','sequence')
-
-#addBimapObj('~/Desktop/ecoliK12CHIPGenbank.dbX/inst/extdata/ecoliK12CHIPGenbank.dbX','GENBANK','probes','sequence')
-#addBimapObj('~/Desktop/ecoliK12CHIPEntrez.dbX/inst/extdata/ecoliK12CHIPEntrez.dbX','ENTREZ','probes','sequence')
 
 install.packages(pkgs='~/Desktop/ecoliK12CHIPEntrez.dbX/',repos=NULL)
 install.packages(pkgs='~/Desktop/ecoliK12CHIPGenbank.dbX/',repos=NULL)
@@ -57,19 +51,9 @@ makeDbX(feature.seq.list,'Eschericha Coli','EColi','ecoliK12CHIP','~/Desktop','0
 cat('\nFüge der .dbX Datenbank die Annotationen aus der .db1 hinzu für Entrez IDs\n\n')
 addNewAnnotationFromDb1(x='~/Desktop/ecoliK12CHIP.dbX/inst/extdata/ecoliK12CHIP.dbX',data=mergedEntrez,mapT='probes',mapD='genes', dbSrc='ecoliK12v2.4.1.db1')
 
-#a <- 
-#b <- toTable(ecoliK12CHIPEntrezACCNUM)
+addBimapObj('~/Desktop/ecoliK12CHIP.dbX/inst/extdata/ecoliK12CHIP.dbX','SEQUENCE','probes','sequence')
 
-#A <- toTable(ecoliK12CHIPGenbankENTREZID)
-#B <- toTable(ecoliK12CHIPGenbankACCNUM)
-
-#ab <- merge(a,b,by.x='probe_id',by.y='probe_id')
-#AB <- merge(A,B,by.x='probe_id',by.y='probe_id')
-
-#abAB <- merge(ab,AB,by.x='probe_id',by.y='probe_id')
-
-
-
+install.packages(pkgs='~/Desktop/ecoliK12CHIP.dbX/',repos=NULL)
 
 
 
