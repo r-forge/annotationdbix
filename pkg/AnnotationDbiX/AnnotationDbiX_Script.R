@@ -20,8 +20,8 @@ cat('\nFüge der .dbX Datenbank die Annotationen aus der .db1 hinzu für Genbank
 addNewAnnotationFromDb1(x='~/Desktop/ecoliK12CHIPGenbank.dbX/inst/extdata/ecoliK12CHIPGenbank.dbX',data=probe_genbank.list,mapT='probes',mapD='genbank_id', dbSrc='ecoliK12v2.3.5.db1')
 
 cat('\nFüge neues Bimap-Objekt SEQUENCE hinzu\n\n')
-addBimapObj('~/Desktop/ecoliK12CHIP.dbX/inst/extdata/ecoliK12CHIPEntrez.dbX','SEQUENCE','probes','sequence')
-addBimapObj('~/Desktop/ecoliK12CHIP.dbX/inst/extdata/ecoliK12CHIPGenbank.dbX','SEQUENCE','probes','sequence')
+addBimapObj('~/Desktop/ecoliK12CHIPEntrez.dbX/inst/extdata/ecoliK12CHIPEntrez.dbX','SEQUENCE','probes','sequence')
+addBimapObj('~/Desktop/ecoliK12CHIPGenbank.dbX/inst/extdata/ecoliK12CHIPGenbank.dbX','SEQUENCE','probes','sequence')
 
 #addBimapObj('~/Desktop/ecoliK12CHIPGenbank.dbX/inst/extdata/ecoliK12CHIPGenbank.dbX','GENBANK','probes','sequence')
 #addBimapObj('~/Desktop/ecoliK12CHIPEntrez.dbX/inst/extdata/ecoliK12CHIPEntrez.dbX','ENTREZ','probes','sequence')
@@ -38,16 +38,24 @@ library(ecoliK12CHIPEntrez.dbX)
 probeIDs <- as.data.frame(Lkeys(ecoliK12CHIPEntrezENTREZID),stringsAsFactors=FALSE)
 colnames(probeIDs) <- "probe_id"
 mergedEntrez <- merge(probeIDs,toTable(ecoliK12CHIPEntrezENTREZID),by.x='probe_id',by.y='probe_id',all.x=TRUE)
-mergedEntrez <- merge(probeIDs,toTable(ecoliK12CHIPGenbankENTREZID),by.x='probe_id',by.y='probe_id',all.x=TRUE)
+mergedEntrez <- unique(rbind(mergedEntrez,toTable(ecoliK12CHIPGenbankENTREZID)))
+mergedEntrez <- mergedEntrez[!is.na(mergedEntrez[[2]]),]
 
 # Dublikate EntrezIds zu den ProbeIds
 multiEntrez <- mergedEntrez[mergedEntrez[[1]] %in% mergedEntrez[duplicated(mergedEntrez[[1]]),1],]
 
 mergedGenbank <- merge(probeIDs,toTable(ecoliK12CHIPEntrezACCNUM),by.x='probe_id',by.y='probe_id',all.x=TRUE)
-mergedGenbank <- merge(probeIDs,toTable(ecoliK12CHIPGenbankACCNUM),by.x='probe_id',by.y='probe_id',all.x=TRUE)
+mergedGenbank <- merge(mergedGenbank,toTable(ecoliK12CHIPGenbankACCNUM),by.x='probe_id',by.y='probe_id',all.x=TRUE)
 
-# Dublikate EntrezIds zu den ProbeIds
+# Dublikate GenbankIds zu den ProbeIds
 multiGenbank <- mergedGenbank[mergedGenbank[[1]] %in% mergedGenbank[duplicated(mergedGenbank[[1]]),1],]
+
+# Neues Annotationspaket mit mehr IDs
+cat('\nErzeuge neue .dbX Datenbank mit Sequenzdaten und ProbeIDs für gemergetes Annotationspaket\n\n')
+makeDbX(feature.seq.list,'Eschericha Coli','EColi','ecoliK12CHIP','~/Desktop','0.1.0','Mo-Ferm','ecoliK12 Chip','www.derauer.net',author=c('Norbert Auer','Test Dummy'),maintainer='Norbert Auer <norbert@derauer.net>')
+
+cat('\nFüge der .dbX Datenbank die Annotationen aus der .db1 hinzu für Entrez IDs\n\n')
+addNewAnnotationFromDb1(x='~/Desktop/ecoliK12CHIP.dbX/inst/extdata/ecoliK12CHIP.dbX',data=mergedEntrez,mapT='probes',mapD='genes', dbSrc='ecoliK12v2.4.1.db1')
 
 #a <- 
 #b <- toTable(ecoliK12CHIPEntrezACCNUM)
@@ -55,10 +63,10 @@ multiGenbank <- mergedGenbank[mergedGenbank[[1]] %in% mergedGenbank[duplicated(m
 #A <- toTable(ecoliK12CHIPGenbankENTREZID)
 #B <- toTable(ecoliK12CHIPGenbankACCNUM)
 
-ab <- merge(a,b,by.x='probe_id',by.y='probe_id')
-AB <- merge(A,B,by.x='probe_id',by.y='probe_id')
+#ab <- merge(a,b,by.x='probe_id',by.y='probe_id')
+#AB <- merge(A,B,by.x='probe_id',by.y='probe_id')
 
-abAB <- merge(ab,AB,by.x='probe_id',by.y='probe_id')
+#abAB <- merge(ab,AB,by.x='probe_id',by.y='probe_id')
 
 
 

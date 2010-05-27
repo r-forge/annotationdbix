@@ -162,6 +162,7 @@ setMethod("addNewAnnotationFromDb1", signature("SQLiteConnection","data.frame","
 	
 	## Add helper table	
 	cat("Add helper table data_temp\n")
+	colnames(data) <- c("V1","V2")
 	dbWriteTable(conn=con,name="data_temp",value=unique(data),row.names=FALSE,overwrite=TRUE)	
 	
 	dbBeginTransaction(con)
@@ -193,7 +194,7 @@ setMethod("addNewAnnotationFromDb1", signature("SQLiteConnection","data.frame","
 				dyn <- paste("b.",tableInfoDb1[i,5])	
 			
 			sql <- paste("INSERT INTO ",tableInfoDb1[i,1]," SELECT m._id, ",dyn," FROM db1.",mapDb1TableName," a,db1.",tableInfoDb1[i,1]," b,data_temp d,",mapTableName," m WHERE m.",tableInfo[tableInfo$tablename==mapTableName,4]," = d.V1 AND a.",tableInfoDb1[tableInfoDb1$tablename==mapDb1TableName,5]," = d.V2 AND b._id == a._id",sep="")
-
+			
 			tryCatch(dbGetQuery(con,sql),error=function(e) 
 			{ 
 				dbRollback(con)
