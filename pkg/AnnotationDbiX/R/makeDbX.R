@@ -43,12 +43,12 @@ function(probeList,organism,species,prefix,outputDir,version,chipName,author,mai
 			LIC='Artistic-2.0',
 			#BIOCVIEWS=x@biocViews,
 			#DBFILE=chipSrc,
-			DBFILENEW=paste(prefix,".dbX",sep=""),
+			DBFILENEW=paste(prefix,".db",sep=""),
 			ANNDBIVERSION=ann_dbi_version
         )
         
     ## Create Package
-	createPackage(paste(prefix,'.dbX',sep=""),
+	createPackage(paste(prefix,'.db',sep=""),
 					destinationDir=outputDir,
 					originDir=template_path,
 					symbolValues=symvals,
@@ -58,9 +58,9 @@ function(probeList,organism,species,prefix,outputDir,version,chipName,author,mai
 	drv <- dbDriver("SQLite")
 	
 	## Generate Connection Object	
-	db_dir <- file.path(outputDir,paste(prefix,'.dbX',sep=""),'inst','extdata',prefix)
+	db_dir <- file.path(outputDir,paste(prefix,'.db',sep=""),'inst','extdata',prefix)
 	cat('Generates a sqlite file at',db_dir,'\n')
-	con <- dbConnect(drv, dbname = paste(db_dir,".dbX",sep=""))
+	con <- dbConnect(drv, dbname = paste(db_dir,".db",sep=""))
 	on.exit(dbDisconnect(con))
 	
 	## Drop existing tables

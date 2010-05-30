@@ -13,3 +13,9 @@ o bei addNewAnnotation Transaction einfügen
 o testen, ob "" in IDs richtig erarbeitet werden
 
 o Paketname() gibt keine QC Daten aus
+
+o metadata Table erzeugen
+
+o Schema an Datentypen.txt anpassen
+
+o Hilfe bearbeiten, um .dbX wieder zu .db zu machen
