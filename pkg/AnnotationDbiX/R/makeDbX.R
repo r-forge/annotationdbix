@@ -1,12 +1,12 @@
 ## Generates a .dbX package
 
 setGeneric("makeDbX", signature = c("probeList","organism","species","prefix","outputDir","version","chipName","author","maintainer"),
-	function(probeList,organism,species,prefix,outputDir,version,chipName,author,maintainer,manufacturer="Manufacturer not specified",manufacturerUrl="ManufacturerUrl not specified",tableName='sequence',colName='sequence') standardGeneric("makeDbX"))
+	function(probeList,organism,species,prefix,outputDir,version,chipName,author,maintainer,manufacturer="Manufacturer not specified",manufacturerUrl="ManufacturerUrl not specified",tableName='sequence',colName='sequence',link='') standardGeneric("makeDbX"))
 	
 ## FilePath
 setMethod("makeDbX",
 signature("data.frame","character","character","character","character","character","character","character","character"), 
-function(probeList,organism,species,prefix,outputDir,version,chipName,author,maintainer,manufacturer,manufacturerUrl,tableName,colName) 
+function(probeList,organism,species,prefix,outputDir,version,chipName,author,maintainer,manufacturer,manufacturerUrl,tableName,colName,link) 
 {	
 	
 	## Test parameters
@@ -18,6 +18,12 @@ function(probeList,organism,species,prefix,outputDir,version,chipName,author,mai
 	
 	if(colName == 'probe_id')
 		stop("'colName' must not be named 'probe_id'.")
+		
+	if(tableName == 'probes_temp' || tableName == 'probes')
+		stop("'tableName' must not be named 'probes_temp' or 'probes'.")
+		
+	if(grepl('meta',tableName))
+		stop("'tableName' must not contain 'meta' in the name.")
 
 	if(any(is.na(unique(probeList))))
 		stop("'probeList' must not contain NAs.")
@@ -46,36 +52,31 @@ function(probeList,organism,species,prefix,outputDir,version,chipName,author,mai
 			DBFILENEW=paste(prefix,".db",sep=""),
 			ANNDBIVERSION=ann_dbi_version
         )
-        
+    
+    ## Package Pathname
+    pkgName <- paste(prefix,'.db',sep="")
+    pkgPathName <- file.path(outputDir,pkgName)
+    
+    ## Test if package already exists
+	if(file.exists(pkgPathName))
+		stop('There already exists a package at ',pkgPathName,'. Remove it before.\n')
+		
     ## Create Package
-	createPackage(paste(prefix,'.db',sep=""),
+    cat('Create a new package at',pkgPathName,'.\n')
+	createPackage(  pkgName,
 					destinationDir=outputDir,
 					originDir=template_path,
-					symbolValues=symvals,
-					unlink=TRUE)                            
+					symbolValues=symvals)                            
 	                            
 	## Load SQLite Driver
 	drv <- dbDriver("SQLite")
 	
 	## Generate Connection Object	
-	db_dir <- file.path(outputDir,paste(prefix,'.db',sep=""),'inst','extdata',prefix)
-	cat('Generates a sqlite file at',db_dir,'\n')
-	con <- dbConnect(drv, dbname = paste(db_dir,".db",sep=""))
-	on.exit(dbDisconnect(con))
+	db_dir <- file.path(pkgPathName,'inst','extdata',paste(prefix,'.db',sep=""))
 	
-	## Drop existing tables
-	#sql <- "DROP TABLE IF EXISTS internal_id"
-	#dbGetQuery(con,sql)
-	sql <- paste("DROP TABLE IF EXISTS",tableName)
-	dbGetQuery(con,sql)
-	sql <- "DROP TABLE IF EXISTS meta"
-	dbGetQuery(con,sql)
-	sql <- "DROP TABLE IF EXISTS bimap_meta"
-	dbGetQuery(con,sql)
-	sql <- "DROP TABLE IF EXISTS probes_id"
-	dbGetQuery(con,sql)
-	sql <- "DROP TABLE IF EXISTS table_master_meta"
-	dbGetQuery(con,sql)
+	cat('Generates a sqlite file at',db_dir,'\n')
+	con <- dbConnect(drv, dbname = db_dir)
+	on.exit(dbDisconnect(con))
 	
 	## Add helper table	
 	cat("Add helper Table\n")
@@ -92,20 +93,10 @@ function(probeList,organism,species,prefix,outputDir,version,chipName,author,mai
 	sql <- "CREATE TABLE table_master_meta (tablename TEXT, fieldnames TEXT,links TEXT)"
 	dbGetQuery(con,sql)
 	
-	## Add Bimap table
-	#cat("Add bimap table\n")
-	#sql<-"CREATE TABLE bimap_meta(name TEXT PRIMARY KEY,table1 TEXT NOT NULL,table2 TEXT NOT NULL,tagname1 TEXT,tagname2 TEXT,comment TEXT,filter1 TEXT,filter2 TEXT)"
-	#dbGetQuery(con,sql)
-	
 	## Add User Defined table
 	cat("Add",tableName,"table\n")
 	sql <- paste("CREATE TABLE",tableName,"(_id INTEGER PRIMARY KEY,",colName,"TEXT NOT NULL)")
 	dbGetQuery(con,sql)
-	
-	## Add Main ID table
-	#cat("Add Main ID table\n")
-	#sql <- paste("CREATE TABLE internal_id (_id INTEGER PRIMARY KEY)")
-	#dbGetQuery(con,sql)
 	
 	## Add Probes table
 	cat("Add probes table\n")
@@ -117,11 +108,6 @@ function(probeList,organism,species,prefix,outputDir,version,chipName,author,mai
 	sql <- paste("INSERT INTO",tableName,"SELECT NULL,",colName,"FROM probes_temp GROUP BY",colName)
 	dbGetQuery(con,sql)
 	
-	## Fill internal ID table
-	#cat("Fill internal ID table\n")
-	#sql <- paste("INSERT INTO internal_id SELECT _id FROM",tableName)
-	#dbGetQuery(con,sql)
-	
 	## Fill Probes table
 	cat("Fill Probes table\n")
 	sql <- paste("INSERT INTO probes SELECT _id,probe_id FROM probes_temp p,",tableName," s WHERE p.",colName," = s.",colName," GROUP BY p.probe_id",seq="")
@@ -132,12 +118,15 @@ function(probeList,organism,species,prefix,outputDir,version,chipName,author,mai
 	sql <- paste("INSERT INTO meta (key,value) VALUES ('main_table','",tableName,"')")
 	dbGetQuery(con,sql)
 	
-	## Fill meta Table
-	cat("Fill meta Table\n")
-	sql <- paste("INSERT INTO table_master_meta (tablename,fieldnames,links) VALUES ('probes','probe_id','')")
+	## Fill table_master_meta Table
+	cat("Fill table_master_meta Table\n")
+	sql <- paste("INSERT INTO table_master_meta (tablename,fieldnames) VALUES ('probes','probe_id')")
 	dbGetQuery(con,sql)
-	sql <- paste("INSERT INTO table_master_meta (tablename,fieldnames,links) VALUES ('",tableName,"','",colName,"','')",sep="")
+	sql <- paste("INSERT INTO table_master_meta (tablename,fieldnames) VALUES ('",tableName,"','",colName,"')",sep="")
 	dbGetQuery(con,sql)
+	
+	## SetIdLink
+	setIdLink(con,tableName,link)
 	
 	## Create index for main and probes table
 	cat("Create index for main and probes table\n")
@@ -149,6 +138,17 @@ function(probeList,organism,species,prefix,outputDir,version,chipName,author,mai
 	## Remove Helper table
 	sql <- "DROP TABLE IF EXISTS probes_temp"
 	dbGetQuery(con,sql)	
+	
+	## Add metadata Table for interoperability with other functions
+	cat("Add metadata Table\n")
+	sql <- "CREATE TABLE metadata (name TEXT PRIMARY KEY, value TEXT NOT NULL)"
+	dbGetQuery(con,sql)
+	
+	## DBSCHEMA and DBSCHEMAVERSION must be defined
+	sql <- paste("INSERT INTO metadata (name,value) VALUES ('DBSCHEMA','",species,"_dbX_schema')",sep="")
+	dbGetQuery(con,sql)
+	sql <- paste("INSERT INTO metadata (name,value) VALUES ('DBSCHEMAVERSION','1.0')")
+	dbGetQuery(con,sql)
 })
 
 
