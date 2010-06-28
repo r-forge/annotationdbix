@@ -1,5 +1,7 @@
 import("AnnotationDbi")
 import("RSQLite")
+import("XML")
+import("biomaRt")
        
 exportMethods(
     "db1ConverterECOLIK12",
@@ -11,7 +13,10 @@ exportMethods(
     "addNewAnnotation",
     "addNewAnnotationFromDb1",
     "annotationPkgToHTML",
-    "setIdLink"
+    "setIdLink",
+    "getBioMartFromXML",
+    "getBioMartAttributes",
+    "getBioMartFilters"
 )
 export(
 	".createBimapObjs",

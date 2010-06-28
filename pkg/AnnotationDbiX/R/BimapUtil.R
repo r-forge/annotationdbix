@@ -1,5 +1,3 @@
-
-
 setGeneric("addBimapObj", signature = c("x","name","table1","table2"), function(x,name,table1,table2,comment="Added by addBimapObj()",tagname1="",tagname2="",filter1="",filter2="",revmap=FALSE) standardGeneric("addBimapObj"))
 
 setGeneric("deleteBimapObj", signature = c("x","name"), function(x,name) standardGeneric("deleteBimapObj"))
