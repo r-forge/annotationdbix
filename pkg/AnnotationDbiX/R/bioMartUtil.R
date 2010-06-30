@@ -8,6 +8,7 @@ setMethod("getBioMartFromXML", signature("character"), function(x)
 	
 	bioMart <- unlist(xpathApply(doc,"/Query",xmlAttrs))
 	dataset <- unlist(xpathApply(doc,"/Query/Dataset",xmlAttrs))
+	free(doc)
 	
 	Mart = useMart(bioMart['virtualSchemaName'], dataset = dataset['name'])
 
@@ -18,6 +19,9 @@ setMethod("getBioMartAttributes", signature("character"), function(x)
 	doc <- xmlRoot(xmlInternalTreeParse(x))
 	
 	Attributes <- unlist(xpathApply(doc,"/Query/Dataset/Attribute",xmlAttrs))
+	free(doc)
+	
+	return(Attributes)
 })
 
 setMethod("getBioMartFilters", signature("character"), function(x) 
@@ -25,9 +29,10 @@ setMethod("getBioMartFilters", signature("character"), function(x)
 	doc <- xmlRoot(xmlInternalTreeParse(x))
 	
 	Filters <- xpathApply(doc,"/Query/Dataset/Filter",xmlAttrs)	
+	free(doc)
 	
 	res1 <- sapply(Filters,function(x) {x[1]})
-		
+
 	res2 <- lapply(Filters,function(x) 
 		{
 			if(names(x[2]) == "excluded")

@@ -10,28 +10,8 @@
 ## filter = c() von IDs, welche die Hauptabelle filtert
 
 
-# TODO: HTML auf mehrere Seiten aufteilen
-
 setGeneric("annotationPkgToHTML", signature = c("x","caption","outputDir","mainTable"),
-	function(x,caption,outputDir,mainTable,tables=character(),filter=character(),onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css="",tableRows=50, ...) standardGeneric("annotationPkgToHTML"))
-	
-## FilePath
-setMethod("annotationPkgToHTML", signature("character","character","character","character"),
-function(x,caption,outputDir,mainTable,tables=character(),filter=character(),onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css="",tableRows=50) 
-{
-	## Check Parameters
-	if(!file.exists(x))
-		stop("Database do not exist!")
-	
-	## Load SQLite Driver
-	drv <- dbDriver("SQLite")
-	
-	## Generate Connection Object	
-	con <- dbConnect(drv, dbname = x)
-	on.exit(dbDisconnect(con))
-	
-	annotationPkgToHTML(con,caption,outputDir,mainTable,tables,onlyIDs,extdata,colOrder,css)
-})
+	function(x,caption,outputDir,mainTable,tables=character(),filter=character(),onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css="",tableRows=50) standardGeneric("annotationPkgToHTML"))
 
 setMethod("annotationPkgToHTML", signature(x="AnnDbBimap",caption="character",outputDir="character",mainTable="missing"),
 function(x,caption,outputDir,tables=character(),filter=character(),onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css="",tableRows=50) 
@@ -42,7 +22,7 @@ function(x,caption,outputDir,tables=character(),filter=character(),onlyIDs=FALSE
 	tables <- x@L2Rchain[[2]]@tablename 
 	
 	path <- strsplit(outputDir,.Platform$file.sep)[[1]]
-	
+	fileName <- path[length(path)]
 	path <- paste(path[1:(length(path)-1)],collapse=.Platform$file.sep)
 	
 	## Read meta
@@ -329,13 +309,32 @@ function(x,caption,outputDir,tables=character(),filter=character(),onlyIDs=FALSE
 	#}))
 })
 
+## FilePath
+setMethod("annotationPkgToHTML", signature("character","character","character","character"),
+function(x,caption,outputDir,mainTable,tables=character(),filter=character(),onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css="",tableRows=50) 
+{
+	## Check Parameters
+	if(!file.exists(x))
+		stop("Database do not exist!")
+	
+	## Load SQLite Driver
+	drv <- dbDriver("SQLite")
+	
+	## Generate Connection Object	
+	con <- dbConnect(drv, dbname = x)
+	on.exit(dbDisconnect(con))
+	
+	annotationPkgToHTML(con,caption,outputDir,mainTable,tables,onlyIDs,extdata,colOrder,css)
+})
+
+## SQLiteConnection
 setMethod("annotationPkgToHTML",signature("SQLiteConnection","character","character","character"),
 function(x,caption,outputDir,mainTable,tables=character(),filter=character(),onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css="",tableRows=50) 
 {	
 	con <- x
 
 	path <- strsplit(outputDir,.Platform$file.sep)[[1]]
-	
+	fileName <- path[length(path)]
 	path <- paste(path[1:(length(path)-1)],collapse=.Platform$file.sep)
 	
 	## Read meta
