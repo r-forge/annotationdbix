@@ -3,6 +3,7 @@
 \alias{addBimapObj}
 \alias{deleteBimapObj}
 \alias{listBimapObj}
+\alias{Bimap}
 \title{Handling Bimap objects in .dbX databases}
 \description{
 	In the following sections the handling of Bimap objects in .dbX databases is described.

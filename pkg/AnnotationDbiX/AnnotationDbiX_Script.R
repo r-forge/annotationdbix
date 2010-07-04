@@ -1,8 +1,8 @@
 library(AnnotationDbiX)
 
-probe_entrez.list <- read.table(file=system.file(package='AnnotationDbiX','data','probe_id_entrez_list'),sep=",",header= FALSE,stringsAsFactors= FALSE)
-probe_genbank.list <- read.table(file=system.file(package='AnnotationDbiX','data','probe_id_genbank_list'),sep=",",header= FALSE,stringsAsFactors= FALSE)  
-feature.seq.list <- read.table(file=system.file(package='AnnotationDbiX','data','feature.seq.list'),sep=",",header= FALSE,stringsAsFactors= FALSE) 
+probe_entrez.list <- read.table(file=system.file(package='AnnotationDbiX','data','probe_id_entrez_list'),sep="\t",header= FALSE,stringsAsFactors= FALSE)
+probe_genbank.list <- read.table(file=system.file(package='AnnotationDbiX','data','probe_id_genbank_list'),sep="\t",header= FALSE,stringsAsFactors= FALSE)  
+feature.seq.list <- read.table(file=system.file(package='AnnotationDbiX','data','feature.seq.list'),sep="\t",header= FALSE,stringsAsFactors= FALSE) 
 
 cat('\nErzeuge aus .db0 .db1 Datenbank\n\n')
 db1ConverterECOLIK12 (system.file (package='AnnotationDbiX','data','ecoliK12v2.4.1.sqlite'),'./ecoliK12v2.4.1')
