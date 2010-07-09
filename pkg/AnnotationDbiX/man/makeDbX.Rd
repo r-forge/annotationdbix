@@ -1,6 +1,7 @@
 \name{makeDbX}
 \Rdversion{1.1}
 \alias{makeDbX}
+\alias{makeDbX-methods}
 \title{Generates a extendend annotation database skeleton}
 \description{
 	In the following sections the generation of extendend SQLite based annotation packages from type .db is described.
@@ -11,7 +12,8 @@ makeDbX(probeList, organism, species, prefix, outputDir, version,
     manufacturer = "Manufacturer not specified", 
     manufacturerUrl = "ManufacturerUrl not specified", 
     tableName = "sequence", 
-    colName = "sequence")
+    colName = "sequence",
+    link = "")
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -54,6 +56,9 @@ makeDbX(probeList, organism, species, prefix, outputDir, version,
 }
   \item{colName}{
 	How the right column of the new table should be named. This name is important for generating new \link[=Bimap]{Bimap objects}}. The names \strong{\dQuote{_id}} and \strong{\dQuote{probe_id}} are reserved.
+  \item{link}{
+    A HTML link to a web resource associating to the kind of data which is used. See \code{\link{setIdLink}} for more details.
+}
 }
 
 \details{
@@ -75,7 +80,7 @@ makeDbX(probeList, organism, species, prefix, outputDir, version,
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-	\code{\link{makeDBPackage}}, \code{\link{addNewAnnotationFromDb1}}, \code{\link{addNewAnnotation}} and \code{\link{addBimapObj}}
+	\code{\link{makeDBPackage}}, \code{\link{addNewAnnotationFromDb1}}, \code{\link{addNewAnnotation}}, \code{\link{setIdLink}} and \code{\link{addBimapObj}}
 }
 \examples{
 \dontrun{

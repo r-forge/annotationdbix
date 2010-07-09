@@ -1,9 +1,12 @@
-\name{db1ConverterECOLIK12}
+\name{db1ConverterXXX}
 \Rdversion{1.1}
+\alias{db1Converter}
+\alias{db1ConverterXXX}
 \alias{db1ConverterECOLIK12}
+\alias{db1ConverterECOLIK12-methods}
 \title{Convert .db0 packages into .db1 packages}
 \description{
-Each db1Converter method converts a .db0 database into a .db1 database for which it is designed. The suffix of the db1Converter method is named after the appropriate .db0 database. These .db1 packages are needed for the addNewAnnotationFromDb1() function to add its annotations to the .dbX package. For each .db0 database has its own db1Converter function to create. The db1Converter function must not change, delete or upgrade existing data from the .db0 database. It only add important tables. This ensures that a .db1 database can also be used as a .db0 database.
+Each \code{db1ConverterXXX} method converts a .db0 database into a .db1 SQLite database.
 }
 \usage{
 db1ConverterXXX(connType, outputDir)
@@ -18,19 +21,15 @@ The path and name of the new generated .db1 file. The function automatically add
 }
 }
 \details{
-%%  ~~ If necessary, more details than the description above ~~
+The Bioconductor Project supports many different organism and species with annotation packages. These packages have a .db0 suffix. To check which .db0 packages are available use the \code{available.chipdbschemas} function. To use such annotation packages with the AnnotationDbiX package these packages have to convert into a correct .db1 package. Because each .db0 database differs in the data it stores and there are no concrete rules how the database have to be structured it is not possible to define a generic function that works for all .db0 packages. Therefore, for each .db0 package an aligned \code{db1ConverterXXX} function have to be written. See the \sQuote{How to build a .db1 database from a .db0 database} vignette for more details. These .db1 packages are needed for the \code{addNewAnnotationFromDb1} function to add its annotations to the extendend .db package. The \code{db1ConverterXXX} function do not change, delete or upgrade any existing data from the .db0 database. It only add important tables for the \code{addNewAnnotationFromDb1} function. Therefore, a .db1 database can be further used as a .db0 database.
 }
 \value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
+If the function succeed it returns TRUE.
 }
 \references{
 %% ~put references to the literature/web site here ~
 }
-\author{N. Auer}
+\author{N. Auer \email{norbert@derauer.net}}
 \note{
 %%  ~~further notes~~
 }
@@ -38,22 +37,15 @@ The path and name of the new generated .db1 file. The function automatically add
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
+	\code{\link{makeDBPackage}}, \code{\link{addNewAnnotationFromDb1}}, \code{\link{addNewAnnotation}} and the \sQuote{\emph{How to build a .db1 database from a .db0 database}} vignette.
 }
 \examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
-
-## The function is currently defined as
-structure(function (connType, outputDir) 
-standardGeneric("db1ConverterECOLIK12"), generic = structure("db1ConverterECOLIK12", package = "AnnotationDbiX"), package = "AnnotationDbiX", group = list(), valueClass = character(0), signature = c("connType", 
-"outputDir"), default = <S4 object of class structure("MethodsList", package = "methods")>, skeleton = function (connType, 
-    outputDir) 
-stop("invalid call in method dispatch to \"db1ConverterECOLIK12\" (no default method)", 
-    domain = NA)(connType, outputDir), class = structure("standardGeneric", package = "methods"))
-}
+\dontrun{
+db1ConverterECOLIK12 (system.file (package='AnnotationDbiX',
+        'data','ecoliK12v2.4.1.sqlite'), 
+    outputDir='./ecoliK12v2.4.1')
+}}
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+\keyword{IO}
+\keyword{utilities}

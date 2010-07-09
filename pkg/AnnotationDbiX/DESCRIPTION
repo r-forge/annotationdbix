@@ -3,8 +3,8 @@ Type: Package
 Title: What the package does (short line)
 Version: 1.0
 Date: 2010-01-03
-Author: Who wrote it
-Maintainer: Who to complain to <yourfault@somewhere.net>
+Author: Norbert Auer <norbert@derauer.net>
+Maintainer: Norbert Auer <norbert@derauer.net>
 Description: More about what it does (maybe more than one line)
 License: What license is it under?
 LazyLoad: yes

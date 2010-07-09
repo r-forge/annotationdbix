@@ -3,7 +3,7 @@
 \alias{addNewAnnotation}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Add new Annotations to the .dbX database
+Add new Annotations to the extendend SQLite annotation database
 }
 \description{
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
@@ -26,6 +26,8 @@ addNewAnnotation(x, data, newTableName, data.colNames, mapTableName)
 %%     ~~Describe \code{data.colNames} here~~
 }
   \item{mapTableName}{
+%%     ~~Describe \code{mapTableName} here~~
+	\item{tableTypeLength}{
 %%     ~~Describe \code{mapTableName} here~~
 }
 }

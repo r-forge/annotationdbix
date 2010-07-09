@@ -193,4 +193,6 @@ setMethod("db1ConverterECOLIK12", signature("SQLiteConnection","missing"), funct
 
 	sql <- paste("INSERT INTO bimap_meta VALUES ('SYMBOL','probes','gene_info','','','','','',1)",sep="")
 	dbGetQuery(connType,sql)
+	
+	return(TRUE)
 })

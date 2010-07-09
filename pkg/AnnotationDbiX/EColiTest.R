@@ -1,34 +1,34 @@
-library(ecoliK12CHIP.dbX)
+library(ecoliK12Test.db)
 
-ecoliK12CHIPMAPCOUNTS
-ls("package:ecoliK12CHIP.dbX")
-all_probes <- ls(ecoliK12CHIPENTREZID)
+ecoliK12TestMAPCOUNTS
+ls("package:ecoliK12Test.db")
+all_probes <- ls(ecoliK12TestENTREZID)
 length(all_probes)
-ecoliK12CHIPENTREZID$"ACBT-Ecoli-07:Cons-O-01:A-01"
+ecoliK12TestENTREZID$"ACBT-Ecoli-07:Cons-O-01:A-01"
 probes <- sample(all_probes, 5)
 probes
 
-syms <- unlist(mget(probes, ecoliK12CHIPALIAS))
+syms <- unlist(mget(probes, ecoliK12TestALIAS))
 syms
 
-unlist(mget(probes, ecoliK12CHIPREFSEQ))
-unlist(mget(probes, ecoliK12CHIPENTREZID))
+unlist(mget(probes, ecoliK12TestREFSEQ))
+unlist(mget(probes, ecoliK12TestENTREZID))
 
-zz <- as.list(ecoliK12CHIPALIAS)
+zz <- as.list(ecoliK12TestALIAS)
 
-unlist(mget(syms, revmap(ecoliK12CHIPALIAS)))
+unlist(mget(syms, revmap(ecoliK12TestALIAS)))
 
-as.list(revmap(ecoliK12CHIPPATH)[1])
+as.list(revmap(ecoliK12TestPATH)[1])
 
-x <- ecoliK12CHIPPATH
-revx <- ecoliK12CHIPPATH2PROBE
+x <- ecoliK12TestPATH
+revx <- ecoliK12TestPATH2PROBE
 revx2 <- revmap(x, objName="PATH2PROBE")
 revx2
 identical(revx, revx2)
 
 as.list(revx[1])
 
-toTable(ecoliK12CHIPGO_ALL[probes])
+toTable(ecoliK12TestGO_BP_ALL[probes])
 toTable(x)[1:6,]
 
 "%w/o%" <- function(x,y) x[!x %in% y] #--  x without y
@@ -53,7 +53,7 @@ phenoData <- new("AnnotatedDataFrame",
                  data=pData, varMetadata=metadata)
 phenoData
 
-annotation = "ecoliK12CHIP"
+annotation = "ecoliK12Test"
 
 experimentData <- new("MIAME",
   name="Gerald Striedner",
@@ -70,16 +70,16 @@ exampleSet <- new("ExpressionSet",
                   exprs=exprs, 
                   phenoData=phenoData, 
                   experimentData=experimentData,
-                  annotation="ecoliK12CHIP")
+                  annotation="ecoliK12Test")
 
 
-entrezIds <- mget(featureNames(exampleSet), envir=ecoliK12CHIPENTREZID)
+entrezIds <- mget(featureNames(exampleSet), envir=ecoliK12TestENTREZID)
 haveEntrezId <- names(entrezIds[!is.na(entrezIds)])
 #haveEntrezId <- names(entrezIds)[sapply(entrezIds, function(x) !is.na(x))]
 numNoEntrezId <- length(featureNames(exampleSet)) - length(haveEntrezId)
 exampleSet <- exampleSet[haveEntrezId, ]
 
-haveGo <- sapply(mget(featureNames(exampleSet), ecoliK12CHIPGO_ALL),
+haveGo <- sapply(mget(featureNames(exampleSet), ecoliK12TestGO_BP_ALL),
                  function(x) {
                      if (length(x) == 1 && is.na(x)) 
                        FALSE 
@@ -99,7 +99,7 @@ library(annotate)
 
 numNsWithDups <- length(featureNames(nsFiltered))
 nsFilteredIqr <- exampleSetIqr[selected]
-uniqGenes <- findLargest(featureNames(nsFiltered), nsFilteredIqr, "ecoliK12CHIP")
+uniqGenes <- findLargest(featureNames(nsFiltered), nsFilteredIqr, "ecoliK12Test")
 nsFiltered <- nsFiltered[uniqGenes, ]
 numSelected <- length(featureNames(nsFiltered))
 
@@ -112,7 +112,7 @@ cols = brewer.pal(10, "RdBu")
 
 coliUniverse <- featureNames(nsFiltered)
 
-temp <- unlist(mget(coliUniverse, ecoliK12CHIPENTREZID))
+temp <- unlist(mget(coliUniverse, ecoliK12TestENTREZID))
 entrezUniverse <- temp[!is.na(temp)]
 
 entrezUniverse <- entrezUniverse[!duplicated(entrezUniverse)]
@@ -122,7 +122,7 @@ if (any(duplicated(entrezUniverse)))
 
 ## Also define an alternate universe based on the entire chip
 chipColiUniverse <- featureNames(exampleSet)
-chipEntrezUniverse <- mget(chipColiUniverse, ecoliK12CHIPENTREZID)
+chipEntrezUniverse <- mget(chipColiUniverse, ecoliK12TestENTREZID)
 chipEntrezUniverse <- unique(unlist(chipEntrezUniverse)) 
 
 ttestCutoff <- 0.05
@@ -132,15 +132,15 @@ smPV = ttests$p.value < ttestCutoff
 
 pvalFiltered <- nsFiltered[smPV, ]
 selectedEntrezIds <- unlist(mget(featureNames(pvalFiltered),
-                                 ecoliK12CHIPENTREZID))
+                                 ecoliK12TestENTREZID))
 selectedSymbols <- unlist(mget(featureNames(pvalFiltered),
-                                 ecoliK12CHIPSYMBOL))
+                                 ecoliK12TestSYMBOL))
 
 hgCutoff <- 0.05
 params <- new("GOHyperGParams",
               geneIds=selectedEntrezIds,
               universeGeneIds=entrezUniverse,
-              annotation="ecoliK12CHIP.db",
+              annotation="ecoliK12Test.db",
               ontology="BP",
               pvalueCutoff=hgCutoff,
               conditional=FALSE,
@@ -186,7 +186,7 @@ sigCategories <- function(res, p) {
 }
 
 featureNames(exampleSet)[1:10] -> featnam
-ids <- getPMID(featnam,"ecoliK12CHIP")
+ids <- getPMID(featnam,"ecoliK12Test")
 ids = unlist(ids, use.name=F)
 ids = unique(ids[!is.na(as.numeric(ids))])
 

@@ -4,7 +4,7 @@ setGeneric("deleteBimapObj", signature = c("x","name"), function(x,name) standar
 
 setGeneric("listBimapObj", signature = c("x"), function(x) standardGeneric("listBimapObj"))
 
-setGeneric("setfilterBimapObj", signature = c("x","name","bimap","filter"), function(x,name,bimap,filter,comment="Added by filterBimapObj()") standardGeneric("setfilterBimapObj"))
+setGeneric("setFilterBimapObj", signature = c("x","name","bimap","filter"), function(x,name,bimap,filter,comment="Added by setFilterBimapObj()") standardGeneric("setFilterBimapObj"))
 
 setGeneric("setIdLink", signature = c("x","table","link"), function(x,table,link) standardGeneric("setIdLink"))
 
@@ -200,7 +200,7 @@ setMethod("listBimapObj", signature("SQLiteConnection"), function(x)
 ## Add special filtered BiMapObjects to the Database
 
 ## FilePath
-setMethod("setfilterBimapObj", signature(x="character",name="character",bimap="AnnDbBimap",filter="character"), function(x,name,bimap,filter,comment="Added by filterBimapObj()") 
+setMethod("setFilterBimapObj", signature(x="character",name="character",bimap="AnnDbBimap",filter="character"), function(x,name,bimap,filter,comment="Added by filterBimapObj()") 
 {
 	## Check Parameter
 	if(!file.exists(x))
@@ -213,12 +213,12 @@ setMethod("setfilterBimapObj", signature(x="character",name="character",bimap="A
 	con <- dbConnect(drv, dbname = x)
 	on.exit(dbDisconnect(con))
 	
-	setfilterBimapObj(con,name,bimap,filter,comment)
+	setFilterBimapObj(con,name,bimap,filter,comment)
 })
 
 
 ## DB-Connection
-setMethod("setfilterBimapObj", signature(x="SQLiteConnection",name="character",bimap="AnnDbBimap",filter="character"), function(x,name,bimap,filter,comment="Added by fliterBimapObj()") 
+setMethod("setFilterBimapObj", signature(x="SQLiteConnection",name="character",bimap="AnnDbBimap",filter="character"), function(x,name,bimap,filter,comment="Added by setFilterBimapObj()") 
 {	
 	con <- x;
 	
@@ -296,19 +296,11 @@ setMethod("setIdLink", signature("SQLiteConnection","character","character"), fu
 	if(table != result[[1]][1])
 		stop("Table '",table,"' is not listed in 'table_master_meta'.\n")		
 	
-	## Check if $ID is set in the link
-	#if(length(grep("\\$ID",link)) == 0)
-	#	stop("There is no $ID Tag in the link. This tag will be replaced with the ids from the .dbX database\n")	
-	# fixed link allowed
-	
 	if(length(link) != length(strsplit(result[[2]],";")[[1]]))
 	
 	for(i in 1:length(strsplit(result[[2]],";")[[1]]))
 		if(is.na(link[i]))
 			link[i] <- ""
-			
-	print(link)
-	print(length(link))
 	
 	## Concatenate all links to one string
 	link <- paste(link,collapse="|")

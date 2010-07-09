@@ -2,9 +2,6 @@
 
 ## TODO: In Zukunft statt der probe_id die primer seq. verwenden, die ist 100% unique
 
-## Load Library
-#require("RSQLite")
-
 # x					dbConn() - Objekt oder Pfad
 # data				Liste mit neuen AnnotationDaten 1.Spalte Ids die im Package bereits vorhanden sind; 2 Spalte neue Ids
 # newTableName		Neuer Tablename
@@ -12,12 +9,12 @@
 # mapTableName		Name der Table auf die gematched wird
 # dbSrc				.db1 Datenbank Pfad oder dbConn() Objekt
 
-setGeneric("addNewAnnotation", signature = c("x","data","newTableName","data.colNames","mapTableName"),function(x,data,newTableName,data.colNames,mapTableName) standardGeneric("addNewAnnotation"))
+setGeneric("addNewAnnotation", signature = c("x","data","newTableName","data.colNames","mapTableName"),function(x,data,newTableName,data.colNames,mapTableName,tableTypeLength) standardGeneric("addNewAnnotation"))
 
 setGeneric("addNewAnnotationFromDb1", signature = c("x","data","mapTableName","mapDb1TableName","dbSrc"),function(x,data,mapTableName,mapDb1TableName,dbSrc) standardGeneric("addNewAnnotationFromDb1"))
 
 ## FilePath
-setMethod("addNewAnnotation", signature("character","data.frame","character","character","character"), function(x,data,newTableName,data.colNames,mapTableName) 
+setMethod("addNewAnnotation", signature("character","data.frame","character","character","character"), function(x,data,newTableName,data.colNames,mapTableName,tableTypeLength) 
 {
 	## Check Parameters
 	if(!file.exists(x))
@@ -30,14 +27,20 @@ setMethod("addNewAnnotation", signature("character","data.frame","character","ch
 	con <- dbConnect(drv, dbname = x)
 	on.exit(dbDisconnect(con))
 	
-	addNewAnnotation(con,data,newTableName,data.colNames,mapTableName)
+	addNewAnnotation(con,data,newTableName,data.colNames,mapTableName,tableTypeLength)
 })
 
 ## SQLite-Connection
-setMethod("addNewAnnotation", signature("SQLiteConnection","data.frame","character","character","character"), function(x,data,newTableName,data.colNames,mapTableName) 
+setMethod("addNewAnnotation", signature("SQLiteConnection","data.frame","character","character","character"), function(x,data,newTableName,data.colNames,mapTableName,tableTypeLength) 
 {	
 	con <- x
 	
+	## Check if tableTypeLength is integer
+	if(!missing(tableTypeLength))
+		if(!isTRUE(all.equal(as.integer(tableTypeLength), tableTypeLength)))
+			stop("'tableTypeLength' must be from type integer\n")
+
+	## Check if table already exists
 	if(dbExistsTable(con,newTableName))
 		stop("Table '",newTableName,"' already exists\n")
 	
@@ -53,23 +56,40 @@ setMethod("addNewAnnotation", signature("SQLiteConnection","data.frame","charact
 	main_table <- meta[meta$key == 'main_table','value']
 	
 	if(!(mapTableName %in% tableInfo[[1]]))
-	stop("There is no table named ",mapTableName)
-
+		stop("There is no table named ",mapTableName)
+	
+	data <- unique(data[,1:(length(data.colNames)+1)])
 	colnames(data) <- c(as.character(tableInfo[tableInfo$tablename == mapTableName,'mainCol'][1]),data.colNames)
 	
+	## Check maximum length of data rows
+	max.colLength <- apply(data[-1],2,function(x) max(nchar(x)))
+	
+	if(missing(tableTypeLength))
+		tableTypeLength <- max.colLength
+		
+	## Test if vector length are equal
+	if(length(tableTypeLength) != length(max.colLength))
+		stop("Vector length of 'tableTypeLength' must be as long as ncol(data)-1\n")
+		
+	## Test if length of data rows <= 
+	if(!all(tableTypeLength >= max.colLength))
+		stop("There are data entrys longer than in 'tableTypeLength' defined\n")
+				
 	## Add helper table	
-	data[which(data[[2]] == ""),2] <- NA
+	if(length(ind<-which(data[[2]] == "")) != 0)
+		data[ind,2] <- NA
+		
 	cat("Add helper table ",newTableName,"_temp\n",sep="")
-	dbWriteTable(conn=con,name=paste(newTableName,"_temp",sep=""),value=unique(data),row.names=FALSE,overwrite=TRUE)	
+	dbWriteTable(conn=con,name=paste(newTableName,"_temp",sep=""),value=data,row.names=FALSE,overwrite=TRUE)	
 	
 	## Create new table
 	cat("Create new table",newTableName,"\n")
 	if(length(data.colNames[-1]) != 0)
-		dyn <- paste(",",paste(data.colNames[-1],"TEXT",collapse=","))
+		dyn <- paste(",",paste(data.colNames[-1],"VARCHAR(",tableTypeLength[-1],")",collapse=","))
 	else
 		dyn <- ""
 		
-	sql <- paste("CREATE TABLE",newTableName,"(_id INTEGER REFERENCES ",main_table,"(_id) NOT NULL,",colnames(data)[2]," TEXT NOT NULL",dyn,")")
+	sql <- paste("CREATE TABLE ",newTableName," (_id INTEGER NOT NULL,",colnames(data)[2]," VARCHAR(",tableTypeLength[1],") NOT NULL",dyn,",FOREIGN KEY (_id) REFERENCES ",main_table," (_id))",sep="")
 	dbGetQuery(con,sql)
 	
 	## Fill new table
@@ -86,13 +106,14 @@ setMethod("addNewAnnotation", signature("SQLiteConnection","data.frame","charact
 	## Update table_master_meta
 	cat("Update table_master_meta\n")
 	sql <- paste("INSERT INTO table_master_meta VALUES('",newTableName,"','",paste(data.colNames,collapse=";"),"','",paste(rep('|',length(data.colNames)-1),collapse=''),"')",sep="")
-	print(sql)
 	dbGetQuery(con,sql)
 	
 	## Remove helper table
 	cat("Remove helper table\n")
 	sql <- paste("DROP TABLE ",newTableName,"_temp",sep="")
 	dbGetQuery(con,sql)
+	
+	return(TRUE)
 })
 
 ## FilePath 
