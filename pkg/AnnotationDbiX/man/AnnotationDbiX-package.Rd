@@ -2,10 +2,7 @@
 \alias{AnnotationDbiX-package}
 \alias{AnnotationDbiX}
 \docType{package}
-\title{T2
-What the package does (short line)
-~~ package title ~~
-}
+\title{T2}
 \description{
 More about what it does (maybe more than one line)
 ~~ A concise (1-5 lines) description of the package ~~
@@ -24,7 +21,7 @@ Depends: \tab methods\cr
 ~~ functions ~~
 }
 \author{
-Who wrote it
+N. Auer \email{norbert@derauer.net}
 
 Maintainer: Who to complain to <yourfault@somewhere.net>
 ~~ The author and/or maintainer of the package ~~
@@ -40,5 +37,5 @@ Maintainer: Who to complain to <yourfault@somewhere.net>
 ~~ \code{\link[<pkg>:<pkg>-package]{<pkg>}} ~~
 }
 \examples{
-~~ simple examples of the most important functions ~~
+
 }

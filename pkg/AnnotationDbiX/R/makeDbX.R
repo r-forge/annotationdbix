@@ -1,9 +1,9 @@
 ## Generates a .dbX package
 
-setGeneric("makeDbX",signature = c("probeList","organism","species","prefix","outputDir","version","chipName","author","maintainer"),function(probeList,organism,species,prefix,outputDir,version,chipName,author,maintainer,manufacturer="Manufacturer not specified",manufacturerUrl="ManufacturerUrl not specified",tableName='sequence',colName='sequence',link='') standardGeneric("makeDbX"))
+setGeneric("makeDbX",signature = c("probeList","organism","species","prefix","outputDir","version","chipName","author","maintainer"),function(probeList,organism,species,prefix,outputDir,version,chipName,author,maintainer,manufacturer="Manufacturer not specified",manufacturerUrl="ManufacturerUrl not specified",newTableName='sequence',colName='sequence',bimapName,link='') standardGeneric("makeDbX"))
 	
 ## FilePath
-setMethod("makeDbX",signature("data.frame","character","character","character","character","character","character","character","character"),function(probeList,organism,species,prefix,outputDir,version,chipName,author,maintainer,manufacturer,manufacturerUrl,tableName,colName,link) 
+setMethod("makeDbX",signature("data.frame","character","character","character","character","character","character","character","character"),function(probeList,organism,species,prefix,outputDir,version,chipName,author,maintainer,manufacturer,manufacturerUrl,newTableName,colName,bimapName,link) 
 {	
 	
 	## Test parameters
@@ -16,14 +16,23 @@ setMethod("makeDbX",signature("data.frame","character","character","character","
 	if(colName == 'probe_id' || colName == '_id')
 		stop("'colName' must not be named 'probe_id'.")
 		
-	if(tableName == 'probes_temp' || tableName == 'probes')
-		stop("'tableName' must not be named 'probes_temp' or 'probes'.")
+	if(newTableName == 'probes_temp' || newTableName == 'probes')
+		stop("'newTableName' must not be named 'probes_temp' or 'probes'.")
 		
-	if(grepl('meta',tableName))
-		stop("'tableName' must not contain 'meta' in the name.")
+	if(grepl('meta',newTableName))
+		stop("'newTableName' must not contain 'meta' in the name.")
 
 	if(any(is.na(unique(probeList))))
 		stop("'probeList' must not contain NAs.")
+		
+	if(!missing(bimapName))
+		if(is.character(bimapName))
+		{
+			if(length(bimapName) > 1)
+				stop(paste("length(",bimapName,") must be 1.",sep=""))
+		}
+		else
+			stop(paste("'",bimapName,"' must be from type 'character'.",sep=""))
 				
 	## Prepare .dbX creation
 	template_path <- system.file("Pkg-template",package="AnnotationDbiX")
@@ -87,8 +96,8 @@ setMethod("makeDbX",signature("data.frame","character","character","character","
 	dbGetQuery(con,sql)
 	
 	## Add User Defined table
-	cat("Add",tableName,"table\n")
-	sql <- paste("CREATE TABLE",tableName,"(_id INTEGER PRIMARY KEY,",colName,"VARCHAR(255) NOT NULL)")
+	cat("Add",newTableName,"table\n")
+	sql <- paste("CREATE TABLE",newTableName,"(_id INTEGER PRIMARY KEY,",colName,"VARCHAR(255) NOT NULL)")
 	dbGetQuery(con,sql)
 	
 	## Add Probes table
@@ -97,35 +106,35 @@ setMethod("makeDbX",signature("data.frame","character","character","character","
 	dbGetQuery(con,sql)
 	
 	## Fill User Defined table
-	cat("Fill",tableName,"table\n")
-	sql <- paste("INSERT INTO",tableName,"SELECT NULL,",colName,"FROM probes_temp GROUP BY",colName)
+	cat("Fill",newTableName,"table\n")
+	sql <- paste("INSERT INTO",newTableName,"SELECT NULL,",colName,"FROM probes_temp GROUP BY",colName)
 	dbGetQuery(con,sql)
 	
 	## Fill Probes table
 	cat("Fill Probes table\n")
-	sql <- paste("INSERT INTO probes SELECT _id,probe_id FROM probes_temp p,",tableName," s WHERE p.",colName," = s.",colName," GROUP BY p.probe_id",sep="")
+	sql <- paste("INSERT INTO probes SELECT _id,probe_id FROM probes_temp p,",newTableName," s WHERE p.",colName," = s.",colName," GROUP BY p.probe_id",sep="")
 	dbGetQuery(con,sql)
 	
 	## Fill meta Table
 	cat("Fill meta Table\n")
-	sql <- paste("INSERT INTO meta (key,value) VALUES ('main_table','",tableName,"')")
+	sql <- paste("INSERT INTO meta (key,value) VALUES ('main_table','",newTableName,"')")
 	dbGetQuery(con,sql)
 	
 	## Fill table_master_meta Table
 	cat("Fill table_master_meta Table\n")
 	sql <- paste("INSERT INTO table_master_meta (tablename,fieldnames) VALUES ('probes','probe_id')")
 	dbGetQuery(con,sql)
-	sql <- paste("INSERT INTO table_master_meta (tablename,fieldnames) VALUES ('",tableName,"','",colName,"')",sep="")
+	sql <- paste("INSERT INTO table_master_meta (tablename,fieldnames) VALUES ('",newTableName,"','",colName,"')",sep="")
 	dbGetQuery(con,sql)
 	
 	## SetIdLink
-	setIdLink(con,tableName,link)
+	setIdLink(con,newTableName,link)
 	
 	## Create index for main and probes table
 	cat("Create index for main and probes table\n")
-	sql <- paste("CREATE INDEX F",tableName," ON ",tableName,"(_id)",sep="")
+	sql <- paste("CREATE INDEX F",newTableName," ON ",newTableName,"(_id)",sep="")
 	dbGetQuery(con,sql)	
-	sql <- paste("CREATE INDEX FPROBES ON ",tableName,"(_id)",sep="")
+	sql <- paste("CREATE INDEX FPROBES ON ",newTableName,"(_id)",sep="")
 	dbGetQuery(con,sql)	
 	
 	## Remove Helper table
@@ -137,13 +146,25 @@ setMethod("makeDbX",signature("data.frame","character","character","character","
 	sql <- "CREATE TABLE metadata (name VARCHAR(40) PRIMARY KEY,value VARCHAR(80) NOT NULL)"
 	dbGetQuery(con,sql)
 	
+	## Add the first Bimap if bimapName was defined
+	addBimapObj(con,bimapName,'probes',newTableName)
+		
+	## Add map_counts Table for interoperability with other functions
+	cat("Add map_counts Table\n")
+	sql <- "CREATE TABLE map_counts (map_name VARCHAR(80) PRIMARY KEY,count INTEGER NOT NULL)"
+	dbGetQuery(con,sql)
+	
+	sql <- "INSERT INTO map_counts SELECT 'TOTAL',COUNT(*) FROM probes"
+	dbGetQuery(con,sql)
+	
+	sql <- paste("INSERT INTO map_counts SELECT '",bimapName,"',COUNT(*) FROM probes",sep="")
+	dbGetQuery(con,sql)
+	
 	## DBSCHEMA and DBSCHEMAVERSION must be defined for compatibility
 	sql <- paste("INSERT INTO metadata (name,value) VALUES ('DBSCHEMA','",species,"_dbX_schema')",sep="")
 	dbGetQuery(con,sql)
 	sql <- paste("INSERT INTO metadata (name,value) VALUES ('DBSCHEMAVERSION','1.0')")
 	dbGetQuery(con,sql)
-	
+		
 	return(TRUE)
 })
-
-

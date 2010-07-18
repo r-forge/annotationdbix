@@ -1,12 +1,12 @@
 Package: AnnotationDbiX
 Type: Package
-Title: What the package does (short line)
+Title: Extend the Functionality of the AnnotationDbi Package
 Version: 1.0
 Date: 2010-01-03
 Author: Norbert Auer <norbert@derauer.net>
 Maintainer: Norbert Auer <norbert@derauer.net>
 Description: More about what it does (maybe more than one line)
-License: What license is it under?
+License: Artistic-2.0
+biocViews: Annotation, Infrastructure
 LazyLoad: yes
-Depends: methods
-Packaged: 2010-01-10 21:56:43 UTC; nauer
+Depends: methods, utils, Biobase, AnnotationDbi, biomaRt, RSQLite, XML

@@ -62,7 +62,7 @@ makeDbX(probeList, organism, species, prefix, outputDir, version,
 }
 
 \details{
-	\code{\link{makeDbX}} generates a annotation package similar to the \code{\link{makeDBPackage}} function but store the data internally different. One reason for the re-development is the circumstance that the \code{\link{makeDBPackage}} function cannot generate a correct working annotation package for the \emph{E. Coli} K12 strain. Another reason is that the \code{\link{makeDBPackage}} function only can generate an annotation package for a custom microarray if the used organism is supported by the Bioconductor team with a convenient .db0 package. Read the \code{SQLForge} vignette for more detail. \code{\link{makeDbX}} builds only the first two tables. The probes table including the feature names and the second table contains an unique identifier e.g. the nucleotid sequence of the primer. This step is needed to generate an internal id which connect this two tables and future tables together. At this step already no \link[=Bimap]{Bimap objects}} have been generated. Use the \code{\link{addNewAnnotation}} functions to enlarge the annotation package with new annotation data and the \code{\link{addBimapObj}} function to generate \link[=Bimap]{Bimap objects}} in the new annotation package.
+	\code{\link{makeDbX}} generates a annotation package similar to the \code{\link{makeDBPackage}} function from the \emph{AnnotationDbi} package but store the data internally different. One reason for the re-development is the circumstance that the \code{\link{makeDBPackage}} function cannot generate a correct working annotation package for the \emph{E. Coli} K12 strain. Another reason is that the \code{\link{makeDBPackage}} function only can generate an annotation package for a custom microarray if the used organism is supported by the Bioconductor team with a convenient .db0 package. Read the \code{SQLForge} vignette for more detail. \code{\link{makeDbX}} builds only the first two tables. The probes table including the feature names and the second table contains an unique identifier e.g. the nucleotid sequence of the primer. This step is needed to generate an internal id which connect this two tables and future tables together. At this step already no \link[=Bimap]{Bimap objects}} have been generated. Use the \code{\link{addNewAnnotation}} functions to enlarge the annotation package with new annotation data and the \code{\link{addBimapObj}} function to generate \link[=Bimap]{Bimap objects}} in the new annotation package.
 }
 \value{
 	If the function succeed it returns TRUE.
@@ -80,7 +80,7 @@ makeDbX(probeList, organism, species, prefix, outputDir, version,
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-	\code{\link{makeDBPackage}}, \code{\link{addNewAnnotationFromDb1}}, \code{\link{addNewAnnotation}}, \code{\link{setIdLink}} and \code{\link{addBimapObj}}
+	\command{\link{makeDBPackage}}, \command{\link{addNewAnnotationFromDb1}}, \command{\link{addNewAnnotation}}, \command{\link{setIdLink}} and \command{\link{addBimapObj}}.
 }
 \examples{
 \dontrun{

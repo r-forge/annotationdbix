@@ -20,9 +20,9 @@ datacache <- new.env(hash=TRUE, parent=emptyenv())
     ## Assigned _dbschema function to datacache  
     dbschema <- function(x=system.file(package=pkgname,lib.loc=libname,'extdata','@DBFILENEW@'), show.indices=FALSE,tableName="") .dbSchema(x, show.indices,tableName)
     assign("@ANNOBJPREFIX@_dbschema", dbschema, envir=datacache)
-    #assign("@ANNOBJPREFIX@_dbconn",function() dbconn(datacache), envir=datacache) ??? Problems with export
-	#assign("@ANNOBJPREFIX@_dbfile",function() dbfile(datacache), envir=datacache)
-	#assign("@ANNOBJPREFIX@ORGANISM","@ORGANISM@", envir=datacache)
+    
+    qc <- function() showQCData("@ANNOBJPREFIX@", datacache) 
+    assign("@ANNOBJPREFIX@", qc, envir=datacache)
 	
     ## Create the AnnObj instances 
     newBimap <- new.env(hash=TRUE,parent=emptyenv()) 

@@ -3,13 +3,13 @@
 \alias{annotationPkgToHTML}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Generates a nice to read HTML table
+Generates a nice to read HTML table from the annotation package
 }
 \description{
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
 }
 \usage{
-annotationPkgToHTML(x, caption, outputDir, mainTable, tables = character(), filter = character(), onlyIDs = FALSE, extdata = NULL, colOrder = NULL, css = "", tableRows = 50, ...)
+annotationPkgToHTML(x, caption, outputDir, mainTable, tables = character(), filter = character(), onlyIDs = FALSE, extdata = NULL, colOrder = NULL, css = "", tableRows = 50)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -64,7 +64,7 @@ annotationPkgToHTML(x, caption, outputDir, mainTable, tables = character(), filt
 %% ~put references to the literature/web site here ~
 }
 \author{
-%%  ~~who you are~~
+N. Auer \email{norbert@derauer.net}
 }
 \note{
 %%  ~~further notes~~
@@ -76,22 +76,7 @@ annotationPkgToHTML(x, caption, outputDir, mainTable, tables = character(), filt
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
 
-## The function is currently defined as
-structure(function (x, caption, outputDir, mainTable, tables = character(), 
-    filter = character(), onlyIDs = FALSE, extdata = NULL, colOrder = NULL, 
-    css = "", tableRows = 50, ...) 
-standardGeneric("annotationPkgToHTML"), generic = structure("annotationPkgToHTML", package = "AnnotationDbiX"), package = "AnnotationDbiX", group = list(), valueClass = character(0), signature = c("x", 
-"caption", "outputDir", "mainTable"), default = <S4 object of class structure("MethodsList", package = "methods")>, skeleton = function (x, 
-    caption, outputDir, mainTable, tables = character(), filter = character(), 
-    onlyIDs = FALSE, extdata = NULL, colOrder = NULL, css = "", 
-    tableRows = 50, ...) 
-stop("invalid call in method dispatch to \"annotationPkgToHTML\" (no default method)", 
-    domain = NA)(x, caption, outputDir, mainTable, tables, filter, 
-    onlyIDs, extdata, colOrder, css, tableRows, ...), class = structure("standardGeneric", package = "methods"))
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

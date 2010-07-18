@@ -1,8 +1,8 @@
-setGeneric("getBioMartFromXML", signature = c("x"), function(x) standardGeneric("getBioMartFromXML"))
+setGeneric("getBioMartFromXML", signature = c("x"), function(x,results=FALSE) standardGeneric("getBioMartFromXML"))
 setGeneric("getBioMartAttributes", signature = c("x"), function(x) standardGeneric("getBioMartAttributes"))
 setGeneric("getBioMartFilters", signature = c("x"), function(x) standardGeneric("getBioMartFilters"))
 
-setMethod("getBioMartFromXML", signature("character"), function(x) 
+setMethod("getBioMartFromXML", signature("character"), function(x,results=FALSE) 
 {
 	doc <- xmlRoot(xmlInternalTreeParse(x))
 	
@@ -12,6 +12,15 @@ setMethod("getBioMartFromXML", signature("character"), function(x)
 	
 	Mart = useMart(bioMart['virtualSchemaName'], dataset = dataset['name'])
 
+	if(results)
+	{
+		attr <- getBioMartAttributes(x)
+		filt <- getBioMartFilters(x)
+		
+		return(getBM(attributes=attr,filters=filt$filters,values=filt$values,mart=Mart))
+	}
+	else
+		return(Mart)
 })
 
 setMethod("getBioMartAttributes", signature("character"), function(x) 

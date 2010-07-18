@@ -4,10 +4,10 @@
 \alias{getBioMartFromXML}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Utilities for \sQuote{\emph{bimaRt}} queries
+Utilities for bimaRt queries
 }
 \description{
-%%  ~~ A concise (1-5 lines) description of what the function does. ~~
+Helper functions for using the biomaRt interface.
 }
 \usage{
 getBioMartAttributes(x)
@@ -34,7 +34,7 @@ getBioMartFromXML(x)
 %% ~put references to the literature/web site here ~
 }
 \author{
-%%  ~~who you are~~
+N. Auer \email{norbert@derauer.net}
 }
 \note{
 %%  ~~further notes~~

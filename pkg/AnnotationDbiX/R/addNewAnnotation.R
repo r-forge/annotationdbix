@@ -1,20 +1,10 @@
 ## Add new Annotation Data to the .dbX database
-
-## TODO: In Zukunft statt der probe_id die primer seq. verwenden, die ist 100% unique
-
-# x					dbConn() - Objekt oder Pfad
-# data				Liste mit neuen AnnotationDaten 1.Spalte Ids die im Package bereits vorhanden sind; 2 Spalte neue Ids
-# newTableName		Neuer Tablename
-# data.colNames		Spalten für die neue Tabelle ohne _id
-# mapTableName		Name der Table auf die gematched wird
-# dbSrc				.db1 Datenbank Pfad oder dbConn() Objekt
-
-setGeneric("addNewAnnotation", signature = c("x","data","newTableName","data.colNames","mapTableName"),function(x,data,newTableName,data.colNames,mapTableName,tableTypeLength) standardGeneric("addNewAnnotation"))
+setGeneric("addNewAnnotation", signature = c("x","data","newTableName","data.colNames","mapTableName"),function(x,data,newTableName,data.colNames,mapTableName,tableTypeLength,bimapName) standardGeneric("addNewAnnotation"))
 
 setGeneric("addNewAnnotationFromDb1", signature = c("x","data","mapTableName","mapDb1TableName","dbSrc"),function(x,data,mapTableName,mapDb1TableName,dbSrc) standardGeneric("addNewAnnotationFromDb1"))
 
 ## FilePath
-setMethod("addNewAnnotation", signature("character","data.frame","character","character","character"), function(x,data,newTableName,data.colNames,mapTableName,tableTypeLength) 
+setMethod("addNewAnnotation", signature("character","data.frame","character","character","character"), function(x,data,newTableName,data.colNames,mapTableName,tableTypeLength,bimapName) 
 {
 	## Check Parameters
 	if(!file.exists(x))
@@ -27,11 +17,11 @@ setMethod("addNewAnnotation", signature("character","data.frame","character","ch
 	con <- dbConnect(drv, dbname = x)
 	on.exit(dbDisconnect(con))
 	
-	addNewAnnotation(con,data,newTableName,data.colNames,mapTableName,tableTypeLength)
+	addNewAnnotation(con,data,newTableName,data.colNames,mapTableName,tableTypeLength,bimapName)
 })
 
 ## SQLite-Connection
-setMethod("addNewAnnotation", signature("SQLiteConnection","data.frame","character","character","character"), function(x,data,newTableName,data.colNames,mapTableName,tableTypeLength) 
+setMethod("addNewAnnotation", signature("SQLiteConnection","data.frame","character","character","character"), function(x,data,newTableName,data.colNames,mapTableName,tableTypeLength,bimapName) 
 {	
 	con <- x
 	
@@ -40,6 +30,16 @@ setMethod("addNewAnnotation", signature("SQLiteConnection","data.frame","charact
 		if(!isTRUE(all.equal(as.integer(tableTypeLength), tableTypeLength)))
 			stop("'tableTypeLength' must be from type integer\n")
 
+	## Check bimapName
+	if(!missing(bimapName))
+		if(is.character(bimapName))
+		{
+			if(length(bimapName) > 1)
+				stop(paste("length(",bimapName,") must be 1.",sep=""))
+		}
+		else
+			stop(paste("'",bimapName,"' must be from type 'character'.",sep=""))
+			
 	## Check if table already exists
 	if(dbExistsTable(con,newTableName))
 		stop("Table '",newTableName,"' already exists\n")
@@ -90,6 +90,7 @@ setMethod("addNewAnnotation", signature("SQLiteConnection","data.frame","charact
 		dyn <- ""
 		
 	sql <- paste("CREATE TABLE ",newTableName," (_id INTEGER NOT NULL,",colnames(data)[2]," VARCHAR(",tableTypeLength[1],") NOT NULL",dyn,",FOREIGN KEY (_id) REFERENCES ",main_table," (_id))",sep="")
+	print(sql)
 	dbGetQuery(con,sql)
 	
 	## Fill new table
@@ -102,6 +103,9 @@ setMethod("addNewAnnotation", signature("SQLiteConnection","data.frame","charact
 	cat(paste("Create index for '",newTableName,"'\n",sep=""))
 	sql <- paste("CREATE INDEX F",newTableName," ON ",newTableName,"(_id)",sep="")
 	dbGetQuery(con,sql)	
+	
+	## Add Bimap if bimapName was defined
+	addBimapObj(con,bimapName,'probes',newTableName)
 	
 	## Update table_master_meta
 	cat("Update table_master_meta\n")
@@ -264,6 +268,8 @@ setMethod("addNewAnnotationFromDb1", signature("SQLiteConnection","data.frame","
 	dbGetQuery(con,sql)
 	
 	.detach_db(con)
+	
+	return(TRUE)
 })
 
 .attach_db <- function(con,dbconn)

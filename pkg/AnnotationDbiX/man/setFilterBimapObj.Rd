@@ -42,7 +42,7 @@ setFilterBimapObj(x, name, bimap, filter, comment = "Added by setFilterBimapObj(
 %% ~put references to the literature/web site here ~
 }
 \author{
-%%  ~~who you are~~
+N. Auer \email{norbert@derauer.net}
 }
 \note{
 %%  ~~further notes~~
@@ -54,17 +54,7 @@ setFilterBimapObj(x, name, bimap, filter, comment = "Added by setFilterBimapObj(
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
 
-## The function is currently defined as
-structure(function (x, name, bimap, filter, comment = "Added by setFilterBimapObj()") 
-standardGeneric("setFilterBimapObj"), generic = structure("setFilterBimapObj", package = "AnnotationDbiX"), package = "AnnotationDbiX", group = list(), valueClass = character(0), signature = c("x", 
-"name", "bimap", "filter"), default = `NULL`, skeleton = function (x, 
-    name, bimap, filter, comment = "Added by setFilterBimapObj()") 
-stop("invalid call in method dispatch to \"setFilterBimapObj\" (no default method)", 
-    domain = NA)(x, name, bimap, filter, comment), class = structure("standardGeneric", package = "methods"))
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

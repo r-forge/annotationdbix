@@ -175,7 +175,7 @@
 			filter1 <- gsub("[}]","",filter1)
 			filter2 <- gsub("[}]","",filter2)		
 		
-			cat(i,' MAPCOUNT ',bimaps[i,'name'],"\n")
+			#cat(i,' MAPCOUNT ',bimaps[i,'name'],"\n")
 			sql <- paste("SELECT COUNT(DISTINCT",tableinfo[tableinfo$tablename==bimaps[i,'table1'],'mainCol'],") FROM",bimaps[i,'table1'],"a,",bimaps[i,'table2'],"b WHERE a._id = b._id AND",filter1,"AND",filter2)
 		
 			MapCount <- as.integer(dbGetQuery(dbconn,sql)[1,1])

@@ -3,47 +3,47 @@
 \alias{addNewAnnotationFromDb1}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Add new Annotations from a .db1 database
+Add new Annotations from a .db1 database to an extendend SQLite annotation database
 }
 \description{
-%%  ~~ A concise (1-5 lines) description of what the function does. ~~
+\command{addNewAnnotationFromDb1} add the data from a converted .db1 SQLite database to an extendend annotation package.
 }
 \usage{
-addNewAnnotationFromDb1(x, data, mapTableName, mapDb1TableName, dbSrc)
+addNewAnnotationFromDb1(x, data, mapTableName, mapDb1TableName, 
+    dbSrc)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{x}{
-%%     ~~Describe \code{x} here~~
+The path and filename or a SQLiteConnection object to the extendent SQLite database of interest.
 }
   \item{data}{
-%%     ~~Describe \code{data} here~~
+  %where the column on the left contains probe or probeset identifiers and the column on the right contains some sort of widely accepted gene accession
+  %one kind of information and that is a list of paired IDs
+  
+A two column dataframe. Where the column on the left contains probe or probeset identifiers from the type of the table named as \sQuote{mapTableName}. These ids are used to map the new data correct to the existing annotations in the package. And the column on the right contains some sort of widely accepted gene accession from the .db1 package paired with the ids from the first column. 
 }
   \item{mapTableName}{
-%%     ~~Describe \code{mapTableName} here~~
+The name of the table from the annotation package which should be mapped. The table \sQuote{probes} would be a good candidate to map.
 }
   \item{mapDb1TableName}{
-%%     ~~Describe \code{mapDb1TableName} here~~
+The name of the table from the .db1 annotation package which should be mapped. The table \sQuote{genes} if present would be a good candidate to map.
 }
   \item{dbSrc}{
-%%     ~~Describe \code{dbSrc} here~~
+The path and filename or a SQLiteConnection object to the .db1 package of interest.
 }
 }
 \details{
-%%  ~~ If necessary, more details than the description above ~~
+\command{addNewAnnotationFromDb1} is a little bit analogue to the \command{makeDBPackage} function from the \emph{AnnotationDbi} package. However, it uses instead of a .db0 package a converted .db1 package. See the \sQuote{How to build a .db1 database from a .db0 database} vignette for more details.
 }
 \value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
+If the function succeed it returns TRUE. 
 }
 \references{
 %% ~put references to the literature/web site here ~
 }
 \author{
-%%  ~~who you are~~
+N. Auer \email{norbert@derauer.net}
 }
 \note{
 %%  ~~further notes~~
@@ -52,22 +52,33 @@ addNewAnnotationFromDb1(x, data, mapTableName, mapDb1TableName, dbSrc)
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
+	\command{\link{addNewAnnotation}}, \command{\link{makeDbX}} and \command{db1ConverterXXX}.
 }
 \examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
+library(AnnotationDbiX)
 
-## The function is currently defined as
-structure(function (x, data, mapTableName, mapDb1TableName, dbSrc) 
-standardGeneric("addNewAnnotationFromDb1"), generic = structure("addNewAnnotationFromDb1", package = "AnnotationDbiX"), package = "AnnotationDbiX", group = list(), valueClass = character(0), signature = c("x", 
-"data", "mapTableName", "mapDb1TableName", "dbSrc"), default = <S4 object of class structure("MethodsList", package = "methods")>, skeleton = function (x, 
-    data, mapTableName, mapDb1TableName, dbSrc) 
-stop("invalid call in method dispatch to \"addNewAnnotationFromDb1\" (no default method)", 
-    domain = NA)(x, data, mapTableName, mapDb1TableName, dbSrc), class = structure("standardGeneric", package = "methods"))
+\dontrun{
+feature.seq.list <- read.table(file=system.file(package='AnnotationDbiX',
+    'data','feature.seq.list'),sep="\t",header= FALSE,stringsAsFactors= FALSE)
+
+probe_entrez.list <- read.table(file=system.file(package='AnnotationDbiX',
+    'data', 'probe_id_entrez_list'),sep="\t",header= FALSE,
+    stringsAsFactors= FALSE)
+   
+makeDbX(feature.seq.list,'Eschericha Coli','EColi','ecoliK12CHIP','~/Desktop',
+     '1.0.0','Mo-Ferm','ecoliK12 Chip','www.bioconductor.org',
+     author=c('N. Auer','T. Scharl'),
+     maintainer='N. Auer <norbert@derauer.net>')
+
+db1ConverterECOLIK12 (system.file (package='AnnotationDbiX','data',
+    'ecoliK12v2.4.1.sqlite'),'./ecoliK12v2.4.1')
+
+addNewAnnotationFromDb1(
+    x='~/Desktop/ecoliK12CHIP.db/inst/extdata/ecoliK12CHIP.db',
+    data=probe_entrez.list,mapT='probes',mapD='genes', 
+    dbSrc='ecoliK12v2.4.1.db1')}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+\keyword{IO}
+\keyword{utilities}

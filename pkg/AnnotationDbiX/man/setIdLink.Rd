@@ -36,7 +36,7 @@ setIdLink(x, table, link)
 %% ~put references to the literature/web site here ~
 }
 \author{
-%%  ~~who you are~~
+N. Auer \email{norbert@derauer.net}
 }
 \note{
 %%  ~~further notes~~
@@ -48,17 +48,7 @@ setIdLink(x, table, link)
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
 
-## The function is currently defined as
-structure(function (x, table, link) 
-standardGeneric("setIdLink"), generic = structure("setIdLink", package = "AnnotationDbiX"), package = "AnnotationDbiX", group = list(), valueClass = character(0), signature = c("x", 
-"table", "link"), default = `NULL`, skeleton = function (x, 
-    table, link) 
-stop("invalid call in method dispatch to \"setIdLink\" (no default method)", 
-    domain = NA)(x, table, link), class = structure("standardGeneric", package = "methods"))
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

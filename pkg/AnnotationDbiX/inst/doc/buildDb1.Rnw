@@ -2,12 +2,12 @@
 %\VignetteDepends{}
 %\VignetteKeywords{annotation, database}
 %\VignettePackage{AnnotationDbiX}
-\documentclass[11pt]{article}
 
-\newcommand{\Rfunction}[1]{{\texttt{#1}}}
-\newcommand{\Robject}[1]{{\texttt{#1}}}
-\newcommand{\Rpackage}[1]{{\textit{#1}}}
-\newcommand{\Rclass}[1]{{\textit{#1}}}
+
+%\newcommand{\Rfunction}[1]{{\texttt{#1}}}
+%\newcommand{\Robject}[1]{{\texttt{#1}}}
+%\newcommand{\Rpackage}[1]{{\textit{#1}}}
+%\newcommand{\Rclass}[1]{{\textit{#1}}}
 
 
 \title{How to build a .db1 database from a .db0 database}
@@ -15,13 +15,13 @@
 
 \SweaveOpts{keep.source=TRUE}
 
-\begin{document}
+
 
 \maketitle
 
-\section{Introduction}
+\section*{Introduction}
 
-The \Rpackage{AnnotationDbi} package provides a series of functions
+The \Rpackage{AnnotationDbiX} package provides a series of functions
 that can be used to build annotation packages for supported
 organisms. This collection of functions is called SQLForge.
 
@@ -38,12 +38,7 @@ own support databases to make an \Rpackage{AnnotationDbi} package for
 you. Here is how these IDs should look if you were to read them into
 R:
 
-<<FileDemo>>=
-library(AnnotationDbi)
-read.table(system.file("extdata", "hcg110_ID",
-                       package="AnnotationDbi"),
-           sep = "\t", header = FALSE, as.is = TRUE)[1:5,]
-@
+
 
 
 In the example above, Genbank IDs are demonstrated.  But it is also
@@ -109,9 +104,7 @@ are interested in, then your organism is supported, and you can use
 that database to make custom packages.  To list all the supported organism
 .db0 packages directly from R you can use available.db0pkgs().
 
-<<availableDB0s>>=
-  available.db0pkgs()  
-@
+
 
 Once you know the package name, you can then install the appropriate package
 with biocLite().
@@ -122,10 +115,7 @@ with biocLite().
 To get the latest organism package you should only need to use biocLite.
 
 Lets begin by making sure we have the latest organism package.
-<<GetIntermedDB, eval=FALSE>>=
-  source("http://bioconductor.org/biocLite.R")
-  biocLite("human.db0")
-@
+
 
 Since each organism will have different kinds of data available, the
 schemas that will be needed for each organism will also
@@ -156,18 +146,7 @@ file that we have included in the AnnotationDbi package and then
 setting up the metadata to be passed in to the
 \Rfunction{popHUMANCHIP()} function.
 
-<<PopulateSetup>>=
-hcg110_IDs = system.file("extdata",
-                           "hcg110_ID",
-                           package="AnnotationDbi")
 
-myMeta = c("DBSCHEMA"="HUMANCHIP_DB",
-           "ORGANISM"="Homo sapiens",
-           "SPECIES"="Human",
-           "MANUFACTURER"="Affymetrix",
-           "CHIPNAME"="Human Cancer G110 Array ",
-           "MANUFACTURERURL"="http://www.affymetrix.com")
-@ 
 
 For illustration purposes I will write this example to put the sqlite
 database into a temporary directory.  I will also specify the type of
@@ -178,36 +157,14 @@ unigene, "eg" for Entrez gene, or "refseq" for refseq accessions.
 Additional details can be found in the man pages for these functions.
 
 
-<<TempDirPopulate, keep.source=TRUE, results=hide>>=
-tmpout = tempdir()
-##To see what chip packages are available:
-available.chipdbschemas()
-##Then you can make a DB using that schema.
-populateDB("HUMANCHIP_DB", affy = FALSE, prefix = "hcg110Test",
-    fileName = hcg110_IDs, metaDataSrc = myMeta,
-    baseMapType = "gb", outputDir = tmpout)
-@
+
 
 
 The preceeding code has generated a file in the working directory
 called hcg110.sqlite, which can be wrapped into an annotation
 package with the following:
 
-<<MakeAnnDbPkg, results=hide>>=
-seed <- new("AnnDbPkgSeed",             
-            Package = "hcg110Test.db",
-            Version = "1.0.0",
-            PkgTemplate = "HUMANCHIP.DB",
-            AnnObjPrefix = "hcg110Test")
 
-makeAnnDbPkg(seed,
-             file.path(tmpout, "hcg110Test.sqlite"),
-             dest_dir = tmpout)
-@
-<<cleanup, echo=FALSE, results=hide>>=
-file.remove(file.path(tmpout, "hcg110Test.sqlite"))
-file.rename(file.path(tmpout, "hcg110Test.db"),file.path(tmpout, "fooTest.db"))
-@
 
 
 Of course, most of the time you only want to make an annotation
@@ -215,22 +172,7 @@ package for a particular chip.  So we have made some wrapper functions
 to combine all of the previous steps.  The following shows how you
 could make the same exact package as above but with a lot less hassle:
 
-<<SQLForge, keep.source=TRUE, results=hide>>=
-makeDBPackage("HUMANCHIP_DB",
-              affy=FALSE,            
-              prefix="hcg110",
-              fileName=hcg110_IDs,
-              baseMapType="gb",
-              outputDir = tmpout,
-              version="1.0.0",
-              manufacturer = "Affymetrix",
-              chipName = "Human Cancer G110 Array",
-              manufacturerUrl = "http://www.affymetrix.com")
-@ 
-<<cleanup2, echo=FALSE, results=hide>>=
-file.remove(file.path(tmpout, "hcg110.sqlite"))
-file.rename(file.path(tmpout, "hcg110.db"),file.path(tmpout, "foo.db"))
-@
+
 
 Wrapper functions are provided for making all of the different kinds
 of chip based package types that are presently defined.  These are
@@ -268,19 +210,7 @@ example, no additional SQL has to be inserted 1st into the database
 since it is just adding a mapping onto data that already exists in the
 database (but is just not normally exposed as a mapping).
 
-<<createSimpleMapping, keep.source=TRUE>>=
-library(hgu95av2.db)
-hgu95av2NAMESYMBOL <- createSimpleBimap("gene_info",
-                                        "gene_name",
-                                        "symbol",
-                                        hgu95av2.db:::datacache,
-                                        "NAMESYMBOL",
-                                        "hgu95av2.db")
-##What is the mapping we just made?
-hgu95av2NAMESYMBOL
-##Display the 1st 4 relationships in this new mapping
-as.list(hgu95av2NAMESYMBOL)[1:4]
-@ 
+
 
 If instead of creating a mapping on an existing example, you wanted to
 add a new mapping to your customized annotation package, you would
@@ -300,4 +230,4 @@ The version number of R and packages loaded for generating the vignette were:
 sessionInfo()
 @
 
-\end{document}
+
