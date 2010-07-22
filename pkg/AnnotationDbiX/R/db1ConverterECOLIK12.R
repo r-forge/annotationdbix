@@ -143,7 +143,7 @@ setMethod("db1ConverterECOLIK12", signature("SQLiteConnection","missing"), funct
 	sql <- paste("INSERT INTO bimap_meta VALUES ('ENTREZID','probes','genes','','','','','',1)",sep="")
 	dbGetQuery(connType,sql)
 
-	sql <- paste("INSERT INTO bimap_meta VALUES ('GO_ALL','probes','go_id','','Evidence=evidence;Ontology=ontology','','','',1)",sep="")
+	sql <- paste("INSERT INTO bimap_meta VALUES ('GO_ALL','probes','go_id','','Ontology=ontology','','','',1)",sep="")
 	dbGetQuery(connType,sql)
 
 	sql <- paste("INSERT INTO bimap_meta VALUES ('GO_BP','probes','go_bp','','Evidence=evidence','','','',1)",sep="")

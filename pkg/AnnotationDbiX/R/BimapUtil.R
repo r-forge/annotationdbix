@@ -89,7 +89,6 @@ setMethod("addBimapObj", signature(x="SQLiteConnection",name="character",table1=
 	## Add new Bimap Object
 	sql <- paste("INSERT INTO bimap_meta VALUES ('",name,"','",table1,"','",table2,"','",tagname1,"','",tagname2,"','",comment,"','",filter1,"','",filter2,"','",revmap,"')",sep="")
 	
-	print(sql)
 	dbGetQuery(con,sql)
 	
 	cat("Bimap Object '",name,"' added.\nTo update the bimaps objects detach and reload the library .\n",sep="")
@@ -304,7 +303,6 @@ setMethod("setIdLink", signature("SQLiteConnection","character","character"), fu
 	
 	## Concatenate all links to one string
 	link <- paste(link,collapse="|")
-	print(link)
 		
 	## Mask all & with the correct &amp; for valid html
 	link <- paste(strsplit(link,"&(?!amp)",perl=TRUE)[[1]],collapse="&amp;",sep="")

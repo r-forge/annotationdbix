@@ -80,7 +80,7 @@ setMethod("addNewAnnotation", signature("SQLiteConnection","data.frame","charact
 		data[ind,2] <- NA
 		
 	cat("Add helper table ",newTableName,"_temp\n",sep="")
-	dbWriteTable(conn=con,name=paste(newTableName,"_temp",sep=""),value=data,row.names=FALSE,overwrite=TRUE)	
+	dbWriteTable(conn=con,name=paste(newTableName,"_temp",sep=""),value=data,row.names=FALSE,overwrite=TRUE)
 	
 	## Create new table
 	cat("Create new table",newTableName,"\n")
@@ -90,7 +90,6 @@ setMethod("addNewAnnotation", signature("SQLiteConnection","data.frame","charact
 		dyn <- ""
 		
 	sql <- paste("CREATE TABLE ",newTableName," (_id INTEGER NOT NULL,",colnames(data)[2]," VARCHAR(",tableTypeLength[1],") NOT NULL",dyn,",FOREIGN KEY (_id) REFERENCES ",main_table," (_id))",sep="")
-	print(sql)
 	dbGetQuery(con,sql)
 	
 	## Fill new table
@@ -164,9 +163,9 @@ setMethod("addNewAnnotationFromDb1", signature("SQLiteConnection","data.frame","
 	tableInfo <- dbGetQuery(con,sql)
 	mainCol <- apply(tableInfo[2],1,function(x) strsplit(x,";")[[1]][1])
 	tableInfo <- as.data.frame(cbind(tableInfo,mainCol,stringsAsFactors=FALSE),stringsAsFactors=FALSE)
-	
+
 	.attach_db(con,dbSrc)
-	
+
 	if(!(mapTableName %in% tableInfo[[1]]))
 	{
 		.detach_db(con)		
@@ -260,6 +259,24 @@ setMethod("addNewAnnotationFromDb1", signature("SQLiteConnection","data.frame","
 	{
     	dbRollback(con)
     	stop("Commit failed")
+	}
+	
+	## Copy metadata table	
+	cat("Add meta table\n")
+	sql <- "SELECT * FROM metadata"
+	metadata1 <- dbGetQuery(con,sql)
+	
+	## Copy metadata table db1
+	cat("Add meta table\n")
+	sql <- "SELECT * FROM db1.metadata"
+	metadata2 <- dbGetQuery(con,sql)
+	
+	metadata<- metadata2[!(metadata2[[1]] %in% metadata1[[1]]),]
+	
+	for(i in 1:nrow(metadata))
+	{
+		sql <- paste("INSERT INTO metadata VALUES('",metadata[i,1],"','",metadata[i,2],"')",sep="")
+		dbGetQuery(con,sql)
 	}
 	
 	## Remove helper table

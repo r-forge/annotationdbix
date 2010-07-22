@@ -92,11 +92,14 @@
 				for(j in seq(along=tagnames))
 				{
 					key_value <- strsplit(tagnames[[1]][j],"=")		
-					temp <- names(tags2)
-					tags2 <- c(tags2,key_value[[1]][2])
-					names(tags2) <- c(temp,key_value[[1]][1])
+					temp <- names(tags1)
+					tags1 <- c(tags1,key_value[[1]][2])
+					names(tags1) <- c(temp,key_value[[1]][1])
 				}
 			}
+			
+			if(is.null(tags1))
+				tags1 <- ""
 		
 			if(bimaps[i,'filter1'] != "")
 			{
@@ -109,7 +112,7 @@
 			}
 		
 			## All attributes which not set as tagname are added as Rattribnames
-			attributes1 <- strsplit(tableinfo[tableinfo[['tablename']] == bimaps[i,'table1'],'fieldnames'],";")[[1]][1]
+			attributes1 <- strsplit(tableinfo[tableinfo[['tablename']] == bimaps[i,'table1'],'fieldnames'],";")[[1]]
 			attributes1 <- attributes1[attributes1 != tableinfo[tableinfo[['tablename']] == bimaps[i,'table1'],'mainCol']]
 			attributes1 <- attributes1[attributes1 != tags2]
 			names(attributes1) <- attributes1
@@ -126,17 +129,20 @@
 					names(tags2) <- c(temp,key_value[[1]][1])
 				}
 			}
-		
+
+			if(is.null(tags2))
+				tags2 <- ""
+
 			## All attributes which not set as tagname are added as Rattribnames
-			attributes2 <- strsplit(tableinfo[tableinfo[['tablename']] == bimaps[i,'table2'],'fieldnames'],";")[[1]][1]
-			attributes2 <- attributes2[attributes2 != tableinfo[tableinfo[['tablename']] == bimaps[i,'table2'],'mainCol']]
-			attributes2 <- attributes2[attributes2 != tags2]
+			attributes2 <- strsplit(tableinfo[tableinfo[['tablename']] == bimaps[i,'table2'],'fieldnames'],";")[[1]]
+			attributes2 <- attributes2[attributes2 != tableinfo[tableinfo[['tablename']] == bimaps[i,'table2'],'mainCol']]		
+			attributes2 <- attributes2[attributes2 != tags2]		
 			names(attributes2) <- attributes2
 		
-			if(is.null(tags1))
+			if(tags1 == "")
 				tags1 <- as.character(NA)
 		
-			if(is.null(tags2))
+			if(tags2 == "")
 				tags2 <- as.character(NA)
 		
 			#cat(i,"nrow Bimaps: ",nrow(bimaps),"table1: ",bimaps[i,'table1'],"- table2: ",bimaps[i,'table2'],"\n")
@@ -167,8 +173,7 @@
 			#revmap(myBimap_T1_2_T2, objName='test')
 			
 			assign(bimaps[i,'name'],myBimap_T1_2_T2,envir=env)
-			
-			
+				
 			## Get MapCounts for Bimap
 			filter1 <- gsub("[{]","",filter1)
 			filter2 <- gsub("[{]","",filter2)
@@ -191,5 +196,15 @@
 	
 	assign('MAPCOUNTS',MapCounts,envir=env)
 	
+	# update map counts table. Needed for showQCData function()
+	sql <- "DELETE FROM map_counts WHERE map_name != 'TOTAL'"
+	dbGetQuery(dbconn,sql)
+	
+	for(i in seq(along=MapCounts))
+	{
+		sql <- paste("INSERT INTO map_counts VALUES('",names(MapCounts[i]),"',",MapCounts[i],")",sep="")
+		dbGetQuery(dbconn,sql)
+	}
+		
 	return(TRUE)
 }

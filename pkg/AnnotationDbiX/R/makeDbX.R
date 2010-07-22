@@ -39,7 +39,12 @@ setMethod("makeDbX",signature("data.frame","character","character","character","
                  
     ann_dbi_version <- installed.packages()['AnnotationDbi','Version']
     
+    ## Package Pathname
+    pkgName <- paste(prefix,'.db',sep="")
+    pkgPathName <- file.path(outputDir,pkgName)
+    
 	symvals <- list(
+		PKGNAME=pkgName,
 		PKGTITLE=paste(manufacturer,prefix,"annotation data (",chipName,")"),
 		ANNOBJPREFIX=prefix,
 		ANNOBJTARGET=chipName,
@@ -54,10 +59,6 @@ setMethod("makeDbX",signature("data.frame","character","character","character","
 		LIC='Artistic-2.0',
 		DBFILENEW=paste(prefix,".db",sep=""),
 		ANNDBIVERSION=ann_dbi_version)
-    
-    ## Package Pathname
-    pkgName <- paste(prefix,'.db',sep="")
-    pkgPathName <- file.path(outputDir,pkgName)
     
     ## Test if package already exists
 	if(file.exists(pkgPathName))
@@ -147,7 +148,8 @@ setMethod("makeDbX",signature("data.frame","character","character","character","
 	dbGetQuery(con,sql)
 	
 	## Add the first Bimap if bimapName was defined
-	addBimapObj(con,bimapName,'probes',newTableName)
+	if(!missing(bimapName))
+		addBimapObj(con,bimapName,'probes',newTableName)
 		
 	## Add map_counts Table for interoperability with other functions
 	cat("Add map_counts Table\n")

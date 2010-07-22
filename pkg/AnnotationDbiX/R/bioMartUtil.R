@@ -4,10 +4,11 @@ setGeneric("getBioMartFilters", signature = c("x"), function(x) standardGeneric(
 
 setMethod("getBioMartFromXML", signature("character"), function(x,results=FALSE) 
 {
-	doc <- xmlRoot(xmlInternalTreeParse(x))
+	doc <- xmlInternalTreeParse(x)
+	root <- xmlRoot(doc)
 	
-	bioMart <- unlist(xpathApply(doc,"/Query",xmlAttrs))
-	dataset <- unlist(xpathApply(doc,"/Query/Dataset",xmlAttrs))
+	bioMart <- unlist(xpathApply(root,"/Query",xmlAttrs))
+	dataset <- unlist(xpathApply(root,"/Query/Dataset",xmlAttrs))
 	free(doc)
 	
 	Mart = useMart(bioMart['virtualSchemaName'], dataset = dataset['name'])
@@ -17,7 +18,10 @@ setMethod("getBioMartFromXML", signature("character"), function(x,results=FALSE)
 		attr <- getBioMartAttributes(x)
 		filt <- getBioMartFilters(x)
 		
-		return(getBM(attributes=attr,filters=filt$filters,values=filt$values,mart=Mart))
+		if(length(filt[[1]]) == 0)
+			return(getBM(attributes=attr,mart=Mart))		
+		else
+			return(getBM(attributes=attr,filters=filt$filters,values=filt$values,mart=Mart))
 	}
 	else
 		return(Mart)
@@ -25,9 +29,10 @@ setMethod("getBioMartFromXML", signature("character"), function(x,results=FALSE)
 
 setMethod("getBioMartAttributes", signature("character"), function(x) 
 {
-	doc <- xmlRoot(xmlInternalTreeParse(x))
+	doc <- xmlInternalTreeParse(x)
+	root <- xmlRoot(doc)
 	
-	Attributes <- unlist(xpathApply(doc,"/Query/Dataset/Attribute",xmlAttrs))
+	Attributes <- unlist(xpathApply(root,"/Query/Dataset/Attribute",xmlAttrs))
 	free(doc)
 	
 	return(Attributes)
@@ -35,9 +40,10 @@ setMethod("getBioMartAttributes", signature("character"), function(x)
 
 setMethod("getBioMartFilters", signature("character"), function(x) 
 {
-	doc <- xmlRoot(xmlInternalTreeParse(x))
+	doc <- xmlInternalTreeParse(x)
+	root <- xmlRoot(doc)
 	
-	Filters <- xpathApply(doc,"/Query/Dataset/Filter",xmlAttrs)	
+	Filters <- xpathApply(root,"/Query/Dataset/Filter",xmlAttrs)	
 	free(doc)
 	
 	res1 <- sapply(Filters,function(x) {x[1]})
