@@ -1,27 +1,27 @@
 ## x = SQLite Database oder AnnDbBimap Objekt
-## caption = Tabellenüberschrift
-## outputDir = dort wird das html File generiert
+## caption = Tabellenueberschrift
+## outputName = dort wird das html File generiert
 ## mainTable = Die Haupttabelle
 ## tables = Weitere Tabellen, die verwendet werden. 
 ## onlyIDs = wenn TRUE werden nur IDs angezeigt. Bei FALSE werden auch andere Attribute angezeigt
-## extdata = zusätzliche Daten. Mindestens 2 Spalten. Die erste Spalte muss IDs der Haupttabelle enthalten. Jede weitere Spalte wird einzeln zur Haupttabelle gemappt (NAs und "" erlaubt). Header werden als Spaltenüberschriften und bei colOrder verwendet.
-## colOrder = legt die Reihenfolge der Spalten fest. Bei tables werden die Tabellennamen verwendet bei extdata die Spaltenüberschriften
+## extdata = zusaetzliche Daten. Mindestens 2 Spalten. Die erste Spalte muss IDs der Haupttabelle enthalten. Jede weitere Spalte wird einzeln zur Haupttabelle gemappt (NAs und "" erlaubt). Header werden als Spaltenueberschriften und bei colOrder verwendet.
+## colOrder = legt die Reihenfolge der Spalten fest. Bei tables werden die Tabellennamen verwendet bei extdata die Spaltenueberschriften
 ## css = Pfad zu css File, dass dann im html code eingebettet wird
 ## filter = c() von IDs, welche die Hauptabelle filtert
 
 
-setGeneric("annotationPkgToHTML", signature = c("x","caption","outputDir","mainTable"),
-	function(x,caption,outputDir,mainTable,tables=character(),filter=character(),onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css="",tableRows=50) standardGeneric("annotationPkgToHTML"))
+setGeneric("annotationPkgToHTML", signature = c("x","caption","outputName","mainTable"),
+	function(x,caption,outputName,mainTable,tables=character(),filter=character(),onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css="",tableRows=50) standardGeneric("annotationPkgToHTML"))
 
-setMethod("annotationPkgToHTML", signature(x="AnnDbBimap",caption="character",outputDir="character",mainTable="missing"),
-function(x,caption,outputDir,tables=character(),filter=character(),onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css="",tableRows=50) 
+setMethod("annotationPkgToHTML", signature(x="AnnDbBimap",caption="character",outputName="character",mainTable="missing"),
+function(x,caption,outputName,tables=character(),filter=character(),onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css="",tableRows=50) 
 {
 	con <- x@datacache$dbconn
 	
 	mainTable <- x@L2Rchain[[1]]@tablename
 	tables <- x@L2Rchain[[2]]@tablename 
 	
-	path <- strsplit(outputDir,.Platform$file.sep)[[1]]
+	path <- strsplit(outputName,.Platform$file.sep)[[1]]
 	fileName <- path[length(path)]
 	path <- paste(path[1:(length(path)-1)],collapse=.Platform$file.sep)
 	
@@ -149,8 +149,6 @@ function(x,caption,outputDir,tables=character(),filter=character(),onlyIDs=FALSE
 			tableInfo <- rbind(tableInfo,temp)
 		}
 	}
-	
-	#print(system.time({
 
 	numPages <- ceiling(nrow(results[[1]])/tableRows)
 	## Write HTML pages
@@ -277,7 +275,7 @@ function(x,caption,outputDir,tables=character(),filter=character(),onlyIDs=FALSE
 						
 					if(any(is.na(res<-results[[tableInfo[colOrder[i],5]]][results[[tableInfo[colOrder[i],5]]][,1] == x,j])))
 						v<-c(v,"&nbsp;")
-					else if(is.na(link)) 
+					else if(is.na(link) || link == "") 
 						v<-c(v,paste(res,collapse="<br />",sep=""))
 					else
 					{
@@ -300,18 +298,15 @@ function(x,caption,outputDir,tables=character(),filter=character(),onlyIDs=FALSE
         	html <- paste(html,"<div class='links'><p>", p,"/",numPages,"<a href='",fileName,p+1,".html'>&gt;</a></p></div></body></html>",sep="")
         else
 	        html <- paste(html,"<div class='links'><p><a href='",fileName,p-1,".html'>&lt;</a>", p,"/",numPages,"<a href='",fileName,p+1,".html'>&gt;</a></p></div></body></html>",sep="")
-	        
-	        
+	               
 		## Write File
-		cat(file=paste(outputDir,p,".html",sep=""),html)
+		cat(file=paste(outputName,p,".html",sep=""),html)
 	}
-
-	#}))
 })
 
 ## FilePath
 setMethod("annotationPkgToHTML", signature("character","character","character","character"),
-function(x,caption,outputDir,mainTable,tables=character(),filter=character(),onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css="",tableRows=50) 
+function(x,caption,outputName,mainTable,tables=character(),filter=character(),onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css="",tableRows=50) 
 {
 	## Check Parameters
 	if(!file.exists(x))
@@ -324,16 +319,16 @@ function(x,caption,outputDir,mainTable,tables=character(),filter=character(),onl
 	con <- dbConnect(drv, dbname = x)
 	on.exit(dbDisconnect(con))
 	
-	annotationPkgToHTML(con,caption,outputDir,mainTable,tables,onlyIDs,extdata,colOrder,css)
+	annotationPkgToHTML(con,caption,outputName,mainTable,tables,onlyIDs,extdata,colOrder,css)
 })
 
 ## SQLiteConnection
 setMethod("annotationPkgToHTML",signature("SQLiteConnection","character","character","character"),
-function(x,caption,outputDir,mainTable,tables=character(),filter=character(),onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css="",tableRows=50) 
+function(x,caption,outputName,mainTable,tables=character(),filter=character(),onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css="",tableRows=50) 
 {	
 	con <- x
 
-	path <- strsplit(outputDir,.Platform$file.sep)[[1]]
+	path <- strsplit(outputName,.Platform$file.sep)[[1]]
 	fileName <- path[length(path)]
 	path <- paste(path[1:(length(path)-1)],collapse=.Platform$file.sep)
 	
@@ -454,10 +449,9 @@ function(x,caption,outputDir,mainTable,tables=character(),filter=character(),onl
 			tableInfo <- rbind(tableInfo,temp)
 		}
 	}
-	
-	#print(system.time({
 
 	numPages <- ceiling(nrow(results[[1]])/tableRows)
+	
 	## Write HTML pages
 	for(p in 1:numPages)
 	{
@@ -562,9 +556,7 @@ function(x,caption,outputDir,mainTable,tables=character(),filter=character(),onl
 			to <- nrow(results[[1]])
 		else
 			to <- p * tableRows
-			
-		
-		
+
 		body <- lapply(results[[1]][from:to,1],function(x)
 		{	
 			v <- c()
@@ -580,7 +572,7 @@ function(x,caption,outputDir,mainTable,tables=character(),filter=character(),onl
 						
 					if(any(is.na(res<-results[[tableInfo[colOrder[i],5]]][results[[tableInfo[colOrder[i],5]]][,1] == x,j])))
 						v<-c(v,"&nbsp;")
-					else if(is.na(link)) 
+					else if(is.na(link) || link == "") 
 						v<-c(v,paste(res,collapse="<br />",sep=""))
 					else
 					{
@@ -605,8 +597,6 @@ function(x,caption,outputDir,mainTable,tables=character(),filter=character(),onl
 	        html <- paste(html,"<div class='links'><p><a href='",fileName,p-1,".html'>&lt;</a>", p,"/",numPages,"<a href='",fileName,p+1,".html'>&gt;</a></p></div></body></html>",sep="")
 	        
 		## Write File
-		cat(file=paste(outputDir,p,".html",sep=""),html)
+		cat(file=paste(outputName,p,".html",sep=""),html)
 	}
-
-	#}))
 })
