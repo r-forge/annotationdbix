@@ -2,9 +2,9 @@
 \Rdversion{1.1}
 \alias{makeDbX}
 \alias{makeDbX-methods}
-\title{Generates a extendend annotation database skeleton}
+\title{Generates an extended annotation database skeleton}
 \description{
-	In the following sections the generation of extendend SQLite based annotation packages from type .db is described.
+	In the following sections the generation of extendend SQLite-based annotation packages from type .db is described.
 }
 \usage{
 makeDbX(probeList, organism, species, prefix, outputDir, version, 
@@ -13,12 +13,13 @@ makeDbX(probeList, organism, species, prefix, outputDir, version,
     manufacturerUrl = "ManufacturerUrl not specified", 
     tableName = "sequence", 
     colName = "sequence",
+    bimapName,
     link = "")
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{probeList}{
-	A twocolumn list. On the left side are the probe ids or feature names and on the right side are unique identifier ids. For example the nucleotid sequence of the primer. This id must be absolutely unique and must not be \strong{empty}. For example the Entrez id is unique but if the same gene appears more than once in a genome it has a own id for each position in the genome. If the Entrez id is used to create the package only one Entrez id can mapped to one probe id (1:1 mapping except there are other probe ids with the same gene). For example if Blattner ids are added to package it may be happen that some Blattner ids get lost because they map one of the discarded Entrez ids.
+	A twocolumn list. On the left side are the probe ids or feature names and on the right side are unique identifier ids. For example the nucleotid sequence of the primer. This id must be absolutely unique and must not be \strong{empty}. For example the Entrez id is unique but if the same gene appears more than once in a genome it has an own id for each position in the genome. If the Entrez id is used to create the package only one Entrez id can be mapped to one probe id (1:1 mapping unless there are other probe ids with the same gene). For example if Blattner ids are added to the package it may happen that some Blattner ids get lost because they map one of the discarded Entrez ids.
 }
   \item{organism}{
 	The name of the organism e.g. Homo sapiens
@@ -55,17 +56,21 @@ makeDbX(probeList, organism, species, prefix, outputDir, version,
 	How the database table should be named. \strong{\dQuote{probe}}, \strong{\dQuote{probe_temp}} and all names including the string \strong{\dQuote{meta}} are not allowed. If no name is specified the default name \strong{\dQuote{sequence}} is used.
 }
   \item{colName}{
-	How the right column of the new table should be named. This name is important for generating new \link[=Bimap]{Bimap objects}}. The names \strong{\dQuote{_id}} and \strong{\dQuote{probe_id}} are reserved.
+	How the right column of the new table should be named. This name is important for generating new \link[=Bimap]{Bimap objects}. The names \strong  	{\dQuote{_id}} and \strong{\dQuote{probe_id}} are reserved.
+}
+  \item{bimapName}{
+  A optional Bimap object name. If \dQuote{bimapName} was set a Bimap object between the \dQuote{probes} table and the new table specified in \dQuote{tableName} is generated.
+}
   \item{link}{
-    A HTML link to a web resource associating to the kind of data which is used. See \code{\link{setIdLink}} for more details.
+    A HTML link to a web resource associated to the kind of data which is used. See \command{\link{setIdLink}} for more details.
 }
 }
 
 \details{
-	\code{\link{makeDbX}} generates a annotation package similar to the \code{\link{makeDBPackage}} function from the \emph{AnnotationDbi} package but store the data internally different. One reason for the re-development is the circumstance that the \code{\link{makeDBPackage}} function cannot generate a correct working annotation package for the \emph{E. Coli} K12 strain. Another reason is that the \code{\link{makeDBPackage}} function only can generate an annotation package for a custom microarray if the used organism is supported by the Bioconductor team with a convenient .db0 package. Read the \code{SQLForge} vignette for more detail. \code{\link{makeDbX}} builds only the first two tables. The probes table including the feature names and the second table contains an unique identifier e.g. the nucleotid sequence of the primer. This step is needed to generate an internal id which connect this two tables and future tables together. At this step already no \link[=Bimap]{Bimap objects}} have been generated. Use the \code{\link{addNewAnnotation}} functions to enlarge the annotation package with new annotation data and the \code{\link{addBimapObj}} function to generate \link[=Bimap]{Bimap objects}} in the new annotation package.
+	\code{\link{makeDbX}} generates an annotation package similar to the \code{\link{makeDBPackage}} function from the \emph{AnnotationDbi} package but stores the data internally different. One reason for the re-development is the circumstance that the \code{\link{makeDBPackage}} function cannot generate a correctly working annotation package for the \emph{E. Coli} K12 strain. Another reason is that the \code{\link{makeDBPackage}} function can only generate an annotation package for a custom microarray if the used organism is supported by the Bioconductor team with a convenient .db0 package. Read the \code{SQLForge} vignette for more detail. \code{\link{makeDbX}} builds only the first two tables. The probes table including the feature names and the second table contains an unique identifier e.g. the nucleotide sequence of the primer. This step is needed to generate an internal id which connects this two tables and future tables together. At this step already no \link[=Bimap]{Bimap objects}} have been generated. Use the \code{\link{addNewAnnotation}} functions to enlarge the annotation package with new annotation data and the \code{\link{addBimapObj}} function to generate \link[=Bimap]{Bimap objects}} in the new annotation package.
 }
 \value{
-	If the function succeed it returns TRUE.
+	TRUE if the function succeeds.
 }
 \references{
 %% ~put references to the literature/web site here ~

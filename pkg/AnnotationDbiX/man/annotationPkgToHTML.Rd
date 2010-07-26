@@ -9,45 +9,42 @@ Generates a nice to read HTML table from the annotation package
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
 }
 \usage{
-annotationPkgToHTML(x, caption, outputDir, mainTable, tables = character(), filter = character(), onlyIDs = FALSE, extdata = NULL, colOrder = NULL, css = "", tableRows = 50)
+annotationPkgToHTML(x, caption, outputName, mainTable, tables = character(), filter = character(), onlyIDs = FALSE, extdata = NULL, colOrder = NULL, css = "", tableRows = 50)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{x}{
-%%     ~~Describe \code{x} here~~
+The path and filename, a SQLiteConnection object to the extended annotation database of interest or a Bimap object of class \emph{AnnDbBimap}.
 }
   \item{caption}{
-%%     ~~Describe \code{caption} here~~
+The titel of the HTML page.
 }
-  \item{outputDir}{
-%%     ~~Describe \code{outputDir} here~~
+  \item{outputName}{
+The path and filename of the HTML page.
 }
   \item{mainTable}{
-%%     ~~Describe \code{mainTable} here~~
+The table name for what the HTML table should be aligned. Must be also defined in the \sQuote{tables} parameter. If \sQuote{x} is from type \emph{AnnDbBimap} this parameter is missing.
 }
   \item{tables}{
-%%     ~~Describe \code{tables} here~~
+All tables which should be included in the HTML page.
 }
   \item{filter}{
-%%     ~~Describe \code{filter} here~~
+A vector of identifiers for what the table should be filtered. The identifiers must be from the same type like the \sQuote{mainTable} parameter is.
 }
   \item{onlyIDs}{
-%%     ~~Describe \code{onlyIDs} here~~
+If TRUE only the main column of a table without its attribute columns is printed in the HTML page.
 }
   \item{extdata}{
-%%     ~~Describe \code{extdata} here~~
+A list of type dataframe with external data which should printed in the HTML page. In the first column are identifiers from type \sQuote{mainTable} in the other columns are the external data which is paired with the first column.
 }
   \item{colOrder}{
-%%     ~~Describe \code{colOrder} here~~
+A vector The order how the columns of the HTML table should be arranged.
 }
   \item{css}{
 %%     ~~Describe \code{css} here~~
 }
   \item{tableRows}{
 %%     ~~Describe \code{tableRows} here~~
-}
-  \item{\dots}{
-%%     ~~Describe \code{\dots} here~~
 }
 }
 \details{
@@ -80,5 +77,5 @@ N. Auer \email{norbert@derauer.net}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+\keyword{IO}
+\keyword{utilities}

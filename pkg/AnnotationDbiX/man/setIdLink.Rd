@@ -2,10 +2,10 @@
 \alias{setIdLink}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-sdds
+Adds a WWW address to an associated database column
 }
 \description{
-%%  ~~ A concise (1-5 lines) description of what the function does. ~~
+The \command{setIdLink()} function is important for the \command{annotationPkgToHTML()} function which generates HTML pages with the package annotations . Each of these annotation identifiers can be visualised in a HTML page as only an identifier string or as an identifier reference linked to an associated web database. The \command{setIdLink()} function adds this address to the database. This address can also be set in the \command{makeDbX()} and \command{(addNewAnnotation)} function as parameter.
 }
 \usage{
 setIdLink(x, table, link)
@@ -13,24 +13,22 @@ setIdLink(x, table, link)
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{x}{
-%%     ~~Describe \code{x} here~~
+The path and filename or a SQLiteConnection object to the extended SQLite database of interest.
 }
   \item{table}{
-%%     ~~Describe \code{table} here~~
+Name of the database table in the annotation package.
 }
   \item{link}{
-%%     ~~Describe \code{link} here~~
+A valid WWW address. If the specific identifier string of the main column is included in the address then this part of the address is replaced by the string \command{\sQuote{$ID}}. This placeholder would be replaced by the actual identifier string when the \command{annotationPkgToHTML()} function generates the HTML page. For example the web address \url{http://www.genome.jp/dbget-bin/www_bget?eco:$ID} is replaced by \url{http://www.genome.jp/dbget-bin/www_bget?eco:$ID} for the Locus Link identifier \sQuote{b1362}.
+
+If a table has more than one columns except the internal identifier column for each column an address could be defined. The addresses are separated by a | character and have the same order as the columns in the table. For all columns the same identifier type for the placeholder string is used.
 }
 }
 \details{
 %%  ~~ If necessary, more details than the description above ~~
 }
 \value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
+	TRUE, if the function succeeds.
 }
 \references{
 %% ~put references to the literature/web site here ~
@@ -45,12 +43,18 @@ N. Auer \email{norbert@derauer.net}
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
+See also \command{\link{annotationPkgToHTML()}} function.
 }
 \examples{
+\dontrun{
+# loading a extented annotation package
+library(ecoliK12.db)
 
-}
+# the identifier string was replaced by '$ID'
+setIdLink(ecoliK12_dbconn(),"blattner",
+    "http://www.genome.jp/dbget-bin/www_bget?eco:$ID")
+}}
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+\keyword{IO}
+\keyword{utilities}

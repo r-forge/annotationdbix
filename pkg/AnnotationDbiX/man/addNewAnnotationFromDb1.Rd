@@ -3,10 +3,10 @@
 \alias{addNewAnnotationFromDb1}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Add new Annotations from a .db1 database to an extendend SQLite annotation database
+Add new Annotations from a .db1 database to an extended SQLite annotation database
 }
 \description{
-\command{addNewAnnotationFromDb1} add the data from a converted .db1 SQLite database to an extendend annotation package.
+\command{addNewAnnotationFromDb1} add the data from a converted .db1 SQLite database to an extended annotation package.
 }
 \usage{
 addNewAnnotationFromDb1(x, data, mapTableName, mapDb1TableName, 
@@ -15,13 +15,13 @@ addNewAnnotationFromDb1(x, data, mapTableName, mapDb1TableName,
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{x}{
-The path and filename or a SQLiteConnection object to the extendent SQLite database of interest.
+The path and filename or a SQLiteConnection object to the extended SQLite database of interest.
 }
   \item{data}{
   %where the column on the left contains probe or probeset identifiers and the column on the right contains some sort of widely accepted gene accession
   %one kind of information and that is a list of paired IDs
   
-A two column dataframe. Where the column on the left contains probe or probeset identifiers from the type of the table named as \sQuote{mapTableName}. These ids are used to map the new data correct to the existing annotations in the package. And the column on the right contains some sort of widely accepted gene accession from the .db1 package paired with the ids from the first column. 
+A two column dataframe where the column on the left contains probe or probeset identifiers from the type of the table named as \sQuote{mapTableName}. These ids are used to map the new data correctly to the existing annotations in the package. And the column on the right contains some sort of widely accepted gene accession from the .db1 package paired with the ids from the first column. 
 }
   \item{mapTableName}{
 The name of the table from the annotation package which should be mapped. The table \sQuote{probes} would be a good candidate to map.
@@ -34,10 +34,10 @@ The path and filename or a SQLiteConnection object to the .db1 package of intere
 }
 }
 \details{
-\command{addNewAnnotationFromDb1} is a little bit analogue to the \command{makeDBPackage} function from the \emph{AnnotationDbi} package. However, it uses instead of a .db0 package a converted .db1 package. See the \sQuote{How to build a .db1 database from a .db0 database} vignette for more details.
+\command{addNewAnnotationFromDb1} is a little bit analogous to the \command{makeDBPackage} function from the \emph{AnnotationDbi} package. However, instead of a .db0 package it uses a converted .db1 package. See the \sQuote{How to build a .db1 database from a .db0 database} vignette for more details.
 }
 \value{
-If the function succeed it returns TRUE. 
+If the function succeeds it returns TRUE. 
 }
 \references{
 %% ~put references to the literature/web site here ~

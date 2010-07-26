@@ -1,15 +1,12 @@
 \name{BimapObj functions}
 \Rdversion{1.1}
 \alias{addBimapObj}
-\alias{addBimapObj-methods}
 \alias{deleteBimapObj}
-\alias{deleteBimapObj-methods}
 \alias{listBimapObj}
-\alias{listBimapObj-methods}
 \alias{Bimap}
 \title{Handling Bimap objects in .dbX databases}
 \description{
-	In the following sections the handling of Bimap objects in extendent SQLite databases created by the \code{\link{makeDbX}} is described.
+	In the following sections the handling of Bimap objects in extended SQLite databases created by the \code{\link{makeDbX}} is described.
 }
 \usage{
 addBimapObj(x, name, table1, table2, 
@@ -23,7 +20,7 @@ listBimapObj(x)
 
 \arguments{
 	\item{x}{
-		The path and filename or a SQLiteConnection object to the extendent SQLite database of interest. In the case of deleteBimapObj() an AnnDbBimap object is also allowed.
+		The path and filename or a SQLiteConnection object to the extended SQLite database of interest. In the case of deleteBimapObj() an AnnDbBimap object is also allowed.
 	}
 	\item{name}{
 		Name of the Bimap object.
@@ -38,7 +35,7 @@ listBimapObj(x)
 		Comments for the Bimap object.
 	}
 	\item{tagname1,tagname2}{
-		A character vector naming the columns of the left respectively right SQLite table which should used as tag. If more than one column is used as tag a warning occurs using this Bimap with the toTable() function. This warning can be safely ignored. An alias name for tagnames can be used which is shown as column name in functions like toTable() instead of the column name of the SQLite table. Use named vectors to set the alias e.g.
+		A character vector naming the columns of the left respectively right SQLite table which should be used as tag. If more than one column is used as tag a warning occurs using this Bimap with the toTable() function. This warning can be safely ignored. An alias name for tagnames can be used which is shown as column name in functions like toTable() instead of the column name of the SQLite table. Use named vectors to set the alias e.g.
 		
 		\preformatted{tagname1=c(Evid="evidence",Ont="ontology")}
 	}	
@@ -50,14 +47,14 @@ listBimapObj(x)
 		
 	}
 	\item{revmap}{
-		There are two possibilities to generate reverse maps of Bimap objects. Firstly you add a new Bimap and exchange the two tables or you set revmap TRUE. If revmap is TRUE it generates the Bimap object as a reverse map equivalent to the revmap() function from the AnnotationDbi package. Attention these two methods are not the same. The first methode generates a really reverse map whereas the second method only set the direction slot of the AnnDbBimap object * -1. Functions like the toTable() function from the AnnotationDbi package ignore this slot and the results from the reverse map and the normal map are the same. Other functions like ls() work also correct with with revmaps.
+		There are two possibilities to generate reverse maps of Bimap objects. Firstly you add a new Bimap and exchange the two tables or you set revmap equal TRUE. If revmap is TRUE it generates the Bimap object as a reverse map equivalent to the revmap() function from the AnnotationDbi package. Attention these two methods are not the same. The first method generates a real reverse map whereas the second method only sets the direction slot of the AnnDbBimap object * -1. Functions like the toTable() function from the AnnotationDbi package ignore this slot and the results from the reverse map and the normal map are the same. Other functions like ls() work also correct with with revmaps.
 	}
 }
 \details{
 	The way how \link[=Bimap]{Bimap objects} are generated and saved in the AnnotionDbi package is different to the way followed in the AnnotationDbiX package. In the AnnotationDbi package \link[=Bimap]{Bimap objects} are hard coded in the \code{createAnnObjs.XXX.R} files at which the \code{XXX} stands for the special database schema which was used for the organism. In the AnnotationDbiX package a more generic approch is used. Instead of hard coded files the information about the bimaps are stored into the database itself. Thus, this package works with all organism and other kind of data without any specialised code files. When the package is loaded at runtime the \link[=Bimap]{Bimap objects} are generated dynamically with the Bimap information stored in the SQLite database. The functions described here are used to handle these information with the database. \code{addBimapObj} add new Bimaps to the SQLite database. \code{deleteBimapObj} deletes a Bimap from the SQLite database. \code{listBimapObj} lists all available Bimaps from the SQLite database.
 }
 \value{
-	If the function succeed it returns TRUE. \code{listBimapObj} returns a list of class \code{data.frame} listing all stored \link[=Bimap]{Bimap objects} stored into the SQLite database.
+	If the function succeeds it returns TRUE. \code{listBimapObj} returns a list of class \code{data.frame} listing all stored \link[=Bimap]{Bimap objects} stored into the SQLite database.
 }
 \references{
 %% ~put references to the literature/web site here ~
@@ -70,7 +67,7 @@ If you add or delete a new Bimap object changes will take effect only after the 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-	Bimap-direction, Bimap-keys, Bimap-toTable, BimapFormatting, AnnDbBimap-envirAPI from the AnnotationDbi package and \code{\link{makeDbX}} from the AnnotationDbiX package.
+	\command{Bimap-direction}, \command{Bimap-keys}, \command{Bimap-toTable}, \command{BimapFormatting}, \command{AnnDbBimap-envirAPI} from the AnnotationDbi package and \command{\link{makeDbX}} from the AnnotationDbiX package.
 }
 \examples{
 \dontrun{

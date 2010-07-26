@@ -309,4 +309,6 @@ setMethod("setIdLink", signature("SQLiteConnection","character","character"), fu
 	
 	sql <- paste("UPDATE table_master_meta SET links = '",link,"' WHERE tablename = '",table,"'",sep="")
 	dbGetQuery(con,sql)
+	
+	return(TRUE)
 })

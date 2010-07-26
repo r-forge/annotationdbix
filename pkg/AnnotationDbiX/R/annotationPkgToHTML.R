@@ -82,8 +82,7 @@ function(x,caption,outputName,tables=character(),filter=character(),onlyIDs=FALS
 		if(length(colOrder) != nCols)
 			stop("'colOrder' must have a length of ",nCols,"\n")
 	}	
-	print(tables)
-	print(colOrder)
+	
 	## Test filter
 	if(!is.character(filter))
 		stop("'filter' must be of type character\n")
@@ -255,19 +254,14 @@ function(x,caption,outputName,tables=character(),filter=character(),onlyIDs=FALS
 		else
 			to <- p * tableRows
 		
-		print(tableInfo)	
-		print(colOrder)
-		
 		body <- lapply(results[[1]][from:to,1],function(x)
 		{	
 			v <- c()
 			for(i in 1:length(results)) # num cols
 			{
-				print(paste("i ",i))
 				mainres <- c()
 				for(j in 2:ncol(results[[tableInfo[colOrder[i],5]]]))
 				{
-					print(paste("j ",j))
 					link <- strsplit(tableInfo[colOrder[i],4],"\\|")[[1]][j-1]
 
 					if(j == 2)
