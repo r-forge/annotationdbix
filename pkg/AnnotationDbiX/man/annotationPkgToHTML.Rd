@@ -6,21 +6,23 @@
 Generates a nice to read HTML table from the annotation package
 }
 \description{
-%%  ~~ A concise (1-5 lines) description of what the function does. ~~
+Visualise the annotation data of the package in a nice HTML table.
 }
 \usage{
-annotationPkgToHTML(x, caption, outputName, mainTable, tables = character(), filter = character(), onlyIDs = FALSE, extdata = NULL, colOrder = NULL, css = "", tableRows = 50)
+annotationPkgToHTML(x, caption, outputName, mainTable, 
+    tables = character(), filter = character(), onlyIDs = FALSE, 
+    extdata = NULL, colOrder = NULL, css = "", tableRows = 50)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{x}{
-The path and filename, a SQLiteConnection object to the extended annotation database of interest or a Bimap object of class \emph{AnnDbBimap}.
+The path and file name, a SQLiteConnection object to the extended annotation database of interest or a Bimap object of class \emph{AnnDbBimap}.
 }
   \item{caption}{
-The titel of the HTML page.
+The title of the HTML page.
 }
   \item{outputName}{
-The path and filename of the HTML page.
+The path and file name of the HTML page.
 }
   \item{mainTable}{
 The table name for what the HTML table should be aligned. Must be also defined in the \sQuote{tables} parameter. If \sQuote{x} is from type \emph{AnnDbBimap} this parameter is missing.
@@ -35,16 +37,21 @@ A vector of identifiers for what the table should be filtered. The identifiers m
 If TRUE only the main column of a table without its attribute columns is printed in the HTML page.
 }
   \item{extdata}{
-A list of type dataframe with external data which should printed in the HTML page. In the first column are identifiers from type \sQuote{mainTable} in the other columns are the external data which is paired with the first column. The column names of the table are also used as column names in the HTML table.
+A list of type data frame with external data which should printed in the HTML page. In the first column are identifiers from type \sQuote{mainTable} in the other columns are the external data which is paired with the first column. The column names of the table are also used as column names in the HTML table.
 }
   \item{colOrder}{
 A vector of table names in the order as the columns should be arranged in the HTML table. For the \sQuote{extdata} table the column names are used in the order vector.
 }
   \item{css}{
-The path and filename of a external cascading style sheet file which should be used instead of the internal used css. If css is equal NULL no style sheet is used. TODO ids for css
+The path and file name of a external cascading style sheet file which should be used instead of the internal used css. If css is equal NULL no style sheet is used. If a external cascading style sheet is used there are following additional special css classes defined in the HTML page:
+\describe{
+\item{links}{A <div> area around the links to the other pages if some available.}
+\item{even}{A <tr> area of all even rows.}
+\item{odd}{A <tr> area of all odd rows.}
+}
 }
   \item{tableRows}{
-Number of main table rows per html page.
+Number of main table rows per HTML page.
 }
 }
 \details{

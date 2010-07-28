@@ -13,7 +13,7 @@ setIdLink(x, table, link)
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{x}{
-The path and filename or a SQLiteConnection object to the extended SQLite database of interest.
+The path and file name or a SQLiteConnection object to the extended SQLite database of interest.
 }
   \item{table}{
 Name of the database table in the annotation package.
@@ -47,7 +47,7 @@ See also \command{\link{annotationPkgToHTML()}} function.
 }
 \examples{
 \dontrun{
-# loading a extented annotation package
+# loading a extended annotation package
 library(ecoliK12.db)
 
 # the identifier string was replaced by '$ID'

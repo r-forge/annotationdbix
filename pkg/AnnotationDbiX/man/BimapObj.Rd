@@ -10,8 +10,8 @@
 }
 \usage{
 addBimapObj(x, name, table1, table2, 
-    comment = "Added by addBimapObj()",tagname1 = "", tagname2 = "",
-    filter1 = "", filter2 = "", revmap = FALSE)
+    comment = "Added by addBimapObj()", tagname1 = "", 
+    tagname2 = "", filter1 = "", filter2 = "", revmap = FALSE)
 
 deleteBimapObj(x, name)
 
@@ -20,7 +20,7 @@ listBimapObj(x)
 
 \arguments{
 	\item{x}{
-		The path and filename or a SQLiteConnection object to the extended SQLite database of interest. In the case of deleteBimapObj() an AnnDbBimap object is also allowed.
+		The path and file name or a SQLiteConnection object to the extended SQLite database of interest. In the case of deleteBimapObj() an AnnDbBimap object is also allowed.
 	}
 	\item{name}{
 		Name of the Bimap object.
@@ -29,13 +29,13 @@ listBimapObj(x)
 		SQLite table name of the left side of the Bimap.
 	}
 	\item{table2}{
-		SQLite table name of the rigth side of the Bimap.
+		SQLite table name of the right side of the Bimap.
 	}
 	\item{comment}{
 		Comments for the Bimap object.
 	}
 	\item{tagname1,tagname2}{
-		A character vector naming the columns of the left respectively right SQLite table which should be used as tag. If more than one column is used as tag a warning occurs using this Bimap with the toTable() function. This warning can be safely ignored. An alias name for tagnames can be used which is shown as column name in functions like toTable() instead of the column name of the SQLite table. Use named vectors to set the alias e.g.
+		A character vector naming the columns of the left respectively right SQLite table which should be used as tag. If more than one column is used as tag a warning occurs using this Bimap with the toTable() function. This warning can be safely ignored. An alias name for tag names can be used which is shown as column name in functions like toTable() instead of the column name of the SQLite table. Use named vectors to set the alias e.g.
 		
 		\preformatted{tagname1=c(Evid="evidence",Ont="ontology")}
 	}	
@@ -51,7 +51,7 @@ listBimapObj(x)
 	}
 }
 \details{
-	The way how \link[=Bimap]{Bimap objects} are generated and saved in the AnnotionDbi package is different to the way followed in the AnnotationDbiX package. In the AnnotationDbi package \link[=Bimap]{Bimap objects} are hard coded in the \code{createAnnObjs.XXX.R} files at which the \code{XXX} stands for the special database schema which was used for the organism. In the AnnotationDbiX package a more generic approch is used. Instead of hard coded files the information about the bimaps are stored into the database itself. Thus, this package works with all organism and other kind of data without any specialised code files. When the package is loaded at runtime the \link[=Bimap]{Bimap objects} are generated dynamically with the Bimap information stored in the SQLite database. The functions described here are used to handle these information with the database. \code{addBimapObj} add new Bimaps to the SQLite database. \code{deleteBimapObj} deletes a Bimap from the SQLite database. \code{listBimapObj} lists all available Bimaps from the SQLite database.
+	The way how \link[=Bimap]{Bimap objects} are generated and saved in the AnnotionDbi package is different to the way followed in the AnnotationDbiX package. In the AnnotationDbi package \link[=Bimap]{Bimap objects} are hard coded in the \code{createAnnObjs.XXX.R} files at which the \code{XXX} stands for the special database schema which was used for the organism. In the AnnotationDbiX package a more generic approach is used. Instead of hard coded files the information about the Bimaps are stored into the database itself. Thus, this package works with all organism and other kind of data without any specialised code files. When the package is loaded at runtime the \link[=Bimap]{Bimap objects} are generated dynamically with the Bimap information stored in the SQLite database. The functions described here are used to handle these information with the database. \code{addBimapObj} add new Bimaps to the SQLite database. \code{deleteBimapObj} deletes a Bimap from the SQLite database. \code{listBimapObj} lists all available Bimaps from the SQLite database.
 }
 \value{
 	If the function succeeds it returns TRUE. \code{listBimapObj} returns a list of class \code{data.frame} listing all stored \link[=Bimap]{Bimap objects} stored into the SQLite database.

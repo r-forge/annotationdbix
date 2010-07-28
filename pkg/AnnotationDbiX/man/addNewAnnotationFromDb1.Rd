@@ -15,13 +15,13 @@ addNewAnnotationFromDb1(x, data, mapTableName, mapDb1TableName,
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{x}{
-The path and filename or a SQLiteConnection object to the extended SQLite database of interest.
+The path and file name or a SQLiteConnection object to the extended SQLite database of interest.
 }
   \item{data}{
   %where the column on the left contains probe or probeset identifiers and the column on the right contains some sort of widely accepted gene accession
   %one kind of information and that is a list of paired IDs
   
-A two column dataframe where the column on the left contains probe or probeset identifiers from the type of the table named as \sQuote{mapTableName}. These ids are used to map the new data correctly to the existing annotations in the package. And the column on the right contains some sort of widely accepted gene accession from the .db1 package paired with the ids from the first column. 
+A two column data frame where the column on the left contains probe or probeset identifiers from the type of the table named as \sQuote{mapTableName}. These ids are used to map the new data correctly to the existing annotations in the package. And the column on the right contains some sort of widely accepted gene accession from the .db1 package paired with the ids from the first column. 
 }
   \item{mapTableName}{
 The name of the table from the annotation package which should be mapped. The table \sQuote{probes} would be a good candidate to map.
@@ -30,7 +30,7 @@ The name of the table from the annotation package which should be mapped. The ta
 The name of the table from the .db1 annotation package which should be mapped. The table \sQuote{genes} if present would be a good candidate to map.
 }
   \item{dbSrc}{
-The path and filename or a SQLiteConnection object to the .db1 package of interest.
+The path and file name or a SQLiteConnection object to the .db1 package of interest.
 }
 }
 \details{
@@ -58,17 +58,18 @@ N. Auer \email{norbert@derauer.net}
 library(AnnotationDbiX)
 
 \dontrun{
-feature.seq.list <- read.table(file=system.file(package='AnnotationDbiX',
-    'data','feature.seq.list'),sep="\t",header= FALSE,stringsAsFactors= FALSE)
+feature.seq.list <- read.table(file=system.file(
+    package='AnnotationDbiX','data','feature.seq.list'),
+    sep="\t",header= FALSE,stringsAsFactors= FALSE)
 
-probe_entrez.list <- read.table(file=system.file(package='AnnotationDbiX',
-    'data', 'probe_id_entrez_list'),sep="\t",header= FALSE,
-    stringsAsFactors= FALSE)
+probe_entrez.list <- read.table(file=system.file(
+    package='AnnotationDbiX','data', 'probe_id_entrez_list'),
+    sep="\t",header= FALSE,stringsAsFactors= FALSE)
    
-makeDbX(feature.seq.list,'Eschericha Coli','EColi','ecoliK12CHIP','~/Desktop',
-     '1.0.0','Mo-Ferm','ecoliK12 Chip','www.bioconductor.org',
-     author=c('N. Auer','T. Scharl'),
-     maintainer='N. Auer <norbert@derauer.net>')
+makeDbX(feature.seq.list,'Eschericha Coli','Ecoli','ecoliK12CHIP',
+    '~/Desktop','1.0.0','Mo-Ferm','ecoliK12 Chip',
+    'www.bioconductor.org',author=c('N. Auer','T. Scharl'),
+    maintainer='N. Auer <norbert@derauer.net>')
 
 db1ConverterECOLIK12 (system.file (package='AnnotationDbiX','data',
     'ecoliK12v2.4.1.sqlite'),'./ecoliK12v2.4.1')

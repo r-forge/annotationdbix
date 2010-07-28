@@ -4,7 +4,7 @@
 \alias{makeDbX-methods}
 \title{Generates an extended annotation database skeleton}
 \description{
-	In the following sections the generation of extendend SQLite-based annotation packages from type .db is described.
+	In the following sections the generation of extended SQLite-based annotation packages from type .db is described.
 }
 \usage{
 makeDbX(probeList, organism, species, prefix, outputDir, version, 
@@ -19,7 +19,7 @@ makeDbX(probeList, organism, species, prefix, outputDir, version,
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{probeList}{
-	A twocolumn list. On the left side are the probe ids or feature names and on the right side are unique identifier ids. For example the nucleotid sequence of the primer. This id must be absolutely unique and must not be \strong{empty}. For example the Entrez id is unique but if the same gene appears more than once in a genome it has an own id for each position in the genome. If the Entrez id is used to create the package only one Entrez id can be mapped to one probe id (1:1 mapping unless there are other probe ids with the same gene). For example if Blattner ids are added to the package it may happen that some Blattner ids get lost because they map one of the discarded Entrez ids.
+	A two-column list. On the left side are the probe ids or feature names and on the right side are unique identifier ids. For example the nucleotide sequence of the primer. This id must be absolutely unique and must not be \strong{empty}. For example the Entrez id is unique but if the same gene appears more than once in a genome it has an own id for each position in the genome. If the Entrez id is used to create the package only one Entrez id can be mapped to one probe id (1:1 mapping unless there are other probe ids with the same gene). For example if Blattner ids are added to the package it may happen that some Blattner ids get lost because they map one of the discarded Entrez ids.
 }
   \item{organism}{
 	The name of the organism e.g. Homo sapiens
@@ -89,12 +89,13 @@ makeDbX(probeList, organism, species, prefix, outputDir, version,
 \examples{
 \dontrun{
 feature.seq.list <- read.table(file=system.file(package='AnnotationDbiX',
-    'data','feature.seq.list'),sep="\t",header= FALSE,stringsAsFactors= FALSE)
+    'data','feature.seq.list'),sep="\t",header= FALSE,
+    stringsAsFactors= FALSE)
     
-makeDbX(feature.seq.list,'Eschericha Coli','EColi','ecoliK12CHIP','~/Desktop',
-     '1.0.0','Mo-Ferm','ecoliK12 Chip','www.bioconductor.org',
-     author=c('N. Auer','T. Scharl'),
-     maintainer='N. Auer <norbert@derauer.net>')}
+makeDbX(feature.seq.list,'Eschericha Coli','Ecoli','ecoliK12CHIP',
+    '~/Desktop','1.0.0','Mo-Ferm','ecoliK12 Chip','www.bioconductor.org',
+    author=c('N. Auer','T. Scharl'),
+    maintainer='N. Auer <norbert@derauer.net>')}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

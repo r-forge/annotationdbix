@@ -17,10 +17,10 @@ getBioMartFromXML(x, results = FALSE)
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{x}{
-The path and filename to a BioMart XML file created by the XML button at \url{www.biomart.org}.
+The path and file name to a BioMart XML file created by the XML button at \url{www.biomart.org}.
 }
   \item{results}{
-If results equal TRUE \command{getBioMartFromXML} returns a result dataframe. If results equal FALSE a BioMart object is returned.
+If results equal TRUE \command{getBioMartFromXML} returns a result data frame. If results equal FALSE a BioMart object is returned.
 }
 }
 \details{
@@ -57,8 +57,8 @@ BioMartResults <- getBioMartFromXML(x="biomart.xml",
 Mart <- getBioMartFromXML(x="biomart.xml",results=FALSE)
 
 # extract the BioMart Attributes from the xml
-attributers <- getBioMartAttributes(x="biomart2.xml")
-attributers
+attributes <- getBioMartAttributes(x="biomart2.xml")
+attributes
 
 # extract the BioMart Filters from the xml
 filters <- getBioMartFilters(x="biomart".xml3)
@@ -70,7 +70,7 @@ filters$values <- unlist(Rkeys(ecoliK12ENTREZID))
 
 # get the results from the BioMart query
 BioMartResults <- getBM(mart=Mart,
-    attributes=attributers,
+    attributes=attributes,
     filter=filters$filters,
     value=filters$values)
 }}
