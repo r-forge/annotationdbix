@@ -26,7 +26,7 @@ The path and filename of the HTML page.
 The table name for what the HTML table should be aligned. Must be also defined in the \sQuote{tables} parameter. If \sQuote{x} is from type \emph{AnnDbBimap} this parameter is missing.
 }
   \item{tables}{
-All tables which should be included in the HTML page.
+All tables which should be included in the HTML page except the \sQuote{mainTable} table.
 }
   \item{filter}{
 A vector of identifiers for what the table should be filtered. The identifiers must be from the same type like the \sQuote{mainTable} parameter is.
@@ -35,27 +35,23 @@ A vector of identifiers for what the table should be filtered. The identifiers m
 If TRUE only the main column of a table without its attribute columns is printed in the HTML page.
 }
   \item{extdata}{
-A list of type dataframe with external data which should printed in the HTML page. In the first column are identifiers from type \sQuote{mainTable} in the other columns are the external data which is paired with the first column.
+A list of type dataframe with external data which should printed in the HTML page. In the first column are identifiers from type \sQuote{mainTable} in the other columns are the external data which is paired with the first column. The column names of the table are also used as column names in the HTML table.
 }
   \item{colOrder}{
-A vector The order how the columns of the HTML table should be arranged.
+A vector of table names in the order as the columns should be arranged in the HTML table. For the \sQuote{extdata} table the column names are used in the order vector.
 }
   \item{css}{
-%%     ~~Describe \code{css} here~~
+The path and filename of a external cascading style sheet file which should be used instead of the internal used css. If css is equal NULL no style sheet is used. TODO ids for css
 }
   \item{tableRows}{
-%%     ~~Describe \code{tableRows} here~~
+Number of main table rows per html page.
 }
 }
 \details{
 %%  ~~ If necessary, more details than the description above ~~
 }
 \value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
+If the function succeeds HTML pages were produced.
 }
 \references{
 %% ~put references to the literature/web site here ~
@@ -70,11 +66,26 @@ N. Auer \email{norbert@derauer.net}
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
+See also \code{\link{makeDbX}}.
 }
 \examples{
+\dontrun{
+library(ecoliK12.db)
 
-}
+annotationPkgToHTML(ecoliK12_dbconn(),
+    caption='E. Coli K12 microarray chip',
+    outputName='ecoliK12_1',
+    mainTable="probes",
+    tables=c("ec","genes","kegg","blattner"),
+    filter=Lkeys(ecoliK12SEQUENCE)[1:5],
+    colOrder=c("probes","blattner","genes","kegg","ec"))
+
+# creates a HTML page with a Bimap object
+annotationPkgToHTML(ecoliK12SEQUENCE,
+    caption='E. Coli K12 microarray chip',
+    outputName='ecoliK12_2',
+    filter=Lkeys(ecoliK12SEQUENCE)[1:5])
+}}
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
 \keyword{IO}

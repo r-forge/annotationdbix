@@ -83,7 +83,7 @@ setMethod("db1ConverterECOLIK12", signature("SQLiteConnection","missing"), funct
  		'CREATE TABLE go_mf (_id INTEGER NOT NULL, go_id CHAR(10) NOT NULL, evidence CHAR(3),FOREIGN KEY (_id) REFERENCES internal_id(_id))',
  		'CREATE TABLE go_mf_all (_id INTEGER NOT NULL, go_id CHAR(10) NOT NULL, evidence CHAR(3),FOREIGN KEY (_id) REFERENCES internal_id(_id))')
 	
-	tb <- as.data.frame(cbind(tablenames,fieldnames,createstatements,linksURL))
+	tb <- data.frame(tablenames,fieldnames,createstatements,linksURL,stringsAsFactors=FALSE)
 	
 	colnames(tb) <- c('tablename','fieldnames','createstatements','links')
 	dbWriteTable(connType, 'table_master_meta', tb, row.names = FALSE,overwrite = TRUE, append = FALSE)
