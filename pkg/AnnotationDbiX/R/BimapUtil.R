@@ -91,7 +91,7 @@ setMethod("addBimapObj", signature(x="SQLiteConnection",name="character",table1=
 	
 	dbGetQuery(con,sql)
 	
-	cat("Bimap Object '",name,"' added.\nTo update the bimaps objects detach and reload the library .\n",sep="")
+	cat("Bimap Object '",name,"' added.\nTo update the bimap objects detach and reload the library .\n",sep="")
 	
 	return(TRUE)
 })
@@ -154,7 +154,7 @@ setMethod("deleteBimapObj", signature("SQLiteConnection","character"), function(
 		dbGetQuery(con,sql)
 	}
 	
-	cat("Bimap Object '",name,"' deleted.\nDetach the library now and load it new to update existing bimap objects.\n",sep="")
+	cat("Bimap Object '",name,"' was deleted.\nDetach the library now and load it new to update existing bimap objects.\n",sep="")
 	return(TRUE)
 })
 

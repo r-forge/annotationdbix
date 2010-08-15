@@ -4,7 +4,7 @@
 \alias{getBioMartFromXML}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Utilities for bimaRt queries
+Utilities for bimaRt Queries
 }
 \description{
 Helper functions for using the biomaRt interface.
@@ -17,19 +17,21 @@ getBioMartFromXML(x, results = FALSE)
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{x}{
-The path and file name to a BioMart XML file created by the XML button at \url{www.biomart.org}.
+The path and file name to a BioMart XML file created by the XML button at <\url{www.biomart.org}>.
 }
   \item{results}{
-If results equal TRUE \command{getBioMartFromXML} returns a result data frame. If results equal FALSE a BioMart object is returned.
+If \emph{\sQuote{results}} is equal TRUE the \command{getBioMartFromXML()} function returns a result data frame. If \emph{\sQuote{results}} is equal FALSE a BioMart object is returned.
 }
 }
 \details{
 %%  ~~ If necessary, more details than the description above ~~
 }
 \value{
-\command{getBioMartAttributes} returns a vector with all selected attributes.
-\command{getBioMartFilters} returns a list with all selected filters and their associated values.
-\command{getBioMartFromXML} returns a result dataframe if \sQuote{results} equal TRUE else a BioMart object.
+The \command{getBioMartAttributes()} function returns a vector with all selected attributes.
+
+The \command{getBioMartFilters()} function returns a list with all selected filters and their associated values.
+
+The \command{getBioMartFromXML()} function returns a result data frame if \emph{\sQuote{results}} is equal TRUE else a BioMart object.
 }
 \references{
 %% ~put references to the literature/web site here ~

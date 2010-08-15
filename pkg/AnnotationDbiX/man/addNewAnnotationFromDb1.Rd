@@ -3,10 +3,10 @@
 \alias{addNewAnnotationFromDb1}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Add new Annotations from a .db1 database to an extended SQLite annotation database
+Adds New Annotations from a .db1 SQLite Database to an Extended .db SQLite Annotation Database
 }
 \description{
-\command{addNewAnnotationFromDb1} add the data from a converted .db1 SQLite database to an extended annotation package.
+The \command{addNewAnnotationFromDb1()} function adds the data from a converted \emph{.db1} SQLite database to an extended \emph{.db} SQLite annotation package.
 }
 \usage{
 addNewAnnotationFromDb1(x, data, mapTableName, mapDb1TableName, 
@@ -15,29 +15,29 @@ addNewAnnotationFromDb1(x, data, mapTableName, mapDb1TableName,
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{x}{
-The path and file name or a SQLiteConnection object to the extended SQLite database of interest.
+The path and file name or a \strong{SQLiteConnection} object to a extended \emph{.db} SQLite database of interest.
 }
   \item{data}{
   %where the column on the left contains probe or probeset identifiers and the column on the right contains some sort of widely accepted gene accession
   %one kind of information and that is a list of paired IDs
   
-A two column data frame where the column on the left contains probe or probeset identifiers from the type of the table named as \sQuote{mapTableName}. These ids are used to map the new data correctly to the existing annotations in the package. And the column on the right contains some sort of widely accepted gene accession from the .db1 package paired with the ids from the first column. 
+A two column data frame where the column on the left contains identifiers from the same type of the table named as \emph{\sQuote{mapTableName}}. These identifiers are used to map the new data correctly to the existing annotations in the package. And the column on the right contains some sort of widely accepted gene accession from the \emph{.db1} package paired with the identifiers from the first column. 
 }
   \item{mapTableName}{
-The name of the table from the annotation package which should be mapped. The table \sQuote{probes} would be a good candidate to map.
+The name of the table from the annotation package which should be mapped. The table \emph{\sQuote{probes}} would be a good candidate to map.
 }
   \item{mapDb1TableName}{
-The name of the table from the .db1 annotation package which should be mapped. The table \sQuote{genes} if present would be a good candidate to map.
+The name of the table from a \emph{.db1} annotation database which should be mapped. The table \emph{\sQuote{genes}} if present would be a good candidate to map.
 }
   \item{dbSrc}{
-The path and file name or a SQLiteConnection object to the .db1 package of interest.
+The path and file name or a \strong{SQLiteConnection} object to a \emph{.db1} package of interest.
 }
 }
 \details{
-\command{addNewAnnotationFromDb1} is a little bit analogous to the \command{makeDBPackage} function from the \emph{AnnotationDbi} package. However, instead of a .db0 package it uses a converted .db1 package. See the \sQuote{How to build a .db1 database from a .db0 database} vignette for more details.
+The \command{addNewAnnotationFromDb1()} function is a bit analogous to the \command{makeDBPackage()} function from the \emph{AnnotationDbi} package. However, instead of a \emph{.db0} package it uses a converted \emph{.db1} database. See the \emph{\sQuote{How to Build a .db1 Database from a .db0 Database}} vignette for more details.
 }
 \value{
-If the function succeeds it returns TRUE. 
+TRUE, if the function succeeds.
 }
 \references{
 %% ~put references to the literature/web site here ~

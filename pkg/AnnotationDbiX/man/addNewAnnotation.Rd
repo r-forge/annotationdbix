@@ -3,10 +3,10 @@
 \alias{addNewAnnotation}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Add new Annotations to an extended SQLite annotation package.
+Add New Annotations to an Extended .db SQLite Annotation Package.
 }
 \description{
-\command{addNewAnnotation} adds a new table with custom data to an extended SQLite annotation package.
+The \command{addNewAnnotation()} function adds a new table with custom data to an extended \emph{.db} SQLite annotation package.
 }
 \usage{
 addNewAnnotation(x, data, newTableName, data.colNames, mapTableName, 
@@ -15,32 +15,32 @@ addNewAnnotation(x, data, newTableName, data.colNames, mapTableName,
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{x}{
-The path and file name or a SQLiteConnection object to the extended SQLite database of interest.
+The path and file name or a \strong{SQLiteConnection} object to an extended \emph{.db} SQLite database of interest.
 }
   \item{data}{
-A data frame including the data which should be added to the annotation package, where the column on the left contains mainly probe or probeset identifiers from the type of the table named as \sQuote{mapTableName}. These ids are used to map the new data correctly to the existing annotations in the package. The next column is the id or information which should be added. In the first two columns no NAs or empty entries are allowed. In the next columns optional additional information are allowed. Empty entrees are allowed. This data are mostly additional attributes describing the main column in more detail e.g. the \sQuote{ontology} column from the GO ids determine from which kind of ontology the go id is. 
+A data frame including the data which should be added to the annotation package, where the column on the left contains identifiers from the same type of the table named as \emph{\sQuote{mapTableName}}. These identifiers are used to map the new data correctly to the existing annotations in the package. The next columns are the identifiers or information which should be added. In the first two columns no NAs or empty entries are allowed. In the next columns optional attributes are allowed. Empty entries are allowed. This data are mostly additional attributes describing the main column in more detail e.g. the \emph{\sQuote{ontology}} column from the Gene Ontology identifiers determine from which kind of ontology the Gene Ontology identifiers are. 
 }
   \item{newTableName}{
 The name of the new table in the database. The table name must not already exist in the database.
 }
   \item{data.colNames}{
-A character vector of column names for the new table. For each column of \sQuote{data} except for the first a name must be specified in the same order as the columns in \sQuote{data} are ordered.
+A character vector of column names for the new table. For each column of \sQuote{data} except for the first a name must be specified in the same order as the columns in \emph{\sQuote{data}} are listened.
 }
   \item{mapTableName}{
-The name of the table from the annotation package which should be mapped. The table \sQuote{probes} would be a good candidate to map.
+The name of the table from the annotation package which should be mapped. The table \emph{\sQuote{probes}} or another unique identifiers would be good candidates to map.
 }
 	\item{tableTypeLength}{
-The maximum expected string length of the entries from the \sQuote{data} except for the first column in \sQuote{data} in the same order as the columns in \sQuote{data} are ordered.
+The maximum expected string length of the entries from the \emph{\sQuote{data}} except for the first column in \emph{\sQuote{data}} in the same order as the columns in \emph{\sQuote{data}} are listened.
 }
 	\item{bimapName}{
-  A optional Bimap object name. If \dQuote{bimapName} was set a Bimap object between the \dQuote{probes} table and the new table specified in \dQuote{tableName} is generated.
+  An optional Bimap object name. If \emph{\sQuote{bimapName}} was set a Bimap object between the \emph{\sQuote{probes}} table and the new table specified in \dQuote{tableName} is generated.
 }
 }
 \details{
-It is also possible to map the data to another existing table in the database than to the \sQuote{probes} table but it is highly important that these identifiers are unique within the database and have no multi bindings to the probeset like \sQuote{GO terms} have or the data is related to these identifiers.
+It is also possible to map the data to another existing table in the database than to the \emph{\sQuote{probes}} table but it is highly important that these identifiers are unique within the database and have no multi bindings to the probe set like the \emph{Gene Ontology terms} have or the data is related to these identifiers.
 }
 \value{
-If the function succeeds it returns TRUE. 
+TRUE, if the function succeeds.
 }
 \references{
 %% ~put references to the literature/web site here ~
