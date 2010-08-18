@@ -2,7 +2,7 @@
 \alias{setIdLink}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Adds a WWW Address to an Associated Database Column
+Adds a WWW address to an associated database column
 }
 \description{
 The \command{setIdLink()} function is important for the \command{annotationPkgToHTML()} function which generates HTML pages with the package annotations . Each of these annotation identifiers can be visualised in a HTML page as only an identifier string or as an identifier reference linked to an associated web database. The \command{setIdLink()} function adds this address to the database. This address can also be set in the \command{makeDbX()} and \command{addNewAnnotation()} function as a parameter.
@@ -47,7 +47,7 @@ See also \command{\link{annotationPkgToHTML()}} function.
 }
 \examples{
 \dontrun{
-# loading a extended annotation package
+# loading an extended annotation package
 library(ecoliK12.db)
 
 # the identifier string was replaced by '$ID'

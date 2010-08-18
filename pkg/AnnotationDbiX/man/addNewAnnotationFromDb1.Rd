@@ -3,7 +3,7 @@
 \alias{addNewAnnotationFromDb1}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Adds New Annotations from a .db1 SQLite Database to an Extended .db SQLite Annotation Database
+Adds new annotations from a .db1 SQLite database to an extended .db SQLite annotation database
 }
 \description{
 The \command{addNewAnnotationFromDb1()} function adds the data from a converted \emph{.db1} SQLite database to an extended \emph{.db} SQLite annotation package.

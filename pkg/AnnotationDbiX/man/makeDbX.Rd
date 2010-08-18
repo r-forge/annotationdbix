@@ -2,7 +2,7 @@
 \Rdversion{1.1}
 \alias{makeDbX}
 \alias{makeDbX-methods}
-\title{How to Create an extended Annotation Database Skeleton}
+\title{How to create an extended annotation database skeleton}
 \description{
 	In the following sections is described how an extended SQLite-based annotation package from type \emph{.db} is created.
 }
@@ -28,7 +28,7 @@ makeDbX(probeList, organism, species, prefix, outputDir, version,
 	The name of the species e.g. Human
 }
   \item{prefix}{
-  	Prefix is the first part of the eventual desired package name. (ie. \emph{\sQuote{prefix.db}})
+  	Prefix is the first part of the eventual desired package name. (e.g. \emph{\sQuote{prefix.db}})
 }
   \item{outputDir}{
   	Where you would like the output files to be placed.

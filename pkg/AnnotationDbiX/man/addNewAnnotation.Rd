@@ -3,7 +3,7 @@
 \alias{addNewAnnotation}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Add New Annotations to an Extended .db SQLite Annotation Package.
+Add new annotations to an extended .db SQLite annotation package.
 }
 \description{
 The \command{addNewAnnotation()} function adds a new table with custom data to an extended \emph{.db} SQLite annotation package.
@@ -61,6 +61,7 @@ N. Auer \email{norbert@derauer.net}
 library(AnnotationDbiX)
 
 \dontrun{
+## reads in the annotation data
 feature.seq.list <- read.table(file=system.file(package='AnnotationDbiX',
     'data','feature.seq.list'),sep="\t",header= FALSE,
     stringsAsFactors= FALSE)
@@ -74,7 +75,7 @@ makeDbX(feature.seq.list,'Eschericha Coli','Ecoli','ecoliK12CHIP',
     author=c('N. Auer','T. Scharl'),
     maintainer='N. Auer <norbert@derauer.net>')
 
-# Add other columns from the .gal file to annotation package
+## Add other columns from the .gal file to the annotation package
 addNewAnnotation(
     x='~/Desktop/ecoliK12CHIP.db/inst/extdata/ecoliecoliK12CHIP.db',
     data=feature.blatt.list,newTableName='blattner',

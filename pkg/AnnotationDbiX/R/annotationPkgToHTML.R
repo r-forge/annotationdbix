@@ -1,15 +1,4 @@
-## x = SQLite Database oder AnnDbBimap Objekt
-## caption = Tabellenueberschrift
-## outputName = dort wird das html File generiert
-## mainTable = Die Haupttabelle
-## tables = Weitere Tabellen, die verwendet werden. 
-## onlyIDs = wenn TRUE werden nur IDs angezeigt. Bei FALSE werden auch andere Attribute angezeigt
-## extdata = zusaetzliche Daten. Mindestens 2 Spalten. Die erste Spalte muss IDs der Haupttabelle enthalten. Jede weitere Spalte wird einzeln zur Haupttabelle gemappt (NAs und "" erlaubt). Header werden als Spaltenueberschriften und bei colOrder verwendet.
-## colOrder = legt die Reihenfolge der Spalten fest. Bei tables werden die Tabellennamen verwendet bei extdata die Spaltenueberschriften
-## css = Pfad zu css File, dass dann im html code eingebettet wird
-## filter = c() von IDs, welche die Hauptabelle filtert
-
-
+## Generates HTML pages with the annotation database data
 setGeneric("annotationPkgToHTML", signature = c("x","caption","outputName","mainTable"),
 	function(x,caption,outputName,mainTable,tables=character(),filter=character(),onlyIDs=FALSE,extdata=NULL,colOrder=NULL,css="",tableRows=50) standardGeneric("annotationPkgToHTML"))
 

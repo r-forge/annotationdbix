@@ -91,7 +91,7 @@ setMethod("addBimapObj", signature(x="SQLiteConnection",name="character",table1=
 	
 	dbGetQuery(con,sql)
 	
-	cat("Bimap Object '",name,"' added.\nTo update the bimap objects detach and reload the library .\n",sep="")
+	cat("Bimap Object '",name,"' added.\nTo update the new created Bimaps objects detach and reload the library.\n",sep="")
 	
 	return(TRUE)
 })
@@ -132,7 +132,7 @@ setMethod("deleteBimapObj", signature("SQLiteConnection","character"), function(
 	## Check if bimap_meta exists
 	if(!dbExistsTable(con,'bimap_meta'))
 	{
-		cat("There are no bimap objects in database. Use addBimapObj() to add bimap objects.\n")
+		cat("There are no Bimap objects in database. Use addBimapObj() to add Bimap objects.\n")
 		return(FALSE)
 	}	
 		
@@ -154,7 +154,7 @@ setMethod("deleteBimapObj", signature("SQLiteConnection","character"), function(
 		dbGetQuery(con,sql)
 	}
 	
-	cat("Bimap Object '",name,"' was deleted.\nDetach the library now and load it new to update existing bimap objects.\n",sep="")
+	cat("Bimap Object '",name,"' was deleted.\nDetach the library now and load it new to update existing Bimap objects.\n",sep="")
 	return(TRUE)
 })
 
@@ -186,7 +186,7 @@ setMethod("listBimapObj", signature("SQLiteConnection"), function(x)
 	## Check if bimap_meta exists
 	if(!dbExistsTable(con,'bimap_meta'))
 	{
-		cat("There are no bimap objects in database. Use addBimapObj() to add bimap objects.\n")
+		cat("There are no Bimap objects in database. Use addBimapObj() to add Bimap objects.\n")
 		return(FALSE)
 	}	
 	
@@ -195,65 +195,64 @@ setMethod("listBimapObj", signature("SQLiteConnection"), function(x)
 	return(dbGetQuery(con,sql))
 })
 
-
 ## Add special filtered BiMapObjects to the Database
-
+## Currently broken !!!
 ## FilePath
-setMethod("setFilterBimapObj", signature(x="character",name="character",bimap="AnnDbBimap",filter="character"), function(x,name,bimap,filter,comment="Added by filterBimapObj()") 
-{
+#setMethod("setFilterBimapObj", signature(x="character",name="character",bimap="AnnDbBimap",filter="character"), function(x,name,bimap,filter,comment="Added by filterBimapObj()") 
+#{
 	## Check Parameter
-	if(!file.exists(x))
-		stop("Database do not exist!")
+#	if(!file.exists(x))
+#		stop("Database do not exist!")
 	
 	## Load SQLite Driver
-	drv <- dbDriver("SQLite")
+#	drv <- dbDriver("SQLite")
 	
 	## Generate Connection Object	
-	con <- dbConnect(drv, dbname = x)
-	on.exit(dbDisconnect(con))
+#	con <- dbConnect(drv, dbname = x)
+#	on.exit(dbDisconnect(con))
 	
-	setFilterBimapObj(con,name,bimap,filter,comment)
-})
+#	setFilterBimapObj(con,name,bimap,filter,comment)
+#})
 
 
 ## DB-Connection
-setMethod("setFilterBimapObj", signature(x="SQLiteConnection",name="character",bimap="AnnDbBimap",filter="character"), function(x,name,bimap,filter,comment="Added by setFilterBimapObj()") 
-{	
-	con <- x;
+#setMethod("setFilterBimapObj", signature(x="SQLiteConnection",name="character",bimap="AnnDbBimap",filter="character"), function(x,name,bimap,filter,comment="Added by setFilterBimapObj()") 
+#{	
+#	con <- x;
 	
 	## Create bimap_meta table if not exist		
-	sql <- "CREATE TABLE IF NOT EXISTS bimap_meta(name TEXT PRIMARY KEY,table1 TEXT NOT NULL,table2 TEXT NOT NULL,tagname1 TEXT,tagname2 TEXT,comment TEXT,filter1 TEXT,filter2 TEXT)"
-	dbGetQuery(con,sql)
+#	sql <- "CREATE TABLE IF NOT EXISTS bimap_meta(name TEXT PRIMARY KEY,table1 TEXT NOT NULL,table2 TEXT NOT NULL,tagname1 TEXT,tagname2 TEXT,comment TEXT,filter1 TEXT,filter2 TEXT)"
+#	dbGetQuery(con,sql)
 	
 	## Check if Bimap Object already exists
-	sql <- paste("SELECT COUNT(*) FROM bimap_meta WHERE name='",name,"'",sep="")
-	if(dbGetQuery(con,sql) > 0)
-	{
-		cat("Bimap object '",name,"' already exist. Use deleteBimapObj() to delete bimap object.\n",sep="")
-		return(FALSE)
-	}
+#	sql <- paste("SELECT COUNT(*) FROM bimap_meta WHERE name='",name,"'",sep="")
+#	if(dbGetQuery(con,sql) > 0)
+#	{
+#		cat("Bimap object '",name,"' already exist. Use deleteBimapObj() to delete bimap object.\n",sep="")
+#		return(FALSE)
+#	}
 	
 	## Get tableinfo
-	sql <- "SELECT * FROM table_master_meta"
-	tableinfo <- dbGetQuery(con,sql)
-	tableinfo <- as.data.frame(cbind(tableinfo,apply(tableinfo[2],1,function(x) strsplit(x,";")[[1]][1])),stringsAsFactors=FALSE)
-	mainCol <- tableinfo[tableinfo['tablename']==bimap@L2Rchain[[2]]@tablename,4]
+#	sql <- "SELECT * FROM table_master_meta"
+#	tableinfo <- dbGetQuery(con,sql)
+#	tableinfo <- as.data.frame(cbind(tableinfo,apply(tableinfo[2],1,function(x) strsplit(x,";")[[1]][1])),stringsAsFactors=FALSE)
+#	mainCol <- tableinfo[tableinfo['tablename']==bimap@L2Rchain[[2]]@tablename,4]
 	
 	## Add new Bimap Object
-	if(is.null(bimap@L2Rchain[[1]]@tagname) || is.na(bimap@L2Rchain[[1]]@tagname))
-		tagname1 = ""
-	else
-		tagname1 = bimap@L2Rchain[[1]]@tagname
-		
-	if(is.null(bimap@L2Rchain[[2]]@tagname) || is.na(bimap@L2Rchain[[2]]@tagname))
-		tagname2 = ""
-	else
-		tagname2 = bimap@L2Rchain[[2]]@tagname
-	
-	filter2 <- paste(bimap@L2Rchain[[2]]@filter,'AND',paste("{",mainCol,"}=\"",filter,"\"",sep="",collapse=" OR "))
-
-	return(addBimapObj(con,name,bimap@L2Rchain[[1]]@tablename,bimap@L2Rchain[[2]]@tablename,comment,tagname1=tagname1,tagname2=tagname2,filter1=bimap@L2Rchain[[1]]@filter,filter2=filter2))
-})
+#	if(is.null(bimap@L2Rchain[[1]]@tagname) || is.na(bimap@L2Rchain[[1]]@tagname))
+#		tagname1 = ""
+#	else
+#		tagname1 = bimap@L2Rchain[[1]]@tagname
+#		
+#	if(is.null(bimap@L2Rchain[[2]]@tagname) || is.na(bimap@L2Rchain[[2]]@tagname))
+#		tagname2 = ""
+#	else
+#		tagname2 = bimap@L2Rchain[[2]]@tagname
+#	
+#	filter2 <- paste(bimap@L2Rchain[[2]]@filter,'AND',paste("{",mainCol,"}=\"",filter,"\"",sep="",collapse=" OR "))
+#
+#	return(addBimapObj(con,name,bimap@L2Rchain[[1]]@tablename,bimap@L2Rchain[[2]]@tablename,comment,tagname1=tagname1,tagname2=tagname2,filter1=bimap@L2Rchain[[1]]@filter,filter2=filter2))
+#})
 
 ## Set the HTML link in the .dbX database associating to a biodatabase which is used in the html as Id link generated by the annotationPkgToHTML function.
 

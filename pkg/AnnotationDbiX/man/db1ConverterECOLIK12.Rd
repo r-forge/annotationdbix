@@ -3,7 +3,7 @@
 \alias{db1Converter}
 \alias{db1ConverterXXX}
 \alias{db1ConverterECOLIK12}
-\title{Converts .db0 Packages into .db1 Packages}
+\title{Converts .db0 databases into .db1 databases}
 \description{
 Each \command{db1ConverterXXX} method converts a \emph{.db0} SQLite file into its appropriate \emph{.db1} SQLite file.
 }

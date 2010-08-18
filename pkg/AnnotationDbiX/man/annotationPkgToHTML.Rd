@@ -3,7 +3,7 @@
 \alias{annotationPkgToHTML}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Generates a Nice to Read HTML Table with the Annotation Package
+Generates a nice to read HTML table with the annotation package data
 }
 \description{
 Visualise the annotation data of the package in a nice HTML table.

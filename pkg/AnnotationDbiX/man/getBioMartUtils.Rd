@@ -4,7 +4,7 @@
 \alias{getBioMartFromXML}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Utilities for bimaRt Queries
+Utilities for bimaRt queries
 }
 \description{
 Helper functions for using the biomaRt interface.

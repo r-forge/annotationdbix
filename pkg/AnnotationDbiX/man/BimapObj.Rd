@@ -4,7 +4,7 @@
 \alias{deleteBimapObj}
 \alias{listBimapObj}
 \alias{Bimap}
-\title{Handling Bimap Objects with extended .db SQLite Databases}
+\title{Handling Bimap objects with extended .db SQLite databases}
 \description{
 	In the following sections is described how Bimap objects can be handled in extended SQLite databases created by the \command{\link{makeDbX}()} function.
 }
@@ -71,35 +71,33 @@ If a Bimap object is added or deleted, the changes only will take effect after t
 }
 \examples{
 \dontrun{
-## load a .db library
 library(ecoliK12.db)
 
-## add new Bimaps
+## add new Bimap objects
 addBimapObj(ecoliK12CHIP_dbconn(),"GO_CCMF","probes","go_id",
     tagname2=c("evidence",Ontology="ontology"),
     filter2="{ontology} = 'cc' OR {ontology} = 'mf'")
 
 addBimapObj(ecoliK12CHIP_dbconn(),"ALIAS2GO","gene_synonyms","go_id")
 
-## the same like revmap(ecoliK12CHIPALIAS2GO,objName="GO2ALIAS")
+## the same as revmap(ecoliK12CHIPALIAS2GO,objName="GO2ALIAS")
 addBimapObj(ecoliK12CHIP_dbconn(),"GO2ALIAS","gene_synonyms","go_id",
     revmap=TRUE)
 
-## add a real revers map from ecoliK12CHIPALIAS2GO Bimap
+## add a real revers map from the ecoliK12CHIPALIAS2GO Bimap
 addBimapObj(ecoliK12CHIP_dbconn(),"GO2ALIASREAL","go_id","gene_synonyms")		
 
 ## reload the the annotation package
 detach(package:ecoliK12.db,unload=TRUE)
 library(ecoliK12.db)
 
-# shows all Bimaps stored in the .dbX database
+# shows all Bimaps stored in the extended .db database
 listBimapObj(ecoliK12CHIP_dbconn())
 
 toTable(ecoliK12CHIPGO2ALIAS)[1:10,]
 
-# the revers map is sorted like the normal map
+# the revers map is sorted as the normal map
 toTable(ecoliK12CHIPALIAS2GO)[1:10,]
-
 toTable(ecoliK12CHIPGO2ALIASREAL)[1:10,]
 
 ls(ecoliK12CHIPGO2ALIAS)[1:10]
