@@ -8,31 +8,31 @@ setMethod("makeDbX",signature("data.frame","character","character","character","
 	
 	## Test parameters
 	if(dim(probeList)[2] != 2)
-		stop("'probeList' must have 2 columns. The left side must be the featurenames and the right side must be a unique identifier e.g. oligosequence.")
+		stop("'probeList' must have 2 columns. The left side must be the feature names and the right side must be a unique identifier e.g. oligosequence.\n")
 	
 	if(nrow(unique(probeList)) != nrow(unique(probeList[1])))
-		stop("'probeList' is not unique. Same featurename must have same id.")
+		stop("'probeList' is not unique. Same feature name must have same id.\n")
 	
 	if(colName == 'probe_id' || colName == '_id')
-		stop("'colName' must not be named 'probe_id'.")
+		stop("'colName' must not be named as 'probe_id'.\n")
 		
 	if(newTableName == 'probes_temp' || newTableName == 'probes')
-		stop("'newTableName' must not be named 'probes_temp' or 'probes'.")
+		stop("'newTableName' must not be named as 'probes_temp' or 'probes'.\n")
 		
 	if(grepl('meta',newTableName))
-		stop("'newTableName' must not contain 'meta' in the name.")
+		stop("'newTableName' must not contain 'meta' in the name.\n")
 
 	if(any(is.na(unique(probeList))))
-		stop("'probeList' must not contain NAs.")
+		stop("'probeList' must not contain NAs\n.")
 		
 	if(!missing(bimapName))
 		if(is.character(bimapName))
 		{
 			if(length(bimapName) > 1)
-				stop(paste("length(",bimapName,") must be 1.",sep=""))
+				stop(paste("length(",bimapName,") must be 1.\n",sep=""))
 		}
 		else
-			stop(paste("'",bimapName,"' must be from type 'character'.",sep=""))
+			stop(paste("'",bimapName,"' must be from type 'character'.\n",sep=""))
 				
 	## Prepare .dbX creation
 	template_path <- system.file("Pkg-template",package="AnnotationDbiX")
@@ -77,52 +77,52 @@ setMethod("makeDbX",signature("data.frame","character","character","character","
 	## Generate Connection Object	
 	db_dir <- file.path(pkgPathName,'inst','extdata',paste(prefix,'.db',sep=""))
 	
-	cat('Generates a sqlite file at',db_dir,'\n')
+	cat('Creates a SQLite file at',db_dir,'.\n')
 	con <- dbConnect(drv,dbname = db_dir)
 	on.exit(dbDisconnect(con))
 	
 	## Add helper table	
-	cat("Add helper Table\n")
+	cat("Add the helper table.\n")
 	colnames(probeList) <- (c("probe_id",colName))
 	dbWriteTable(conn=con,name="probes_temp",value=unique(probeList),row.names=FALSE,overwrite=TRUE)
 	
 	## Add meta Table
-	cat("Add meta Table\n")
+	cat("Add the 'meta' table.\n")
 	sql <- "CREATE TABLE meta (key VARCHAR(80) PRIMARY KEY,value VARCHAR(80) NOT NULL)"
 	dbGetQuery(con,sql)
 	
 	## Add table_master_meta
-	cat("Add table_master_meta\n")
+	cat("Add the 'table_master_meta' table.\n")
 	sql <- "CREATE TABLE table_master_meta (tablename VARCHAR(80),fieldnames VARCHAR(80),links VARCHAR(255))"
 	dbGetQuery(con,sql)
 	
 	## Add User Defined table
-	cat("Add",newTableName,"table\n")
+	cat("Add the '",newTableName,"' table.\n")
 	sql <- paste("CREATE TABLE",newTableName,"(_id INTEGER PRIMARY KEY,",colName,"VARCHAR(255) NOT NULL)")
 	dbGetQuery(con,sql)
 	
 	## Add Probes table
-	cat("Add probes table\n")
+	cat("Add the 'probes' table.\n")
 	sql <- paste("CREATE TABLE probes (_id INTEGER,probe_id VARCHAR(80) NOT NULL)")
 	dbGetQuery(con,sql)
 	
 	## Fill User Defined table
-	cat("Fill",newTableName,"table\n")
+	cat("Fill the '",newTableName,"' table.\n")
 	sql <- paste("INSERT INTO",newTableName,"SELECT NULL,",colName,"FROM probes_temp GROUP BY",colName)
 	dbGetQuery(con,sql)
 	
 	## Fill Probes table
-	cat("Fill Probes table\n")
+	cat("Fill the 'probes' table.\n")
 	sql <- paste("INSERT INTO probes SELECT _id,probe_id FROM probes_temp p,",newTableName," s WHERE p.",colName," = s.",colName," GROUP BY p.probe_id",sep="")
 	dbGetQuery(con,sql)
 	
 	## Fill meta Table
-	cat("Fill meta Table\n")
+	cat("Fill the 'meta' Table.\n")
 	sql <- paste("INSERT INTO meta (key,value) VALUES ('main_table','",newTableName,"')")
 	dbGetQuery(con,sql)
 	
 	## Fill table_master_meta Table
-	cat("Fill table_master_meta Table\n")
+	cat("Fill the 'table_master_meta' table.\n")
 	sql <- paste("INSERT INTO table_master_meta (tablename,fieldnames) VALUES ('probes','probe_id')")
 	dbGetQuery(con,sql)
 	sql <- paste("INSERT INTO table_master_meta (tablename,fieldnames) VALUES ('",newTableName,"','",colName,"')",sep="")
@@ -132,7 +132,7 @@ setMethod("makeDbX",signature("data.frame","character","character","character","
 	setIdLink(con,newTableName,link)
 	
 	## Create index for main and probes table
-	cat("Create index for main and probes table\n")
+	cat("Create the index for the 'main' and the 'probes' table.\n")
 	sql <- paste("CREATE INDEX F",newTableName," ON ",newTableName,"(_id)",sep="")
 	dbGetQuery(con,sql)	
 	sql <- paste("CREATE INDEX FPROBES ON ",newTableName,"(_id)",sep="")
@@ -143,7 +143,7 @@ setMethod("makeDbX",signature("data.frame","character","character","character","
 	dbGetQuery(con,sql)	
 	
 	## Add metadata Table for interoperability with other functions
-	cat("Add metadata Table\n")
+	cat("Add the 'metadata' table.\n")
 	sql <- "CREATE TABLE metadata (name VARCHAR(40) PRIMARY KEY,value VARCHAR(80) NOT NULL)"
 	dbGetQuery(con,sql)
 	
@@ -152,7 +152,7 @@ setMethod("makeDbX",signature("data.frame","character","character","character","
 		addBimapObj(con,bimapName,'probes',newTableName)
 		
 	## Add map_counts Table for interoperability with other functions
-	cat("Add map_counts Table\n")
+	cat("Add the 'map_counts' table.\n")
 	sql <- "CREATE TABLE map_counts (map_name VARCHAR(80) PRIMARY KEY,count INTEGER NOT NULL)"
 	dbGetQuery(con,sql)
 	

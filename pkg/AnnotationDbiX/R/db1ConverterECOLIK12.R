@@ -89,7 +89,7 @@ setMethod("db1ConverterECOLIK12", signature("SQLiteConnection","missing"), funct
 	dbWriteTable(connType, 'table_master_meta', tb, row.names = FALSE,overwrite = TRUE, append = FALSE)
 	
 	## Add Main ID table
-	cat("Add Main ID table\n")
+	cat("Add main ID table.\n")
 	sql <- "DROP TABLE IF EXISTS internal_id"
 	dbGetQuery(connType,sql)
 	
@@ -97,12 +97,12 @@ setMethod("db1ConverterECOLIK12", signature("SQLiteConnection","missing"), funct
 	dbGetQuery(connType,sql)
 	
 	## Writes internal ids into the database
-	cat("Writes internal ids into the database\n")
+	cat("Writes internal ids into the database.\n")
 	sql <- "INSERT INTO internal_id (_id) SELECT _id FROM genes"
 	dbGetQuery(connType,sql)
 
 	## Transform all GO tables to the table go_id with one additional column ontology
-	cat("Writes GO Table\n")
+	cat("Writes GO table.\n")
 	sql <- "DROP TABLE IF EXISTS go_id"
 	dbGetQuery(connType,sql)
 	
@@ -119,7 +119,7 @@ setMethod("db1ConverterECOLIK12", signature("SQLiteConnection","missing"), funct
 	dbGetQuery(connType,sql)
 	
 	## Add db1 Genbank-Table with correct values
-	cat("Writes Genbank Table\n")
+	cat("Writes GenBank table.\n")
 	sql <- "DROP TABLE IF EXISTS genbank_id"
 	dbGetQuery(connType,sql)
 	
@@ -130,7 +130,7 @@ setMethod("db1ConverterECOLIK12", signature("SQLiteConnection","missing"), funct
 	dbGetQuery(connType,sql)
 	
 	## Add bimap_meta tables
-	cat("Writes bimap_meta Table\n")
+	cat("Writes bimap_meta table.\n")
 	sql <- "DROP TABLE IF EXISTS bimap_meta"
 	dbGetQuery(connType,sql)
 	sql <- "CREATE TABLE IF NOT EXISTS bimap_meta (name VARCHAR(40) PRIMARY KEY,table1 VARCHAR(40) NOT NULL,table2 VARCHAR(40) NOT NULL,

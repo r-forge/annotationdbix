@@ -18,11 +18,11 @@
 			},
 			error=function(e)
 			{ 			
-				stop("Cannot open database '",x,"'\n") 
+				stop("Cannot open database '",x,"'!\n") 
 			})
 		}
 		else
-			stop("File '",x,"' does not exist\n") 
+			stop("File '",x,"' does not exist!\n") 
 	}
 	else if(class(x) == "SQLiteConnection")
 	{
@@ -36,7 +36,7 @@
 	## Check if tableName exists
 	if(tableName != '' && !dbExistsTable(con,tableName))
 	{
-		cat(paste("Table '",tableName,"' does not exist'\n",sep=""))
+		cat(paste("Table '",tableName,"' does not exist'.\n",sep=""))
 		return(NULL)
 	}
 	
@@ -59,7 +59,7 @@
 	## Check if bimap_meta exists
 	if(!dbExistsTable(dbconn,'bimap_meta'))
 	{
-		cat('No Bimap Objects available\n')
+		cat('No Bimap objects available.\n')
 		return(NULL)
 	}
 	
@@ -189,7 +189,7 @@
 		}
 		,error=function(e) 
 		{ 
-			cat("Cannot create bimap object '",bimaps[i,'name'],"'\n") 
+			cat("Cannot create Bimap object '",bimaps[i,'name'],"'.\n") 
 		})
 		
 	}

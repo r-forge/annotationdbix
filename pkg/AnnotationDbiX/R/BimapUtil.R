@@ -15,7 +15,7 @@ setMethod("addBimapObj", signature("character","character","character","characte
 {
 	## Check Parameter
 	if(!file.exists(x))
-		stop("Database do not exist!")
+		stop("Database does not exist!\n")
 	
 	## Load SQLite Driver
 	drv <- dbDriver("SQLite")
@@ -35,10 +35,10 @@ setMethod("addBimapObj", signature(x="SQLiteConnection",name="character",table1=
 	
 	## Check Parameter
 	if(!dbExistsTable(con,table1))
-		stop("Table1 do not exist!")
+		stop("Table1 does not exist!\n")
 		
 	if(!dbExistsTable(con,table2))
-		stop("Table2 do not exist!")
+		stop("Table2 does not exist!\n")
 		
 	## Create bimap_meta table if not exist
 	sql <- "CREATE TABLE IF NOT EXISTS bimap_meta(name TEXT PRIMARY KEY,table1 TEXT NOT NULL,table2 TEXT NOT NULL,tagname1 TEXT,tagname2 TEXT,comment TEXT,filter1 TEXT,filter2 TEXT,revmap INTEGER)"
@@ -55,7 +55,7 @@ setMethod("addBimapObj", signature(x="SQLiteConnection",name="character",table1=
 	sql <- paste("SELECT COUNT(*) FROM bimap_meta WHERE name='",name,"'",sep="")
 	if(dbGetQuery(con,sql) > 0)
 	{
-		cat("Bimap object '",name,"' already exist. Use deleteBimapObj() to delete bimap object.\n",sep="")
+		cat("Bimap object '",name,"' already exist. Use deleteBimapObj() to delete a Bimap object.\n",sep="")
 		return(FALSE)
 	}
 	
@@ -91,7 +91,7 @@ setMethod("addBimapObj", signature(x="SQLiteConnection",name="character",table1=
 	
 	dbGetQuery(con,sql)
 	
-	cat("Bimap Object '",name,"' added.\nTo update the new created Bimaps objects detach and reload the library.\n",sep="")
+	cat("Bimap object '",name,"' added.\nTo update the new created Bimap objects detach and reload the library.\n",sep="")
 	
 	return(TRUE)
 })
@@ -104,7 +104,7 @@ setMethod("deleteBimapObj", signature("character","character"), function(x,name)
 {
 	## Check Parameter
 	if(!file.exists(x))
-		stop("Database do not exist!")
+		stop("Database does not exist!\n")
 	
 	## Load SQLite Driver
 	drv <- dbDriver("SQLite")
@@ -132,7 +132,7 @@ setMethod("deleteBimapObj", signature("SQLiteConnection","character"), function(
 	## Check if bimap_meta exists
 	if(!dbExistsTable(con,'bimap_meta'))
 	{
-		cat("There are no Bimap objects in database. Use addBimapObj() to add Bimap objects.\n")
+		cat("There are no Bimap objects in the database. Use addBimapObj() to add Bimap objects.\n")
 		return(FALSE)
 	}	
 		
@@ -154,7 +154,7 @@ setMethod("deleteBimapObj", signature("SQLiteConnection","character"), function(
 		dbGetQuery(con,sql)
 	}
 	
-	cat("Bimap Object '",name,"' was deleted.\nDetach the library now and load it new to update existing Bimap objects.\n",sep="")
+	cat("Bimap object '",name,"' was deleted.\nDetach the library now and load it new to update all existing Bimap objects.\n",sep="")
 	return(TRUE)
 })
 
@@ -166,7 +166,7 @@ setMethod("listBimapObj", signature("character"), function(x)
 {
 	## Check Parameter
 	if(!file.exists(x))
-		stop("Database do not exist!")
+		stop("Database does not exist!\n")
 	
 	## Load SQLite Driver
 	drv <- dbDriver("SQLite")
@@ -186,7 +186,7 @@ setMethod("listBimapObj", signature("SQLiteConnection"), function(x)
 	## Check if bimap_meta exists
 	if(!dbExistsTable(con,'bimap_meta'))
 	{
-		cat("There are no Bimap objects in database. Use addBimapObj() to add Bimap objects.\n")
+		cat("There are no Bimap objects in the database. Use addBimapObj() to add new Bimap objects.\n")
 		return(FALSE)
 	}	
 	
@@ -202,7 +202,7 @@ setMethod("listBimapObj", signature("SQLiteConnection"), function(x)
 #{
 	## Check Parameter
 #	if(!file.exists(x))
-#		stop("Database do not exist!")
+#		stop("Database does not exist!\n")
 	
 	## Load SQLite Driver
 #	drv <- dbDriver("SQLite")
@@ -228,7 +228,7 @@ setMethod("listBimapObj", signature("SQLiteConnection"), function(x)
 #	sql <- paste("SELECT COUNT(*) FROM bimap_meta WHERE name='",name,"'",sep="")
 #	if(dbGetQuery(con,sql) > 0)
 #	{
-#		cat("Bimap object '",name,"' already exist. Use deleteBimapObj() to delete bimap object.\n",sep="")
+#		cat("Bimap object '",name,"' already exist. Use deleteBimapObj() to delete a Bimap object.\n",sep="")
 #		return(FALSE)
 #	}
 	
@@ -261,7 +261,7 @@ setMethod("setIdLink", signature("character","character","character"), function(
 {
 	## Check Parameter
 	if(!file.exists(x))
-		stop("Database do not exist!")
+		stop("Database does not exist!\n")
 	
 	## Load SQLite Driver
 	drv <- dbDriver("SQLite")

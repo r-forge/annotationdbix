@@ -8,7 +8,7 @@ setMethod("addNewAnnotation", signature("character","data.frame","character","ch
 {
 	## Check Parameters
 	if(!file.exists(x))
-		stop("Database do not exist!")
+		stop("Database does not exist!\n")
 	
 	## Load SQLite Driver
 	drv <- dbDriver("SQLite")
@@ -28,21 +28,21 @@ setMethod("addNewAnnotation", signature("SQLiteConnection","data.frame","charact
 	## Check if tableTypeLength is integer
 	if(!missing(tableTypeLength))
 		if(!isTRUE(all.equal(as.integer(tableTypeLength), tableTypeLength)))
-			stop("'tableTypeLength' must be from type integer\n")
+			stop("'tableTypeLength' must be from type 'integer'.\n")
 
 	## Check bimapName
 	if(!missing(bimapName))
 		if(is.character(bimapName))
 		{
 			if(length(bimapName) > 1)
-				stop(paste("length(",bimapName,") must be 1.",sep=""))
+				stop(paste("length(",bimapName,") must be 1.\n",sep=""))
 		}
 		else
-			stop(paste("'",bimapName,"' must be from type 'character'.",sep=""))
+			stop(paste("'",bimapName,"' must be from type 'character'.\n",sep=""))
 			
 	## Check if table already exists
 	if(dbExistsTable(con,newTableName))
-		stop("Table '",newTableName,"' already exists\n")
+		stop("Table '",newTableName,"' already exists.\n")
 	
 	## Read meta
 	cat("Read table_master_meta\n")
@@ -69,11 +69,11 @@ setMethod("addNewAnnotation", signature("SQLiteConnection","data.frame","charact
 		
 	## Test if vector length are equal
 	if(length(tableTypeLength) != length(max.colLength))
-		stop("Vector length of 'tableTypeLength' must be as long as ncol(data)-1\n")
+		stop("Vector length of 'tableTypeLength' must be as long as ncol(data)-1.\n")
 		
 	## Test if length of data rows <= 
 	if(!all(tableTypeLength >= max.colLength))
-		stop("There are data entrys longer than in 'tableTypeLength' defined\n")
+		stop("There are data entries longer than in 'tableTypeLength' set.\n")
 				
 	## Add helper table	
 	if(length(ind<-which(data[[2]] == "")) != 0)
@@ -124,7 +124,7 @@ setMethod("addNewAnnotationFromDb1", signature("character","data.frame","charact
 {
 	## Check Parameters
 	if(!file.exists(x))
-		stop("Database do not exist!")
+		stop("Database does not exist!\n")
 	
 	## Load SQLite Driver
 	drv <- dbDriver("SQLite")
@@ -169,7 +169,7 @@ setMethod("addNewAnnotationFromDb1", signature("SQLiteConnection","data.frame","
 	if(!(mapTableName %in% tableInfo[[1]]))
 	{
 		.detach_db(con)		
-		stop("There is no table named '",mapTableName,"' in the dbX database")
+		stop("There is no table named '",mapTableName,"' in the extended .db database.\n")
 	}
 		
 	## Get tableinfo from db1
@@ -181,7 +181,7 @@ setMethod("addNewAnnotationFromDb1", signature("SQLiteConnection","data.frame","
 	if(!(mapDb1TableName %in% tableInfoDb1[[1]]))
 	{
 		.detach_db(con)	
-		stop("There is no table named '",mapDb1TableName,"' in the db1 database")
+		stop("There is no table named '",mapDb1TableName,"' in the .db1 database.\n")
 	}	
 	
 	## Add helper table	
@@ -199,7 +199,7 @@ setMethod("addNewAnnotationFromDb1", signature("SQLiteConnection","data.frame","
 		{
 			dbRollback(con)
 			.detach_db(con)
-			stop("Table '",tableInfoDb1[i,1],"' already exists in the dbX database\n")
+			stop("Table '",tableInfoDb1[i,1],"' already exists in the extended .db database.\n")
 		}
 		else
 		{
@@ -207,7 +207,7 @@ setMethod("addNewAnnotationFromDb1", signature("SQLiteConnection","data.frame","
 			{ 
 				dbRollback(con)
 				.detach_db(con)
-				stop("Cannot create table '",tableInfoDb1[i,3],"'\n") 
+				stop("Cannot create table '",tableInfoDb1[i,3],"'.\n") 
 			})
 			
 			fieldNames <- strsplit(tableInfoDb1[i,2],";")
@@ -223,17 +223,17 @@ setMethod("addNewAnnotationFromDb1", signature("SQLiteConnection","data.frame","
 			{ 
 				dbRollback(con)
 				.detach_db(con)
-				stop("Cannot insert data into '",tableInfoDb1[i,1],"'\n") 
+				stop("Cannot insert data into '",tableInfoDb1[i,1],"'.\n") 
 			})
 		}
 		
 		## Fill meta Table
-		cat("Fill meta Table\n")
+		cat("Fill meta Table.\n")
 		sql <- paste("INSERT INTO table_master_meta (tablename,fieldnames,links) VALUES ('",tableInfoDb1[i,1],"','",tableInfoDb1[i,2],"','",tableInfoDb1[i,4],"')",sep="")
 		dbGetQuery(con,sql)
 		
 		## Create index for each table
-		cat(paste("Create index for '",tableInfoDb1[i,1],"'\n",sep=""))
+		cat(paste("Create index for '",tableInfoDb1[i,1],"'.\n",sep=""))
 		sql <- paste("CREATE INDEX F",tableInfoDb1[i,1]," ON ",tableInfoDb1[i,1],"(_id)",sep="")
 		dbGetQuery(con,sql)		
 	}
@@ -244,7 +244,7 @@ setMethod("addNewAnnotationFromDb1", signature("SQLiteConnection","data.frame","
 			
 	# Update bimap_meta table with all bimap objects from the .db1 database except bimap objects
 	# which have the same name in the .dbX bimap_meta table
-	cat("Update bimap_meta table\n")
+	cat("Update bimap_meta table.\n")
 	sql <- "INSERT INTO bimap_meta SELECT * FROM db1.bimap_meta WHERE name IN (SELECT name FROM db1.bimap_meta except SELECT name FROM bimap_meta)"
 	dbGetQuery(con,sql)	
 			
@@ -252,22 +252,22 @@ setMethod("addNewAnnotationFromDb1", signature("SQLiteConnection","data.frame","
 	{ 
 		dbRollback(con)
 		.detach_db(con)
-		stop("Cannot insert data into '",tableInfoDb1[i,1],"'\n") 
+		stop("Cannot insert data into '",tableInfoDb1[i,1],"'.\n") 
 	})
 	
 	if (!dbCommit(con))
 	{
     	dbRollback(con)
-    	stop("Commit failed")
+    	stop("Commit failed.\n")
 	}
 	
 	## Copy metadata table	
-	cat("Add meta table\n")
+	cat("Add meta table.\n")
 	sql <- "SELECT * FROM metadata"
 	metadata1 <- dbGetQuery(con,sql)
 	
 	## Copy metadata table db1
-	cat("Add meta table\n")
+	cat("Add meta table.\n")
 	sql <- "SELECT * FROM db1.metadata"
 	metadata2 <- dbGetQuery(con,sql)
 	
@@ -280,7 +280,7 @@ setMethod("addNewAnnotationFromDb1", signature("SQLiteConnection","data.frame","
 	}
 	
 	## Remove helper table
-	cat("Remove helper table\n")
+	cat("Remove helper table.\n")
 	sql <- paste("DROP TABLE data_temp",sep="")
 	dbGetQuery(con,sql)
 	
@@ -292,7 +292,7 @@ setMethod("addNewAnnotationFromDb1", signature("SQLiteConnection","data.frame","
 .attach_db <- function(con,dbconn)
 {
 	## Attach Database
-	cat('Attach Database',dbGetInfo(dbconn)$dbname,'as db1\n')
+	cat('Attach database',dbGetInfo(dbconn)$dbname,'as db1.\n')
 	sql <- paste("ATTACH '",dbGetInfo(dbconn)$dbname,"' AS db1",sep="")
 	dbGetQuery(con,sql)
 }
@@ -300,7 +300,7 @@ setMethod("addNewAnnotationFromDb1", signature("SQLiteConnection","data.frame","
 .detach_db <- function(dbconn)
 {
 	## Detach Database
-	cat('Detach Database',dbGetInfo(dbconn)$dbname,'\n')
+	cat('Detach database',dbGetInfo(dbconn)$dbname,'.\n')
 	sql <- "DETACH db1"
 	dbGetQuery(dbconn,sql)
 }

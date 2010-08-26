@@ -15,7 +15,7 @@ function(x,caption,outputName,tables=character(),filter=character(),onlyIDs=FALS
 	path <- paste(path[1:(length(path)-1)],collapse=.Platform$file.sep)
 	
 	## Read meta
-	cat("Read table_master_meta\n")
+	cat("Read table_master_meta.\n")
 	sql <- "SELECT * FROM table_master_meta"
 	tableInfo <- dbGetQuery(con,sql)	
 	mainCol <- apply(tableInfo[2],1,function(x) strsplit(x,";")[[1]][1])
@@ -32,7 +32,7 @@ function(x,caption,outputName,tables=character(),filter=character(),onlyIDs=FALS
 	## Test if tables exist
 	for(i in length(tables))
 		if(!dbExistsTable(con,tables[i]))
-			stop("Table '",tables[i],"' does not exist\n")
+			stop("Table '",tables[i],"' does not exist.\n")
 	
 	## If onlyIDs TRUE then only ids where used without their attributes
 	if(onlyIDs)
@@ -48,12 +48,12 @@ function(x,caption,outputName,tables=character(),filter=character(),onlyIDs=FALS
 	{
 		## colOrder must be unique
 		if(length(colOrder)!=length(unique(colOrder)))
-			stop("'colOrder' must be unique\n")
+			stop("'colOrder' must be unique.\n")
 		
 		## All column names must be in colOrder
 		if(!all(tables %in% colOrder))
 		{
-			stop(paste("'",tables[!(tables %in% colOrder)],"'",sep="",collapse=",")," is not in 'colOrder'\n")
+			stop(paste("'",tables[!(tables %in% colOrder)],"'",sep="",collapse=",")," is not in 'colOrder'.\n")
 		}	
 		nCols <- nCols + length(tables)
 		
@@ -63,18 +63,18 @@ function(x,caption,outputName,tables=character(),filter=character(),onlyIDs=FALS
 		{
 			if(!all(colnames(extdata[-1]) %in% colOrder))
 			{
-				stop("'",colnames(extdata[-1])[!(colnames(extdata[-1]) %in% colOrder)],"' is not in 'colOrder'\n")
+				stop("'",colnames(extdata[-1])[!(colnames(extdata[-1]) %in% colOrder)],"' is not in 'colOrder'.\n")
 			}
 			nCols <- nCols + ncol(extdata[-1])
 		}
 		
 		if(length(colOrder) != nCols)
-			stop("'colOrder' must have a length of ",nCols,"\n")
+			stop("'colOrder' must have a length of ",nCols,".\n")
 	}	
 	
 	## Test filter
 	if(!is.character(filter))
-		stop("'filter' must be of type character\n")
+		stop("'filter' must be of type 'character'.\n")
 		
 	## Set tableRows 50 if not valid
 	if((!is.numeric(tableRows)) || tableRows < 1)
@@ -99,7 +99,7 @@ function(x,caption,outputName,tables=character(),filter=character(),onlyIDs=FALS
 	if(length(filter) > 0)
 	{
 		if(length(filterIds <- mainIds[mainIds[,2] %in% filter,]) == 0)
-			stop("'filter' has no match in ",mainTable,"\n")
+			stop("'filter' has no match in ",mainTable,".\n")
 		
 		dbWriteTable(conn=con,name="filter_temp",value=filterIds,row.names=FALSE,overwrite=TRUE)
 	}
@@ -143,7 +143,7 @@ function(x,caption,outputName,tables=character(),filter=character(),onlyIDs=FALS
 	for(p in 1:numPages)
 	{
 		## Generate HTML side
-		cat("Write page ",p," of ",numPages,"\n")
+		cat("Write page ",p," of ",numPages,".\n")
 		
 		## Write DOCTYPE and META
 		html <- paste('<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">',
@@ -210,7 +210,7 @@ function(x,caption,outputName,tables=character(),filter=character(),onlyIDs=FALS
         else if(is.character(css))
         	html <- paste(html,paste('<link rel="stylesheet" type="text/css" href="',css,'" />',sep=""),'</head>','<body>',sep="\n")
         else
-        	stop("'css' must be from type character or NULL.")
+        	stop("'css' must be from type 'character' or 'NULL'.")
         
         ## Writes links to the other sides
         if(numPages == 1)
@@ -293,7 +293,7 @@ function(x,caption,outputName,mainTable,tables=character(),filter=character(),on
 {
 	## Check Parameters
 	if(!file.exists(x))
-		stop("Database do not exist!")
+		stop("Database does not exist!\n")
 	
 	## Load SQLite Driver
 	drv <- dbDriver("SQLite")
@@ -316,7 +316,7 @@ function(x,caption,outputName,mainTable,tables=character(),filter=character(),on
 	path <- paste(path[1:(length(path)-1)],collapse=.Platform$file.sep)
 	
 	## Read meta
-	cat("Read table_master_meta\n")
+	cat("Read table_master_meta.\n")
 	sql <- "SELECT * FROM table_master_meta"
 	tableInfo <- dbGetQuery(con,sql)	
 	mainCol <- apply(tableInfo[2],1,function(x) strsplit(x,";")[[1]][1])
@@ -333,7 +333,7 @@ function(x,caption,outputName,mainTable,tables=character(),filter=character(),on
 	## Test if tables exist
 	for(i in length(tables))
 		if(!dbExistsTable(con,tables[i]))
-			stop("Table '",tables[i],"' does not exist\n")
+			stop("Table '",tables[i],"' does not exist.\n")
 	
 	## If onlyIDs TRUE then only ids where used without their attributes
 	if(onlyIDs)
@@ -349,12 +349,12 @@ function(x,caption,outputName,mainTable,tables=character(),filter=character(),on
 	{
 		## colOrder must be unique
 		if(length(colOrder)!=length(unique(colOrder)))
-			stop("'colOrder' must be unique\n")
+			stop("'colOrder' must be unique.\n")
 		
 		## All column names must be in colOrder
 		if(!all(tables %in% colOrder))
 		{
-			stop(paste("'",tables[!(tables %in% colOrder)],"'",sep="",collapse=",")," is not in 'colOrder'\n")
+			stop(paste("'",tables[!(tables %in% colOrder)],"'",sep="",collapse=",")," is not in 'colOrder'.\n")
 		}	
 		nCols <- nCols + length(tables)
 		
@@ -364,18 +364,18 @@ function(x,caption,outputName,mainTable,tables=character(),filter=character(),on
 		{
 			if(!all(colnames(extdata[-1]) %in% colOrder))
 			{
-				stop("'",colnames(extdata[-1])[!(colnames(extdata[-1]) %in% colOrder)],"' is not in 'colOrder'\n")
+				stop("'",colnames(extdata[-1])[!(colnames(extdata[-1]) %in% colOrder)],"' is not in 'colOrder'.\n")
 			}
 			nCols <- nCols + ncol(extdata[-1])
 		}
 		
 		if(length(colOrder) != nCols)
-			stop("'colOrder' must have a length of ",nCols,"\n")
+			stop("'colOrder' must have a length of ",nCols,".\n")
 	}	
 	
 	## Test filter
 	if(!is.character(filter))
-		stop("'filter' must be of type character\n")
+		stop("'filter' must be of type 'character'.\n")
 		
 	## Set tableRows 50 if not valid
 	if((!is.numeric(tableRows)) || tableRows < 1)
@@ -391,7 +391,7 @@ function(x,caption,outputName,mainTable,tables=character(),filter=character(),on
 	if(length(filter) > 0)
 	{
 		if(length(filterIds <- mainIds[mainIds[,2] %in% filter,]) == 0)
-			stop("'filter' has no match in ",mainTable,"\n")
+			stop("'filter' has no match in ",mainTable,".\n")
 		
 		dbWriteTable(conn=con,name="filter_temp",value=filterIds,row.names=FALSE,overwrite=TRUE)
 	}
@@ -439,7 +439,7 @@ function(x,caption,outputName,mainTable,tables=character(),filter=character(),on
 	for(p in 1:numPages)
 	{
 		## Generate HTML side
-		cat("Write page ",p," of ",numPages,"\n")
+		cat("Write page ",p," of ",numPages,".\n")
 		
 		## Write DOCTYPE and META
 		html <- paste('<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">',
@@ -506,7 +506,7 @@ function(x,caption,outputName,mainTable,tables=character(),filter=character(),on
         else if(is.character(css))
         	html <- paste(html,paste('<link rel="stylesheet" type="text/css" href="',css,'" />',sep=""),'</head>','<body>',sep="\n")
         else
-        	stop("'css' must be from type character or NULL.")
+        	stop("'css' must be from type 'character' or 'NULL'.\n")
         
         ## Writes links to the other sides
         if(numPages == 1)

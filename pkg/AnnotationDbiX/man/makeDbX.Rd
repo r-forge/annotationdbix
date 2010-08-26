@@ -11,7 +11,7 @@ makeDbX(probeList, organism, species, prefix, outputDir, version,
     chipName, author, maintainer, 
     manufacturer = "Manufacturer not specified", 
     manufacturerUrl = "ManufacturerUrl not specified", 
-    tableName = "sequence", 
+    newTableName = "sequence", 
     colName = "sequence",
     bimapName,
     link = "")
@@ -51,14 +51,14 @@ makeDbX(probeList, organism, species, prefix, outputDir, version,
   \item{manufacturerUrl}{
 	URL for manufacturers website.
 }
-  \item{tableName}{
+  \item{newTableName}{
 	How the database table should be named. \emph{\sQuote{probe}}, \emph{\sQuote{probe_temp}} and all names including the string \emph{\sQuote{meta}} are not allowed. If no name is specified the default name \emph{\sQuote{sequence}} is used.
 }
   \item{colName}{
 	How the right column of the new table should be named. This name is important for generating new \link[=Bimap]{Bimap objects}. The names \emph{\sQuote{_id}} and \emph{\sQuote{probe_id}} are reserved.
 }
   \item{bimapName}{
-  A optional Bimap object name. If \emph{\sQuote{bimapName}} was set a Bimap object between the \emph{\sQuote{probes}} table and the new table specified in \emph{\sQuote{tableName}} is created.
+  A optional Bimap object name. If \emph{\sQuote{bimapName}} was set a Bimap object between the \emph{\sQuote{probes}} table and the new table specified in \emph{\sQuote{newTableName}} is created.
 }
   \item{link}{
     A HTML link to a web resource associated to the kind of identifier which is used. See \command{\link{setIdLink}()} for more details.

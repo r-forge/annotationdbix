@@ -43,7 +43,7 @@ N. Auer \email{norbert@derauer.net}
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-See also \command{\link{annotationPkgToHTML()}} function.
+See also \command{annotationPkgToHTML()} function.
 }
 \examples{
 \dontrun{
