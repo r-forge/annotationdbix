@@ -138,6 +138,11 @@ function(x,caption,outputName,tables=character(),filter=character(),onlyIDs=FALS
 		}
 	}
 
+	## Order results (NAs to the end)
+	results<-lapply(results,function(x) { 
+		x <- x[order(x[1],x[2]),]
+		x})
+
 	numPages <- ceiling(nrow(results[[1]])/tableRows)
 	## Write HTML pages
 	for(p in 1:numPages)
@@ -254,11 +259,15 @@ function(x,caption,outputName,tables=character(),filter=character(),onlyIDs=FALS
 					link <- strsplit(tableInfo[colOrder[i],4],"\\|")[[1]][j-1]
 
 					if(j == 2)
-						mainres<-results[[tableInfo[colOrder[i],5]]][results[[tableInfo[colOrder[i],5]]][,1] == x,j]
-						
-					if(any(is.na(res<-results[[tableInfo[colOrder[i],5]]][results[[tableInfo[colOrder[i],5]]][,1] == x,j])))
-						v<-c(v,"&nbsp;")
-					else if(is.na(link) || link == "") 
+					{
+						mainres <- results[[tableInfo[colOrder[i],5]]][results[[tableInfo[colOrder[i],5]]][,1] == x,j]
+						mainres <- mainres[!is.na(mainres)]
+					}
+	
+					res <- results[[tableInfo[colOrder[i],5]]][results[[tableInfo[colOrder[i],5]]][,1] == x,j]
+					res <- res[!is.na(res)]
+
+					if(is.na(link) || link == "") 
 						v<-c(v,paste(res,collapse="<br />",sep=""))
 					else
 					{
@@ -386,7 +395,7 @@ function(x,caption,outputName,mainTable,tables=character(),filter=character(),on
 	
 	sql <- paste("SELECT DISTINCT * FROM",mainTable)
 	mainIds <- dbGetQuery(con,sql)
-		
+	
 	## Filter mainTable rows
 	if(length(filter) > 0)
 	{
@@ -403,14 +412,14 @@ function(x,caption,outputName,mainTable,tables=character(),filter=character(),on
 	sql <- paste("SELECT DISTINCT ",select1," FROM ",mainTable," m, filter_temp f WHERE m.",tableInfo[mainTable,3]," = f.",tableInfo[mainTable,3],sep="")
 	results[[1]] <- dbGetQuery(con,sql)
 	results[[1]] <- cbind(results[[1]][,1],results[[1]])
-	
+		
 	## Get all unique IDs from the other columns
 	for(i in 2:nrow(tableInfo))
 	{		
 		select2 <- paste(tableInfo[i,1],".",strsplit(tableInfo[i,2],";")[[1]],collapse=",",sep="")
 
 		sql <- paste("SELECT DISTINCT filter_temp.",tableInfo[mainTable,3],",",select2," FROM filter_temp LEFT OUTER JOIN ",tableInfo[i,1]," ON filter_temp.X_id = ",tableInfo[i,1],"._id ORDER BY filter_temp.",tableInfo[mainTable,3],sep="")
-		
+			
 		results[[i]] <- dbGetQuery(con,sql)
 	}
 	
@@ -433,6 +442,12 @@ function(x,caption,outputName,mainTable,tables=character(),filter=character(),on
 		}
 	}
 
+	## Order results (NAs to the end)
+	results<-lapply(results,function(x) { 
+		x <- x[order(x[1],x[2]),]
+		x})
+
+	#return(results)
 	numPages <- ceiling(nrow(results[[1]])/tableRows)
 	
 	## Write HTML pages
@@ -551,11 +566,15 @@ function(x,caption,outputName,mainTable,tables=character(),filter=character(),on
 					link <- strsplit(tableInfo[colOrder[i],4],"\\|")[[1]][j-1]
 
 					if(j == 2)
+					{
 						mainres<-results[[tableInfo[colOrder[i],5]]][results[[tableInfo[colOrder[i],5]]][,1] == x,j]
-						
-					if(any(is.na(res<-results[[tableInfo[colOrder[i],5]]][results[[tableInfo[colOrder[i],5]]][,1] == x,j])))
-						v<-c(v,"&nbsp;")
-					else if(is.na(link) || link == "") 
+						mainres <- mainres[!is.na(mainres)]
+					}
+					
+					res <- results[[tableInfo[colOrder[i],5]]][results[[tableInfo[colOrder[i],5]]][,1] == x,j]
+					res <- res[!is.na(res)]
+
+					if(is.na(link) || link == "") 
 						v<-c(v,paste(res,collapse="<br />",sep=""))
 					else
 					{
