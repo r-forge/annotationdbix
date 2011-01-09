@@ -1,6 +1,8 @@
 ## Add new Annotation Data to the .dbX database
 setGeneric("addNewAnnotation", signature = c("x","data","newTableName","data.colNames","mapTableName"),function(x,data,newTableName,data.colNames,mapTableName,tableTypeLength,bimapName) standardGeneric("addNewAnnotation"))
 
+setGeneric("addNewSimpleAnnotation", signature = c("x","data","newTableName","data.colNames"),function(x,data,newTableName,data.colNames,tableTypeLength,bimapName) standardGeneric("addNewSimpleAnnotation"))
+
 setGeneric("addNewAnnotationFromDb1", signature = c("x","data","mapTableName","mapDb1TableName","dbSrc"),function(x,data,mapTableName,mapDb1TableName,dbSrc) standardGeneric("addNewAnnotationFromDb1"))
 
 ## FilePath
@@ -104,7 +106,8 @@ setMethod("addNewAnnotation", signature("SQLiteConnection","data.frame","charact
 	dbGetQuery(con,sql)	
 	
 	## Add Bimap if bimapName was defined
-	addBimapObj(con,bimapName,'probes',newTableName)
+	if(!missing(bimapName))
+		addBimapObj(con,bimapName,'probes',newTableName)
 	
 	## Update table_master_meta
 	cat("Update table_master_meta\n")
@@ -116,6 +119,117 @@ setMethod("addNewAnnotation", signature("SQLiteConnection","data.frame","charact
 	sql <- paste("DROP TABLE ",newTableName,"_temp",sep="")
 	dbGetQuery(con,sql)
 	
+	return(TRUE)
+})
+
+## FilePath
+setMethod("addNewSimpleAnnotation", signature("character","data.frame","character","character"), function(x,data,newTableName,data.colNames,tableTypeLength,bimapName) 
+{
+	## Check Parameters
+	if(!file.exists(x))
+		stop("Database does not exist!\n")
+	
+	## Load SQLite Driver
+	drv <- dbDriver("SQLite")
+	
+	## Generate Connection Object	
+	con <- dbConnect(drv, dbname = x)
+	on.exit(dbDisconnect(con))
+	
+	addNewSimpleAnnotation(con,data,newTableName,data.colNames,tableTypeLength,bimapName)
+})
+
+## SQLite-Connection
+setMethod("addNewSimpleAnnotation", signature("SQLiteConnection","data.frame","character","character"), function(x,data,newTableName,data.colNames,tableTypeLength,bimapName) 
+{	
+	con <- x
+	
+	## Check if tableTypeLength is integer
+	if(!missing(tableTypeLength))
+		if(!isTRUE(all.equal(as.integer(tableTypeLength), tableTypeLength)))
+			stop("'tableTypeLength' must be from type 'integer'.\n")
+
+	## Check bimapName
+	if(!missing(bimapName))
+		if(is.character(bimapName))
+		{
+			if(length(bimapName) > 1)
+				stop(paste("length(",bimapName,") must be 1.\n",sep=""))
+		}
+		else
+			stop(paste("'",bimapName,"' must be from type 'character'.\n",sep=""))
+			
+	## Check if table already exists
+	if(dbExistsTable(con,newTableName))
+		stop("Table '",newTableName,"' already exists.\n")
+	
+	## Read meta
+	cat("Read table_master_meta\n")
+	sql <- "SELECT * FROM table_master_meta"
+	tableInfo <- dbGetQuery(con,sql)	
+	mainCol <- apply(tableInfo[2],1,function(x) strsplit(x,";")[[1]][1])
+	tableInfo <- as.data.frame(cbind(tableInfo,mainCol,stringsAsFactors=FALSE),stringsAsFactors=FALSE)
+	
+	sql <- "SELECT * FROM meta"
+	meta <- dbGetQuery(con,sql)
+	main_table <- meta[meta$key == 'main_table','value']
+	
+	colnames(data) <- data.colNames
+	
+	## Check maximum length of data rows
+	max.colLength <- apply(data,2,function(x) max(nchar(x)))
+	
+	if(missing(tableTypeLength))
+		tableTypeLength <- max.colLength
+		
+	## Test if vector length are equal
+	if(length(tableTypeLength) != length(max.colLength))
+		stop("Vector length of 'tableTypeLength' must be as long as ncol(data)-1.\n")
+		
+	## Test if length of data rows <= 
+	if(!all(tableTypeLength >= max.colLength))
+		stop("There are data entries longer than in 'tableTypeLength' set.\n")
+				
+		
+	cat("Add helper table ",newTableName,"_temp\n",sep="")
+	dbWriteTable(conn=con,name=paste(newTableName,"_temp",sep=""),value=data,row.names=FALSE,overwrite=TRUE)
+	
+	## Create new table
+	cat("Create new table",newTableName,"\n")
+	
+	dyn <- paste(data.colNames," VARCHAR(",tableTypeLength,")",collapse=",",sep="")
+	
+		
+	sql <- paste("CREATE TABLE ",newTableName," (",dyn,")",sep="")
+cat(sql)
+	dbGetQuery(con,sql)
+	
+	## Fill new table
+	cat("Fill new table",newTableName,"\n")
+
+	sql <- paste("INSERT INTO ",newTableName," SELECT * FROM ",newTableName,"_temp",sep="")
+	dbGetQuery(con,sql)
+	
+	## Create index for main and probes table
+	cat(paste("Create index for '",newTableName,"'\n",sep=""))
+	sql <- paste("CREATE INDEX F",newTableName," ON ",newTableName,"(",data.colNames,")",sep="")
+	dbGetQuery(con,sql)	
+	
+	## Add Bimap if bimapName was defined
+
+	if(!missing(bimapName))
+		addSimpleBimapObj(con,bimapName,newTableName)
+	
+	## Update table_master_meta
+	cat("Update table_master_meta\n")
+	sql <- paste("INSERT INTO table_master_meta VALUES('",newTableName,"','",paste(data.colNames,collapse=";"),"','",paste(rep('|',length(data.colNames)),collapse=''),"')",sep="")
+	dbGetQuery(con,sql)
+	
+	## Remove helper table
+	cat("Remove helper table\n")
+	sql <- paste("DROP TABLE ",newTableName,"_temp",sep="")
+	dbGetQuery(con,sql)
+
 	return(TRUE)
 })
 

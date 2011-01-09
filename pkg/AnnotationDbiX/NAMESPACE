@@ -6,10 +6,12 @@ import("biomaRt")
 exportMethods(
     "db1ConverterECOLIK12",
     "addBimapObj",
+	"addSimpleBimapObj",
     "deleteBimapObj",
 	"listBimapObj",
     "makeDbX",
     "addNewAnnotation",
+	"addNewSimpleAnnotation",
     "addNewAnnotationFromDb1",
     "annotationPkgToHTML",
     "setIdLink",
