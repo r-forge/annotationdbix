@@ -198,10 +198,9 @@ setMethod("addNewSimpleAnnotation", signature("SQLiteConnection","data.frame","c
 	cat("Create new table",newTableName,"\n")
 	
 	dyn <- paste(data.colNames," VARCHAR(",tableTypeLength,")",collapse=",",sep="")
-	
 		
 	sql <- paste("CREATE TABLE ",newTableName," (",dyn,")",sep="")
-cat(sql)
+
 	dbGetQuery(con,sql)
 	
 	## Fill new table
@@ -222,7 +221,7 @@ cat(sql)
 	
 	## Update table_master_meta
 	cat("Update table_master_meta\n")
-	sql <- paste("INSERT INTO table_master_meta VALUES('",newTableName,"','",paste(data.colNames,collapse=";"),"','",paste(rep('|',length(data.colNames)),collapse=''),"')",sep="")
+	sql <- paste("INSERT INTO table_master_meta VALUES('",newTableName,"','",paste(data.colNames,collapse=";"),"','",paste(rep('|',length(data.colNames)-1),collapse=''),"')",sep="")
 	dbGetQuery(con,sql)
 	
 	## Remove helper table
