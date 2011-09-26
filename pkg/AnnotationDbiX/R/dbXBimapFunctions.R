@@ -70,12 +70,11 @@
 	## Get tableinfo
 	sql <- "SELECT * FROM table_master_meta"
 	tableinfo <- dbGetQuery(dbconn,sql)
-	fields <- apply(tableinfo['fieldnames'],1,function(x) strsplit(x,";")[[1]][-1])
+	fields <- apply(tableinfo['fieldnames'],1,function(x) strsplit(x,";")[[1]][1])
 	mainCol <- apply(tableinfo['fieldnames'],1,function(x) strsplit(x,";")[[1]][1])
 	tableinfo <- as.data.frame(cbind(tableinfo,mainCol,stringsAsFactors=FALSE),stringsAsFactors=FALSE)
 	MapCounts <- c()
 
-print(class(fields[[2]]))
 
 	for(i in 1 : nrow(bimaps))
 	{	
