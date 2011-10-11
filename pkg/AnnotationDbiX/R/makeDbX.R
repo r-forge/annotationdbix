@@ -33,6 +33,8 @@ setMethod("makeDbX",signature("data.frame","character","character","character","
 		}
 		else
 			stop(paste("'",bimapName,"' must be from type 'character'.\n",sep=""))
+	else
+		cat('Bimap Name was not set! Bimaps must be added manually.\n')
 				
 	## Prepare .dbX creation
 	template_path <- system.file("Pkg-template",package="AnnotationDbiX")
@@ -159,8 +161,11 @@ setMethod("makeDbX",signature("data.frame","character","character","character","
 	sql <- "INSERT INTO map_counts SELECT 'TOTAL',COUNT(*) FROM probes"
 	dbGetQuery(con,sql)
 	
-	sql <- paste("INSERT INTO map_counts SELECT '",bimapName,"',COUNT(*) FROM probes",sep="")
-	dbGetQuery(con,sql)
+	if(!missing(bimapName))
+	{
+		sql <- paste("INSERT INTO map_counts SELECT '",bimapName,"',COUNT(*) FROM probes",sep="")
+		dbGetQuery(con,sql)
+	}
 	
 	## DBSCHEMA and DBSCHEMAVERSION must be defined for compatibility
 	sql <- paste("INSERT INTO metadata (name,value) VALUES ('DBSCHEMA','",species,"_dbX_schema')",sep="")
