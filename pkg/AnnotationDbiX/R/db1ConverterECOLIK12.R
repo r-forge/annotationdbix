@@ -64,7 +64,7 @@ setMethod("db1ConverterECOLIK12", signature("SQLiteConnection","missing"), funct
 		'http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?db=Nucleotide&cmd=search&term=$ID',
 		'http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?db=gene&cmd=Retrieve&dopt=Graphics&list_uids=$ID',
 		'http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?db=Nucleotide&cmd=search&term=$ID',
-		'','|','','','','||','|','|','|','|','|','|')
+		'','|','','' ,'http://www.ncbi.nlm.nih.gov/pubmed?term=$ID','||','|','|','|','|','|','|')
 		
 	createstatements <- c(
 		'CREATE TABLE genbank_id (_id integer NOT NULL,accession VARCHAR(20) NOT NULL,FOREIGN KEY (_id) REFERENCES internal_id(_id))',
